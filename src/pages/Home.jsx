@@ -14,7 +14,7 @@ function Home(){
 
     return(
         <>
-            <div className="min-h-screen min-w-screen flex flex-col justify-center lg:flex flex-row lg:flex flex-wrap">
+            <div className="fixed left-0 top-25 px-8 flex flex-col w-full h-full justify-center gap-4 lg:grid lg:grid-cols-4">
                 {
                     currentRankings.map((item)=>{
                     return(<Rankings title={item.title} description={item.description} rankItems={item.items}/>)

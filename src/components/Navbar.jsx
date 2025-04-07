@@ -4,7 +4,7 @@ function Navbar()
 {
     return(
     <>
-        <div className="navbar bg-base-100 fixed left-0 top-0 min-w-screen px-8">
+        <div className="navbar bg-base-100 fixed left-0 top-0 z-10 min-w-screen px-8">
             <div className="navbar-start flex-none lg:hidden">
                 <div className="dropdown">
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">

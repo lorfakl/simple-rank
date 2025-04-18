@@ -17,10 +17,10 @@ function Home(){
 
     return(
         <>
-            <div className="w-full">
+            <div className="w-full my-18">
                     <h1 className="">my rankings</h1>
                 </div>
-            <div className="my-18 flex flex-col gap-y-4">
+            <div className="my-12 flex flex-col gap-y-4">
                 <div className="px-8 flex flex-col w-full h-full justify-center gap-4 lg:grid lg:grid-cols-4">
                     {
                         currentRankings.map((item, index)=>{

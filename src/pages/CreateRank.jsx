@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import ProtoRank from "../components/ProtoRank"
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from "react"
+import { Droppable, DragDropContext } from '@hello-pangea/dnd';
 
 function CreateRank(){
 
@@ -67,6 +68,11 @@ function CreateRank(){
         return rankItem 
     }
 
+    function handleDragEnd(result)
+    {
+
+    }
+
     return(
         <>
             <div className="mt-18 mb-8">
@@ -89,16 +95,27 @@ function CreateRank(){
                     <textarea className="textarea lg:text-2xl lg:w-192 w-100 h-20 text-xl" placeholder="description"></textarea>
                     <span className="">ranking description</span>
                 </label>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                <Droppable droppableId='createRank'>
+                    {(provided) => (
+                        <div {...provided.droppableProps} 
+                            className="w-full h-120 flex flex-col lg:grid lg:grid-cols-5 lg:gap-x-4 border-solid rounded-xl gap-y-4 overflow-y-auto" 
+                            ref={provided.innerRef}
+                        >
+                            {protoRanks.map((item, index) => (
+                                // Pass the item data to your ProtoRank component
+                                <ProtoRank key={index} id={item.id} index={index} data={item} 
+                                        onTitleChange={handleRankItemNameUpdates}
+                                        handleRemoveRankItem={removeRank} />
+                            ))}
+                            {provided.placeholder}
+                        </div>
+                    )}
+                    
+                </Droppable>
+                </DragDropContext>
                 
-                <div className="w-full h-120 flex flex-col lg:grid lg:grid-cols-5 lg:gap-x-4 border-solid rounded-xl gap-y-4 overflow-y-auto">
-                    {protoRanks.map((item, index) => {
-                        // Pass the item data to your ProtoRank component
-                        return <ProtoRank key={index} id={item.id} data={item} 
-                                onTitleChange={handleRankItemNameUpdates}
-                                handleRemoveRankItem={removeRank} />
-                    })}
-
-                </div>
+                
 
                 <button className="outline-dashed" onClick={() => {setItemCount( itemCount + 1)}}>
                     <div className="flex flex-row items-center">

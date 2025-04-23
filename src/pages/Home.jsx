@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router';
 import { Plus } from 'lucide-react';
 import { programmingLanguagesRanking, nationalParksRanking } from "../components/exampledata"
+import { DragDropContext } from "@hello-pangea/dnd";
 import Rankings from "../components/Rankings"
 function Home(){
 
@@ -15,26 +16,33 @@ function Home(){
     },
     [])
 
+    function handleDragEnd(result) {
+
+    }
+
     return(
         <>
             <div className="w-full my-18">
                     <h1 className="">my rankings</h1>
-                </div>
-            <div className="my-12 flex flex-col gap-y-4">
-                <div className="px-8 flex flex-col w-full h-full justify-center gap-4 lg:grid lg:grid-cols-4">
-                    {
-                        currentRankings.map((item, index)=>{
-                        return(<Rankings id={index} title={item.title} description={item.description} rankItems={item.items} creator={"You"} lastUpdate={"Now"}/>)
-                    })}
-
-                    <button className="outline-dashed" onClick={() => {navigate("/NewRank")}}>
-                        <div className="flex flex-col items-center">
-                            <Plus size={50}/>
-                            <p className="font-thin lg:text-5xl text-3xl">Create a New Ranking</p>
-                        </div>
-                    </button>
-                </div>
             </div>
+            <DragDropContext onDragEnd={handleDragEnd}>
+                <div className="my-12 flex flex-col gap-y-4">
+                    <div className="px-8 flex flex-col w-full h-full justify-center gap-4 lg:grid lg:grid-cols-4">
+                        {
+                            currentRankings.map((item, index)=>{
+                            return(<Rankings id={index} title={item.title} description={item.description} rankItems={item.items} creator={"You"} lastUpdate={"Now"}/>)
+                        })}
+
+                        <button className="outline-dashed" onClick={() => {navigate("/NewRank")}}>
+                            <div className="flex flex-col items-center">
+                                <Plus size={50}/>
+                                <p className="font-thin lg:text-5xl text-3xl">Create a New Ranking</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </DragDropContext>
+            
         </>
     )
 }

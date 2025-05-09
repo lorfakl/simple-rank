@@ -4,9 +4,10 @@ import Home from './pages/Home'
 import { BrowserRouter, Routes, Route, Router } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import CreateRank from './pages/CreateRank'
+
+
+
 function App() {
-
-
   return (
     <>
       <BrowserRouter>

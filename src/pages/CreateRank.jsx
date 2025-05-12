@@ -1,6 +1,7 @@
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid'
 import { useNavigate } from 'react-router';
 import ProtoRank from "../components/ProtoRank"
+import LimitedTextArea from '../components/LimitedTextArea';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from "react"
 import { createClient } from '@supabase/supabase-js'
@@ -16,8 +17,11 @@ function CreateRank(){
     const [itemCount, setItemCount] = useState(0)
     const [protoRanks, setProtoRanks] = useState([])
     const [protoRanking, setProtoRanking] = useState({ title: "", description: ""})
+    
     const createdRanks = useRef({})
     const previousItemCount = useRef(0)
+    const titleTextLimit = useRef(50)
+    const descriptionTextLimit = useRef(100)
 
     const navigate = useNavigate()
 
@@ -68,6 +72,8 @@ function CreateRank(){
 
 
     //*JS Functions*//
+    
+
     function convert_ranks_to_rows()
     {
         let rowObject = {
@@ -83,7 +89,6 @@ function CreateRank(){
             
         }))
         return rankingData
-
     }
 
     function removeRank(idToRemove)
@@ -113,6 +118,7 @@ function CreateRank(){
         return rankItem 
     }
 
+    //*User Interface Logic Functions*//
     function handleDragEnd(result)
     {
         const {destination, source, draggableId } = result
@@ -143,7 +149,20 @@ function CreateRank(){
 
     }
 
-    //function handleRankingTitle
+    function handleRankingTitle(rankingTitle)
+    {
+        setProtoRanking({...protoRanking, title: rankingTitle})
+    }
+
+    function handleRankingDescription(rankingDescription)
+    {
+        setProtoRanking({...protoRanking, description: rankingDescription})
+    }
+
+    function handleProtoRankChanges(id, title, description)
+    {
+        console.log("rank item: ", id, " rank title: ", title, " rank desc: ", description)
+    }
 
     return(
         <>
@@ -158,27 +177,9 @@ function CreateRank(){
                     <button className="btn btn-soft btn-error" onClick={() => {navigate("/Home")}}><Trash2 />Discard Ranking</button>
                 </div>
 
-                <div>
-                    <label className="floating-label text-4xl">
-                        <textarea 
-                            onChange={(e) => {setProtoRanking({...protoRanking, title: e.target.value})}} 
-                            className="textarea lg:text-2xl lg:w-192 w-100 text-xl" 
-                            placeholder="title">
-                            </textarea>
-                        <span className="text-4xl">ranking title</span>
-                        <div className="place-self-end px-4">{protoRanking.title.length}/{50}</div>
-                    </label>
-                    
-                </div>
+                <LimitedTextArea inputLabel={"ranking title"} characterLimit={25} placeholderText={"title"} handleInputChange={handleRankingTitle} />
                 
-
-                <label className="floating-label text-4xl">
-                    <textarea 
-                        onChange={(e) => {setProtoRanking({...protoRanking, description: e.target.value})}} 
-                        className="textarea lg:text-2xl lg:w-192 w-100 h-20 text-xl" 
-                        placeholder="description"></textarea>
-                    <span className="">ranking description</span>
-                </label>
+                <LimitedTextArea inputLabel={"ranking description"} characterLimit={75} placeholderText={"description"} handleInputChange={handleRankingDescription} />
 
                 <button className="outline-dashed" onClick={() => {setItemCount( itemCount + 1)}}>
                     <div className="flex flex-row items-center">
@@ -191,19 +192,18 @@ function CreateRank(){
                     <Droppable droppableId='createRank'>
                         {(provided) => (
                             <div {...provided.droppableProps} 
-                                className="w-full h-120 flex flex-col lg:flex-row lg:gap-x-4 border-solid rounded-xl gap-y-4 overflow-y-auto" 
+                                className="w-full h-120 flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
                                 ref={provided.innerRef}
                             >
                                 {protoRanks.map((item, index) => (
                                     // Pass the item data to your ProtoRank component
                                     <ProtoRank key={item.id} id={item.id} index={index} data={item} 
-                                            onTitleChange={handleRankItemNameUpdates}
+                                            onDataChange={handleProtoRankChanges}
                                             handleRemoveRankItem={removeRank} />
                                 ))}
                                 {provided.placeholder}
                             </div>
                         )}
-                        
                     </Droppable>
                 </DragDropContext>
             </div>

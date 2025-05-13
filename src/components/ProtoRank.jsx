@@ -2,7 +2,7 @@ import { X } from "lucide-react"
 import { Draggable } from "@hello-pangea/dnd"
 import LimitedTextInput from "./LimitedTextInput"
 import {useRef } from 'react'
-function ProtoRank({id, index, data, onDataChange, handleRemoveRankItem}){
+function ProtoRank({id, index, data, onDataChange, handleRemoveRankItem, showInputError = false}){
 
     const protoRankData = useRef({title: "", description: ""})
 
@@ -29,7 +29,7 @@ function ProtoRank({id, index, data, onDataChange, handleRemoveRankItem}){
                 
                     <LimitedTextInput inputLabel={"item name"} characterLimit={50} placeholderText={"enter rank item name"} 
                         handleInputChange={handleRankItemTitleChange} 
-                        textSize={"text-xl"} />
+                        textSize={"text-xl"} showRequired={showInputError}/>
 
                     <LimitedTextInput inputLabel={"item description"} characterLimit={75} placeholderText={"enter rank item description"} 
                         handleInputChange={handleRankItemDescriptionChange} 

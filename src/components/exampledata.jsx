@@ -1,6 +1,8 @@
 const programmingLanguagesRanking = {
     title: "Top Programming Languages of 2025",
     description: "Based on developer surveys, job market demand, and GitHub activity",
+    createdBy: "You",
+    lastUpdate: "2025-05-31",
     items: [
       {
         title: "JavaScript",
@@ -37,6 +39,8 @@ const programmingLanguagesRanking = {
   const nationalParksRanking = {
     title: "Most Visited National Parks in the US",
     description: "Ranked by annual visitor count and visitor satisfaction ratings",
+    createdBy: "You",
+    lastUpdate: "2025-05-18",
     items: [
       {
         title: "Great Smoky Mountains National Park",

@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import { BrowserRouter, Routes, Route, Router } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import CreateRank from './pages/CreateRank'
+import ViewRanking from './pages/ViewRanking'
 
 
 
@@ -16,7 +17,7 @@ function App() {
           <Route path="/" element={<Home/>}/>
           <Route path="/Home" element={<Home/>}/>
           <Route path="/NewRank" element={<CreateRank/>}/>
-          <Route path="/ViewRanking"/>
+          <Route path="/ViewRanking" element={<ViewRanking/>}/>
           <Route path="/Explore"/>
         </Routes>
       </BrowserRouter>

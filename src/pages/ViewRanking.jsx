@@ -1,5 +1,6 @@
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid'
 import { useNavigate } from 'react-router';
+import { useParams } from 'react-router';
 import RankItem from '../components/RankItem';
 import LimitedTextArea from '../components/LimitedTextArea';
 import ConfirmationModel from '../components/ConfirmationModal';
@@ -26,6 +27,7 @@ function ViewRanking(){
     const previousItemCount = useRef(0)
 
     const navigate = useNavigate()
+    const { id } = useParams()
 
     useEffect(() => {
 
@@ -43,11 +45,23 @@ function ViewRanking(){
 
     useEffect(() => {
         //load User Rank Data
-        setRankItems(programmingLanguagesRanking.items)
+        console.log("Loading ranking info for ranking id: ", id)
+        let prebakedItems = []
+        for(const item of programmingLanguagesRanking.items)
+        {
+            prebakedItems.push({
+                id: uuidv4(),
+                title: item.title,
+                description: item.description,
+                rank: programmingLanguagesRanking.items.indexOf(item) + 1
+            })
+        }
+
+        setRankItems(prebakedItems)
         /**title: "Top Programming Languages of 2025",
-    description: "Based on developer surveys, job market demand, and GitHub activity",
-    createdBy: "You",
-    lastUpdate: "2025-05-31", */
+        description: "Based on developer surveys, job market demand, and GitHub activity",
+        createdBy: "You",
+        lastUpdate: "2025-05-31", */
         setRankingInfo({
             title: programmingLanguagesRanking.title, 
             description: programmingLanguagesRanking.description, 
@@ -56,6 +70,7 @@ function ViewRanking(){
         })
 
     }, [])
+
     useEffect(() => {
 
         //console.log("Proto rank order ", protoRanks)
@@ -116,21 +131,20 @@ function ViewRanking(){
         console.log("OnDragEnd source obj: ", source)
         console.log("OnDragEnd draggableId obj: ", draggableId)
 
-        let draggedProtoRank = protoRanks[source.index]
+        let draggedRankItem = rankItems[source.index]
 
-        if(draggedProtoRank)
+        if(draggedRankItem)
         {
-            let reorderProtoRanks = Array.from(protoRanks)
-            reorderProtoRanks.splice(source.index, 1)
-            reorderProtoRanks.splice(destination.index, 0, draggedProtoRank)
+            let reorderRanks = Array.from(rankItems)
+            reorderRanks.splice(source.index, 1)
+            reorderRanks.splice(destination.index, 0, draggedRankItem)
 
             //let swappedItem = protoRanks[destination.index]
-            //protoRanks[destination.index] = draggedProtoRank
+            //protoRanks[destination.index] = draggedRankItem
             //protoRanks[source.index] = swappedItem
-            reorderProtoRanks.forEach((item, index) => item.rank = index + 1)
-            setProtoRanks([...reorderProtoRanks])
+            reorderRanks.forEach((item, index) => item.rank = index + 1)
+            setRankItems([...reorderRanks])
         }
-
     }
 
     function handleRankEdit(id, name, description)
@@ -146,40 +160,57 @@ function ViewRanking(){
     return(
         <>
             <div className="mt-18 mb-8">
-                <header className="font-semibold text-3xl lg:text-5xl">{}</header>
+                <div className="flex flex-col gap-y-4">
+                    <header className="font-semibold text-3xl lg:text-5xl">{rankingInfo.title}</header>
+                    <p>{rankingInfo.description}</p>
+                    <div className="">
+                        
+                    </div>
+                </div>
+                
             </div>
             
-            <div className="flex flex-col gap-y-8 items-center w-full">
-
-                <div className="flex flex-row gap-4">
-                    <button className="btn btn-soft btn-success" onClick={handleSaveRankingOnClick}><Save />Save Ranking</button>
-                    <button className="btn btn-soft btn-error" onClick={() => {handleDiscardRankingOnClick()}}><Trash2 />Discard Ranking</button>
-                </div>
-
-                <button className="outline-dashed" onClick={() => {setItemCount( itemCount + 1)}}>
-                    <div className="flex flex-row items-center">
-                        <Plus size={30}/>
-                        <p className="font-thin lg:text-2xl text-3xl">add rank item</p>
-                    </div>
-                </button>
-                <DragDropContext onDragEnd={handleDragEnd}>
-                    <Droppable droppableId='createRank'>
-                        {(provided) => (
-                            <div {...provided.droppableProps} 
-                                className="w-full h-120 flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
-                                ref={provided.innerRef}
-                            >
-                                {rankItems.map((item, index) => (
-                                    // Pass the item data to your ProtoRank component
-                                    <RankItem key={item.id} id={item.id} index={index} data={item}
-                                        onDataChange={handleRankEdit} handleRemoveRankItem={handleRankRemoval}/>
-                                ))}
-                                {provided.placeholder}
+            {rankItems.length > 0 ? 
+            
+                <>
+                {console.log(rankItems)}
+                    <div className="flex flex-col gap-y-8 items-center w-full">
+                        <button className="outline-dashed" onClick={() => {setItemCount( itemCount + 1)}}>
+                            <div className="flex flex-row items-center">
+                                <Plus size={30}/>
+                                <p className="font-thin lg:text-2xl text-3xl">add rank item</p>
                             </div>
-                        )}
-                    </Droppable>
-                </DragDropContext>
-            </div>
+                        </button>
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId='viewRanking'>
+                                {(provided) => (
+                                    <div {...provided.droppableProps} 
+                                        className="w-full h-120 flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
+                                        ref={provided.innerRef}
+                                    >
+                                        {rankItems.map((item, index) => (
+                                            // Pass the item data to your ProtoRank component
+                                            
+                                            <RankItem key={item.id} id={item.id} index={index} data={item}
+                                                onDataChange={handleRankEdit} handleRemoveRankItem={handleRankRemoval}/>
+                                        ))}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+                    </div>
+                </>
+                :
+                <>
+                    <div>
+                        <h2 className="">Loading Rank Items</h2>
+                        <span className="loading loading-spinner loading-xl"></span>
+                    </div>
+                </>
+            
+            }
+            
         </>
     )
 }

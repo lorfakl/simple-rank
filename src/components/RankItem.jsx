@@ -37,7 +37,7 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem}){
                     {
                         editMode? 
                         <>                            
-                            <div className="card card-border bg-base-100 w-96">
+                            <div className="card card-border bg-base-100 w-96 card-sm shadow-sm">
                                 <div className="card-body">
                                     <div className="flex flex-col">
                                         
@@ -58,7 +58,7 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem}){
                         </> 
                         :
                         <>
-                            <div className="card card-border bg-base-100 w-96">
+                            <div className="card card-border bg-base-100 w-96 card-sm shadow-sm">
                                 <div className="card-body">
                                     <h2 className="card-title">{data.title}</h2>
                                     <p>{data.description}</p>

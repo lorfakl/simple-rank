@@ -5,10 +5,8 @@ import LimitedTextArea from '../components/LimitedTextArea';
 import ConfirmationModel from '../components/ConfirmationModal';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from "react"
-import { createClient } from '@supabase/supabase-js'
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
-
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+import { useSupabase } from '../contexts/SupabaseContext';
 
 const RANKING_NAMESPACE = '4e4a4cd7-8a00-42d7-a202-855d413d5e6a'
 const RANK_ITEM_NAMESPACE = '312f0e69-5835-4b88-94c1-03d62ecb2f63'
@@ -26,6 +24,7 @@ function CreateRank(){
     const previousItemCount = useRef(0)
 
     const navigate = useNavigate()
+    const supabase = useSupabase()
 
     useEffect(() => {
 

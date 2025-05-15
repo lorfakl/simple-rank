@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import PasswordInput from './PasswordInput';
 import EmailInput from './EmailInput';
-
-function EmailAuthenticationForm({onSubmitOnClick, onValidFormDataSubmit, onInvalidFormDataSubmit})
+import { useUser } from '../contexts/UserContext';
+function EmailAuthenticationForm({isSignUp, onSuccess, onFailure, loading, setLoading})
 {
     
     const [formData, setFormData] = useState({
@@ -11,6 +11,7 @@ function EmailAuthenticationForm({onSubmitOnClick, onValidFormDataSubmit, onInva
     })
 
     const [errors, setErrors] = useState({})
+    const { signUpWithEmail, signInWithEmail } = useUser()
 
     function validateForm(data)
     {
@@ -18,29 +19,43 @@ function EmailAuthenticationForm({onSubmitOnClick, onValidFormDataSubmit, onInva
         //check that password is not null
     }
 
-    const handleSubmitForm = (e) =>
+    const handleChange = (e) => {
+        const {name, value } = e.target
+        console.log("e dot target: ", e.target)
+        console.log("name: ", name, " value: ", value)
+
+        setFormData(prev => ({...prev, [name]: value}))
+
+    }
+
+    const handleSubmitForm = async (e) =>
     {
         e.preventDefault()
-        onSubmitOnClick()
-
-        const newErrors = validateForm(formData);
-        
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
+        setLoading(true)
+        const { error, user } = isSignUp? await signUpWithEmail(formData.email, formData.password) : await signInWithEmail(formData.email, formData.password)
+        if(error != undefined)
+        {
+            console.log("There was an error while logging in, ", error)
+            onFailure(error)
         }
-
-        // Submit the form
-        console.log('Form data:', formData);
-        // Send to API, etc.
+        else
+        {
+            console.log("Successfully logged in")
+            onSuccess(user)
+        }
     }
 
     return(
     <>
         <form onSubmit={handleSubmitForm}>
-            <EmailInput/>
-            <PasswordInput/>
-            <button type="submit" className="btn btn-active btn-primary" onClick={() => {setShowSignInOptions(true)}}>Sign Up</button>
+            <div className="flex flex-col gap-y-4">
+                <EmailInput onEmailChange={handleChange}/>
+                <PasswordInput onPasswordChange={handleChange}/>
+                <button type="submit" className="btn btn-active btn-primary" onClick={() => {handleSubmitForm}}>
+                    {loading ? <><span className="loading loading-spinner loading-md"></span></> : null}
+                    {isSignUp? "Sign up" : "Login"}
+                </button>
+            </div>
         </form>
     </>
     )

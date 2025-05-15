@@ -12,25 +12,33 @@ import Navbar from './components/Navbar'
 import CreateRank from './pages/CreateRank'
 import ViewRanking from './pages/ViewRanking'
 import { SupabaseProvider } from './contexts/SupabaseContext'
+import { UserProvider } from './contexts/UserContext'
+import Login from './pages/Login'
+import { NotificationProvider } from './contexts/NotificationContext'
 
 
 
 function App() {
   return (
     <>
-      <SupabaseProvider>
-        <BrowserRouter>
-            <Navbar/>
-            <Routes>
-              <Route path="/" element={<LandingPage/>}/>
-              <Route path="/Home" element={<Home/>}/>
-              <Route path="/SignUp" element={<Signup/>}/>
-              <Route path="/NewRank" element={<CreateRank/>}/>
-              <Route path="/ranking/:id" element={<ViewRanking/>}/>
-              <Route path="/Explore"/>
-            </Routes>
-          </BrowserRouter>
-      </SupabaseProvider>
+      <NotificationProvider>
+        <SupabaseProvider>
+          <UserProvider>
+            <BrowserRouter>
+              <Navbar/>
+              <Routes>
+                <Route path="/" element={<LandingPage/>}/>
+                <Route path="/Home" element={<Home/>}/>
+                <Route path="/SignUp" element={<Signup/>}/>
+                <Route path="/Login" element={<Login/>}/>
+                <Route path="/NewRank" element={<CreateRank/>}/>
+                <Route path="/ranking/:id" element={<ViewRanking/>}/>
+                <Route path="/Explore"/>
+              </Routes>
+            </BrowserRouter>
+          </UserProvider>
+        </SupabaseProvider>
+      </NotificationProvider>
     </>
   )
 }

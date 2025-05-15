@@ -7,6 +7,7 @@ import { Plus, Save, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from "react"
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
 import { useSupabase } from '../contexts/SupabaseContext';
+import { useUser } from '../contexts/UserContext';
 
 const RANKING_NAMESPACE = '4e4a4cd7-8a00-42d7-a202-855d413d5e6a'
 const RANK_ITEM_NAMESPACE = '312f0e69-5835-4b88-94c1-03d62ecb2f63'
@@ -22,9 +23,10 @@ function CreateRank(){
     const createdRanks = useRef({})
     const rankItemTitleErrors = useRef({})
     const previousItemCount = useRef(0)
-
+    
     const navigate = useNavigate()
     const supabase = useSupabase()
+    const { user } = useUser()
 
     useEffect(() => {
 
@@ -45,7 +47,7 @@ function CreateRank(){
         //console.log("Proto rank order ", protoRanks)
         
 
-    }, [protoRanks])
+    }, [user])
 
     useEffect(() => {
         console.log("Current protoranking: ", protoRanking)
@@ -57,7 +59,7 @@ function CreateRank(){
         const { data , error } = await supabase
             .from("Ranking")
             .insert([
-                { owner: "userId", ranking_id: "rankingId" }
+                { owner: user.id, ranking_id: uuidv4() }
             ])
 
         if(error)

@@ -20,6 +20,5 @@ export function useSupabase(){
     {
         throw new Error('use Supabase must be used within a SupabaseProvider')
     }
-
     return context
 }

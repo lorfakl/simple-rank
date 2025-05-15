@@ -1,4 +1,4 @@
-function PasswordInput({})
+function PasswordInput({onPasswordChange})
 {
 
     return(
@@ -20,8 +20,10 @@ function PasswordInput({})
             </svg>
             <input
                 type="password"
+                name="password"
                 required
                 placeholder="Password"
+                onChange={onPasswordChange}
                 minlength="8"
                 pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                 title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"

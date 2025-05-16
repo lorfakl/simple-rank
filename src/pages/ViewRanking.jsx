@@ -6,11 +6,9 @@ import LimitedTextArea from '../components/LimitedTextArea';
 import ConfirmationModel from '../components/ConfirmationModal';
 import { DessertIcon, Plus, Save, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from "react"
-import { createClient } from '@supabase/supabase-js'
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
 import { programmingLanguagesRanking, nationalParksRanking } from "../components/exampledata"
-
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+import { useSupabase } from '../contexts/SupabaseContext';
 
 const RANKING_NAMESPACE = '4e4a4cd7-8a00-42d7-a202-855d413d5e6a'
 const RANK_ITEM_NAMESPACE = '312f0e69-5835-4b88-94c1-03d62ecb2f63'
@@ -18,7 +16,6 @@ const RANK_ITEM_NAMESPACE = '312f0e69-5835-4b88-94c1-03d62ecb2f63'
 function ViewRanking(){
 
     const [itemCount, setItemCount] = useState(0)
-    const [protoRanks, setProtoRanks] = useState([])
     const [rankItems, setRankItems] = useState([])
     const [rankingInfo, setRankingInfo] = useState({})
     
@@ -27,6 +24,7 @@ function ViewRanking(){
     const previousItemCount = useRef(0)
 
     const navigate = useNavigate()
+    const supabase = useSupabase()
     const { id } = useParams()
 
     useEffect(() => {
@@ -73,10 +71,10 @@ function ViewRanking(){
 
     useEffect(() => {
 
-        //console.log("Proto rank order ", protoRanks)
+        //console.log("Proto rank order ", )
         
 
-    }, [protoRanks])
+    }, [])
 
     //*Supabase Operations*//
     async function SaveRank()
@@ -175,6 +173,9 @@ function ViewRanking(){
                 <>
                 {console.log(rankItems)}
                     <div className="flex flex-col gap-y-8 items-center w-full">
+                        {
+                            
+                        }
                         <button className="outline-dashed" onClick={() => {setItemCount( itemCount + 1)}}>
                             <div className="flex flex-row items-center">
                                 <Plus size={30}/>

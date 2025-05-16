@@ -7,4 +7,22 @@
     <RootNamespace>simple_rank_backend</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Controllers\DTOs\**" />
+    <Compile Remove="NewFolder\**" />
+    <Content Remove="Controllers\DTOs\**" />
+    <Content Remove="NewFolder\**" />
+    <EmbeddedResource Remove="Controllers\DTOs\**" />
+    <EmbeddedResource Remove="NewFolder\**" />
+    <None Remove="Controllers\DTOs\**" />
+    <None Remove="NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Supabase" Version="1.1.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
 </Project>

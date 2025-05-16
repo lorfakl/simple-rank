@@ -161,19 +161,19 @@ export function UserProvider({ children }) {
         password: password
     })
 
+    console.log(data, error)
     if(error)
     {
-        //console.log("error on sign in with Email ", error)
+        console.log("error on sign in with Email ", error)
         showNotification(`${error}`, "error", 10000)
         return {error: error, user: undefined}
-        
     }
     else
     {
         //console.log("successfully signed in with Email, ", data)
         showNotification("Successfully signed up, welcome", "success", 3000)
-        setUser(data.session.user)
-        return {error: undefined, user: data.session.user} 
+        setUser(data.user)
+        return {error: undefined, user: data.user} 
     }
   }
 

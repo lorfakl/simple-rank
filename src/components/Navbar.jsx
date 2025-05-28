@@ -1,23 +1,34 @@
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useUser } from '../contexts/UserContext';
 function Navbar()
 {
-    const { user, signOut } = useUser()
+    const { session, signOut } = useUser()
     const  navigate  = useNavigate()
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-    useEffect(()=>{
-        if(user === null || user === undefined || Object.keys(user).length === 0)
+    useEffect(() => {
+        console.log(session)
+        if(session)
         {
+            console.log("User is authenticated:", session);
+            
+        } 
+    }, [])
+    
+    useEffect(()=>{
+        if(session === null || session === undefined || Object.keys(session).length === 0)
+        {
+            console.log("User is not authenticated")
+            console.log(session)
             setIsAuthenticated(false)
         }
         else
         {
             setIsAuthenticated(true)
         }
-    },[user])
+    },[session])
     
 
     const handleLogout = () => {

@@ -14,11 +14,14 @@ function LandingPage(){
     const supabase = useSupabase()
     
     useEffect(()=>{
-        console.log(programmingLanguagesRanking)
-        console.log(nationalParksRanking)
-        setCurrentRankings([programmingLanguagesRanking, nationalParksRanking])
+        if(localStorage.getItem("auth_token") != null || localStorage.getItem("auth_token") != undefined || localStorage.getItem("auth_token") != "")
+        {
+            console.log(localStorage.getItem("auth_token"))
+            //navigate("/Home")
+        }
     },
     [])
+
 
     return(
         <>

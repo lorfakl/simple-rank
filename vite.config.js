@@ -9,6 +9,13 @@ export default defineConfig({
     extensions: ['.js', '.jsx']
   },
   server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5033', // Change this to your backend server URL
+        changeOrigin: true,
+        //rewrite: (path) => path.replace(/^\/api/, '') // Optional: rewrite the path if needed
+      }
+    },
     open: true // This will automatically open the browser when you run npm run dev
   }
 })

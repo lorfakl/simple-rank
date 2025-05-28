@@ -36,7 +36,7 @@ function AuthenticationOptions({isSignUp}){
     function handleAuthSuccess(authUser)
     {
         setLoading(false)
-        console.log(user)
+        console.log(authUser)
         navigate("/Home")
     }
 

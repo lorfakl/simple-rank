@@ -23,23 +23,22 @@ if(string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
     throw new ArgumentNullException("Supabase URL or Key is not set in environment variables.");
 }
 
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//.AddJwtBearer(options =>
-//{
-//    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-//    options.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuerSigningKey = true,
-//        IssuerSigningKey = new SymmetricSecurityKey(
-//            Encoding.UTF8.GetBytes(jwtSettings["SecretKey"])),
-//        ValidateIssuer = true,
-//        ValidIssuer = jwtSettings["Issuer"],
-//        ValidateAudience = true,
-//        ValidAudience = jwtSettings["Audience"],
-//        ValidateLifetime = true,
-//        ClockSkew = TimeSpan.Zero
-//    };
-//});
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    options.Authority = $"{supabaseUrl}/auth/v1";
+    options.Audience = "authenticated";
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+
+        NameClaimType = "email",
+        RoleClaimType = "role",
+    };
+});
 
 //builder.Services.AddAuthorization(options =>
 //{
@@ -119,17 +118,18 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowFrontEnd",policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173", "https://simple-rank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033")
               .AllowAnyMethod()
+              .AllowCredentials()
               .AllowAnyHeader();
     });
 });
 
 var app = builder.Build();
 
-app.UseMiddleware<AuthTokenValidator>();
+app.UseCors("AllowFrontEnd");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -137,14 +137,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
 
-app.UseCors();
-app.UseRateLimiter();
 
-//app.UseAuthentication();
-//app.UseAuthorization();
+
+
+    app.UseRateLimiter();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

@@ -98,6 +98,8 @@ export function UserProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   const [user, setUser] = useState({})
+  const [session, setSession] = useState(null)
+
   const [authenticated, setAuthenticated] = useState(false)
 
   const supabase = useSupabase()
@@ -130,6 +132,21 @@ export function UserProvider({ children }) {
   }, []);
   
 
+  useEffect(() => {
+    // Check if user is authenticated
+    if (session) {
+      setUser(session.user);
+      setAuthenticated(true);
+      localStorage.setItem('auth_token', session.access_token); // Store token
+      localStorage.setItem('user', JSON.stringify(session.user)); // Store user data
+    } else {
+      setUser({});
+      setAuthenticated(false);
+      localStorage.removeItem('auth_token'); // Clear token if no session
+      localStorage.removeItem('user'); // Clear user data
+    }
+  }, [session]);
+
   // Email sign in
   async function signInWithEmail(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -148,7 +165,7 @@ export function UserProvider({ children }) {
     {
         //console.log("successfully signed in with Email, ", data)
         showNotification("Successfully logged in", "success", 3000)
-        setUser(data.session.user)
+        setSession(data.session)
         return {error: undefined, user: data.session.user} 
     }
   }
@@ -172,7 +189,7 @@ export function UserProvider({ children }) {
     {
         //console.log("successfully signed in with Email, ", data)
         showNotification("Successfully signed up, welcome", "success", 3000)
-        setUser(data.user)
+        setSession(data.session)
         return {error: undefined, user: data.user} 
     }
   }
@@ -227,6 +244,7 @@ export function UserProvider({ children }) {
   async function signOut() {
     const { error } = await supabase.auth.signOut()
     setUser({})
+    setSession(null)
     if(error)
     {
         showNotification(`${error}`, "error", 10000)
@@ -242,6 +260,7 @@ export function UserProvider({ children }) {
   const value = {
     // State
     user: user,
+    session: session,
     isAuthenticated: authenticated,
     isLoading: state.isLoading,
     error: state.error,

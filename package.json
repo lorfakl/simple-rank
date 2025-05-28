@@ -4,10 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run server\" \"npx vite\" ",
+    "dev:og": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "concurrently \"npm run server\" \"npm run vite\" ",
+    "server": "cd simple-rank-backend && dotnet run"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -31,6 +34,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react-swc": "^3.8.0",
+    "concurrently": "^9.1.2",
     "daisyui": "^5.0.9",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",

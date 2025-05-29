@@ -9,13 +9,9 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\DTOs\**" />
-    <Compile Remove="NewFolder\**" />
     <Content Remove="Controllers\DTOs\**" />
-    <Content Remove="NewFolder\**" />
     <EmbeddedResource Remove="Controllers\DTOs\**" />
-    <EmbeddedResource Remove="NewFolder\**" />
     <None Remove="Controllers\DTOs\**" />
-    <None Remove="NewFolder\**" />
   </ItemGroup>
 
   <ItemGroup>

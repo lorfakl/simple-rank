@@ -147,6 +147,27 @@ export function UserProvider({ children }) {
     }
   }, [session]);
 
+  async function updateUserMetadata(metadata) {
+    const { data, error } = await supabase.auth.updateUser({
+      data: metadata
+    })
+
+    if(error)
+    {
+        console.error("Error updating user metadata: ", error)
+        showNotification(`${error}`, "error", 10000)
+        return {error: error, user: undefined}
+    }
+    else
+    {
+        console.log("User metadata updated successfully: ", data)
+        setUser(data.user)
+        showNotification("User metadata updated successfully", "success", 3000)
+        return {error: undefined, user: data.user} 
+    }
+  }
+
+
   // Email sign in
   async function signInWithEmail(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({

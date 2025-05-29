@@ -9,6 +9,9 @@ export default defineConfig({
     extensions: ['.js', '.jsx']
   },
   server: {
+    watch: {
+      ignored: ['**/simple-rank-backend/**'] // Ignore changes in node_modules and dist directories
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5033', // Change this to your backend server URL

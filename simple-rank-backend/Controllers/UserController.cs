@@ -54,7 +54,7 @@ namespace simple_rank_backend.Controllers
             catch (Exception ex)
             {
                 
-                return BadRequest("Something went wrong");
+                return BadRequest($"Something went wrong {ex.Message}");
             }
         }
 
@@ -91,7 +91,7 @@ namespace simple_rank_backend.Controllers
             catch (Exception ex)
             {
 
-                return BadRequest("Something went wrong");
+                return BadRequest($"Something went wrong {ex.Message}");
             }
         }
 

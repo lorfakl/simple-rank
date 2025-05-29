@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using Newtonsoft.Json;
+using simple_rank_backend.Application.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,9 +17,21 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 builder.Configuration.AddEnvironmentVariables();
 
 var supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Machine);
-var supabaseKey = Environment.GetEnvironmentVariable("supabaseKey", EnvironmentVariableTarget.Machine);
+var supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Machine);
+var supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Machine); // The JWT Secret from Supabase Auth settings
 
-if(string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
+if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
+{
+    throw new ArgumentNullException("Supabase URL or Key is not set in environment variables.");
+}
+
+if (string.IsNullOrEmpty(supabaseJwtSecret))
+{
+    throw new ArgumentNullException("supabaseJwt is not set in environment variables. This is required for JWT validation.");
+}
+
+
+if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
 {
     throw new ArgumentNullException("Supabase URL or Key is not set in environment variables.");
 }
@@ -26,17 +39,40 @@ if(string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
-    options.Authority = $"{supabaseUrl}/auth/v1";
-    options.Audience = "authenticated";
+    Console.WriteLine($"{supabaseUrl}/auth/v1");
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(supabaseJwtSecret)),
         ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
+        ValidIssuer = $"{supabaseUrl}/auth/v1",
 
-        NameClaimType = "email",
+        ValidateAudience = true,
+        ValidAudience = "authenticated",
+
+        ValidateLifetime = true,
+        NameClaimType = ClaimTypes.Email,
         RoleClaimType = "role",
+    };
+
+    // Optional: Add logging for debugging authentication failures
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            // Log the exception message. This will give you more details on why auth failed.
+            Console.WriteLine("Authentication failed: " + context.Exception.Message);
+            // Example: If you see 'IDX10241: Security token signature key not found' or 'IDX10503: Signature validation failed',
+            // it points to an issue with IssuerSigningKey.
+            // 'IDX10222: Lifetime validation failed. The token is expired.' means the token lifetime is the issue.
+            // 'IDX10208: Unable to obtain configuration from: '[WellKnownFigPath]' if Authority was used and discovery failed.
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("Token successfully validated for: " + context?.Principal?.Identity?.Name);
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -59,6 +95,10 @@ builder.Services.AddSingleton<SupabaseService>(sp =>
 
     return new SupabaseService(supabaseUrl, supabaseKey, options);
 });
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<IRankService, RankingService>();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -150,7 +190,7 @@ else
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+//app.UseMiddleware<AuthTokenValidator>();
 app.MapControllers();
 
 app.Run();

@@ -1,0 +1,77 @@
+﻿
+using Microsoft.AspNetCore.Mvc;
+
+namespace simple_rank_backend.Application.Common
+{
+    public class Result
+    {
+        public bool IsSuccess { get; }
+        public bool IsFailure => !IsSuccess;
+        public Error Error { get; } // Using a dedicated Error class/record
+        public string Message { get; private set; }
+
+        protected Result(bool isSuccess, Error error)
+        {
+            if (isSuccess && error != Error.None)
+            {
+                throw new InvalidOperationException("Successful result cannot have an error.");
+            }
+            if (!isSuccess && error == Error.None)
+            {
+                throw new InvalidOperationException("Failed result must have an error.");
+            }
+
+            IsSuccess = isSuccess;
+            Message = string.Empty;
+            Error = error;
+        }
+
+        protected Result(bool isSuccess, string msg, Error error)
+        {
+            if (isSuccess && error != Error.None)
+            {
+                throw new InvalidOperationException("Successful result cannot have an error.");
+            }
+            if (!isSuccess && error == Error.None)
+            {
+                throw new InvalidOperationException("Failed result must have an error.");
+            }
+
+            IsSuccess = isSuccess;
+            Message = msg;
+            Error = error;
+        }
+
+        public static Result Success() => new Result(true, Error.None);
+        public static Result Success(string msg) => new Result(true, msg, Error.None);
+        public static Result Failure(Error error) => new Result(false, error);
+
+        // Implicit conversion for convenience in controllers
+        public static implicit operator Result(Error error) => Failure(error);
+    }
+
+    public class Result<TValue> : Result
+    {
+        private readonly TValue? _value;
+
+        public TValue Value => IsSuccess
+            ? _value!
+            : throw new InvalidOperationException("Cannot access value of a failed result.");
+
+        protected Result(TValue value, bool isSuccess, Error error)
+            : base(isSuccess, error)
+        {
+            _value = value;
+        }
+
+        public static Result<TValue> Success(TValue value) => new Result<TValue>(value, true, Error.None);
+        public new static Result<TValue> Failure(Error error) => new Result<TValue>(default!, false, error); // `default` for TValue as it's irrelevant on failure
+
+        // Implicit conversion for convenience
+        public static implicit operator Result<TValue>(TValue value) => Success(value);
+        public static implicit operator Result<TValue>(Error error) => Failure(error);
+
+        
+    }
+
+}

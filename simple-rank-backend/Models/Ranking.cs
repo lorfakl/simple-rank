@@ -1,0 +1,106 @@
+﻿using simple_rank_backend.Application.Services;
+using simple_rank_backend.Application.Services.Interfaces;
+using simple_rank_backend.DTOs.Ranking;
+using System.Xml.Linq;
+
+namespace simple_rank_backend.Models
+{
+    public class Ranking
+    {
+        private string RankingId { get; set; } = string.Empty;
+        public string Owner { get; private set; } = string.Empty;
+        public string Title { get; private set; } = string.Empty;
+        public string Description { get; private set; } = string.Empty;
+        public List<RankItem> Items { get; private set; } = new List<RankItem>();
+        public uint ItemCount { get; private set; } = 0;
+        public DateTime LastUpdated { get; private set; } = DateTime.Now;
+        public DateTime CreatedDate { get; private set; } = DateTime.Now;
+        public bool IsPublic { get; private set; } = false;
+
+        public string Id
+        {
+            get => RankingId;
+        }
+
+
+        public Ranking() { }
+
+        public Ranking(CreateRankingRequest rq, string owner)
+        {
+            RankingId = HashService.GenerateRobustHash($"{rq.Title}:{owner}");
+            Owner = owner;
+            Title = rq.Title;
+            Description = rq.Description;
+            IsPublic = rq.IsPublic;
+            Items = rq.Items.Select(item => new RankItem(item.Name, RankingId, owner, item.Description, item.Rank)).ToList();
+            ItemCount = (uint)Items.Count;
+            LastUpdated = DateTime.Now;
+            CreatedDate = DateTime.Now;
+        }
+
+        public Ranking(string owner, string name, string description)
+        {
+            RankingId = HashService.GenerateRobustHash($"{name}:{owner}");
+            Owner = owner;
+            Title = name;
+            Description = description;
+            ItemCount = 0;
+            LastUpdated = DateTime.Now;
+            CreatedDate = DateTime.Now;
+        }
+
+        public Ranking(string owner, string name, string description, List<RankItem> items)
+        {
+            RankingId = HashService.GenerateRobustHash($"{name}:{owner}");
+            Owner = owner;
+            Title = name;
+            Description = description;
+            ItemCount = (uint)items.Count;
+            Items = items;
+            LastUpdated = DateTime.Now;
+            CreatedDate = DateTime.Now;
+        }
+
+        public void AddItem(RankItem item)
+        {
+            if (item == null || string.IsNullOrEmpty(item.Name) || string.IsNullOrEmpty(item.ItemId))
+                throw new ArgumentException("Invalid item provided.");
+            item.Rank = ItemCount + 1;
+            Items.Add(item);
+            ItemCount++;
+            LastUpdated = DateTime.Now;
+        }
+
+        public void RemoveItem(string itemId)
+        {
+            var item = Items.FirstOrDefault(i => i.ItemId == itemId);
+            if (item != null)
+            {
+                Items.Remove(item);
+                ItemCount--;
+                LastUpdated = DateTime.Now;
+            }
+            else
+            {
+                throw new KeyNotFoundException("Item not found in the ranking.");
+            }
+        }
+
+        public void UpdateItemRank(string itemId, uint newRank)
+        {
+            var item = Items.FirstOrDefault(i => i.ItemId == itemId);
+            if (item != null)
+            {
+                if (newRank < 1 || newRank > ItemCount)
+                    throw new ArgumentOutOfRangeException("Rank must be between 1 and the total number of items.");
+
+                item.Rank = newRank;
+                LastUpdated = DateTime.Now;
+            }
+            else
+            {
+                throw new KeyNotFoundException("Item not found in the ranking.");
+            }
+        }
+    }
+}

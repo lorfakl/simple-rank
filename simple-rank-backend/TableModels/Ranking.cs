@@ -1,4 +1,6 @@
-﻿using Supabase.Postgrest.Attributes;
+﻿using simple_rank_backend.Application.Services;
+using simple_rank_backend.DTOs.Ranking;
+using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 
 namespace simple_rank_backend.TableModels
@@ -24,6 +26,26 @@ namespace simple_rank_backend.TableModels
         [Column("last_updated")]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
 
+        public Ranking() { }
 
+        public Ranking(string rankingId, string owner, string name, string description, uint itemCount, DateTime lastUpdated)
+        {
+            RankingId = rankingId;
+            Owner = owner;
+            Name = name;
+            Description = description;
+            ItemCount = itemCount;
+            LastUpdated = lastUpdated;
+        }
+
+        public Ranking(CreateRankingRequest rq, string owner)
+        {
+            RankingId = HashService.GenerateRobustHash($"{rq.Title}:{owner}");
+            Owner = owner;
+            Name = rq.Title;
+            Description = rq.Description;
+            ItemCount = (uint)rq.Items.Length;
+            LastUpdated = DateTime.Now;
+        }
     }
 }

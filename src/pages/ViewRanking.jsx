@@ -7,18 +7,18 @@ import ConfirmationModel from '../components/ConfirmationModal';
 import { DessertIcon, Plus, Save, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from "react"
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
-import { programmingLanguagesRanking, nationalParksRanking } from "../components/exampledata"
 import { useSupabase } from '../contexts/SupabaseContext';
+import { rankingService } from '../api/services';
+import { useUser } from '../contexts/UserContext';
 
-const RANKING_NAMESPACE = '4e4a4cd7-8a00-42d7-a202-855d413d5e6a'
-const RANK_ITEM_NAMESPACE = '312f0e69-5835-4b88-94c1-03d62ecb2f63'
 
 function ViewRanking(){
 
     const [itemCount, setItemCount] = useState(0)
     const [rankItems, setRankItems] = useState([])
     const [rankingInfo, setRankingInfo] = useState({})
-    
+    const [loading, setLoading] = useState(false)
+
     const createdRanks = useRef({})
     const rankItemTitleErrors = useRef({})
     const previousItemCount = useRef(0)
@@ -32,7 +32,7 @@ function ViewRanking(){
         if(itemCount > 0 && previousItemCount.current !== undefined && itemCount > previousItemCount.current)
         {
             let protoRank = getNewProtoRank()
-            setProtoRanks([...protoRanks, protoRank])
+            setRankItems([...rankItems, protoRank])
             createdRanks.current[protoRank.id] = protoRank
             console.log(itemCount, "<- item count", createdRanks.current)
             rankItemTitleErrors.current[protoRank.id] = false
@@ -43,58 +43,52 @@ function ViewRanking(){
 
     useEffect(() => {
         //load User Rank Data
-        console.log("Loading ranking info for ranking id: ", id)
-        let prebakedItems = []
-        for(const item of programmingLanguagesRanking.items)
-        {
-            prebakedItems.push({
-                id: uuidv4(),
-                title: item.title,
-                description: item.description,
-                rank: programmingLanguagesRanking.items.indexOf(item) + 1
-            })
+        const getCurrentRank = async () => {
+            if(id === undefined || id === null || id === "")
+            {
+                console.error("No ranking ID provided")
+                return
+            }
+            await GetRank(id)
         }
-
-        setRankItems(prebakedItems)
-        /**title: "Top Programming Languages of 2025",
-        description: "Based on developer surveys, job market demand, and GitHub activity",
-        createdBy: "You",
-        lastUpdate: "2025-05-31", */
-        setRankingInfo({
-            title: programmingLanguagesRanking.title, 
-            description: programmingLanguagesRanking.description, 
-            createdBy: programmingLanguagesRanking.createdBy,
-            lastUpdate: programmingLanguagesRanking.lastUpdate
-        })
-
-    }, [])
-
-    useEffect(() => {
-
-        //console.log("Proto rank order ", )
-        
+        getCurrentRank()
 
     }, [])
 
     //*Supabase Operations*//
-    async function SaveRank()
+    async function GetRank(rankingId)
     {
-        const { data , error } = await supabase
-            .from("Ranking")
-            .insert([
-                { owner: "userId", ranking_id: "rankingId" }
-            ])
+        setLoading(true)
+        try {
+            console.log("Getting current rank: ")
+            const response = await rankingService.getRankingById(rankingId)
 
-        if(error)
-        {
-            console.log(error)
+            setLoading(false)
+            if(response.error)
+            {
+                console.error("Error getting ranking: ", response.error)
+                return
+            }
+    
+            console.log("Successfully got ranking: ", response.data)
+            //navigate to the new ranking page
+            if(response.data !== undefined)
+            {
+                setRankItems(response.data.items)
+                setRankingInfo({
+                    title: response.data.title, 
+                    description: response.data.description, 
+                    createdBy: response.data.createdBy,
+                    lastUpdate: response.data.lastUpdate
+                })
+                setItemCount(response.data.items.length)
+            }
         }
-        else
-        {
-            const { data, error } = await supabase
-                .from("Ranking_Data")
-                .insert(convert_ranks_to_rows())
+        catch(error) {
+            setLoading(false)
+            console.error("Error saving ranking: ", error)
         }
+        setLoading(false)
     }
 
 
@@ -113,6 +107,18 @@ function ViewRanking(){
 
         console.log("Updated ranks ", updatedRankList)
         setProtoRanks(updatedRankList)
+    }
+
+    function getNewProtoRank()
+    {
+        let rankItem = {
+            id: uuidv4(), 
+            rank: itemCount, 
+            title: "", 
+            description: ""
+        }
+
+        return rankItem 
     }
 
     //*User Interface Logic Functions*//
@@ -147,7 +153,24 @@ function ViewRanking(){
 
     function handleRankEdit(id, name, description)
     {
+        console.log("Editing rank item: ", id, name, description)
+        let updatedRankItems = rankItems.map(item => {
+            if(item.id === id)
+            {
+                item.title = name
+                item.description = description
+            }
+            return item
+        })
 
+        setRankItems(updatedRankItems)
+
+        // Update the createdRanks reference
+        if(createdRanks.current[id])
+        {
+            createdRanks.current[id].title = name
+            createdRanks.current[id].description = description
+        }
     }
 
     function handleRankRemoval(id)
@@ -168,10 +191,16 @@ function ViewRanking(){
                 
             </div>
             
-            {rankItems.length > 0 ? 
+            {loading ? 
             
                 <>
-                {console.log(rankItems)}
+                    <div>
+                        <h2 className="">Loading Rank Items</h2>
+                        <span className="loading loading-spinner loading-xl"></span>
+                    </div>
+                </>
+            :
+                <>
                     <div className="flex flex-col gap-y-8 items-center w-full">
                         {
                             
@@ -202,14 +231,6 @@ function ViewRanking(){
                         </DragDropContext>
                     </div>
                 </>
-                :
-                <>
-                    <div>
-                        <h2 className="">Loading Rank Items</h2>
-                        <span className="loading loading-spinner loading-xl"></span>
-                    </div>
-                </>
-            
             }
             
         </>

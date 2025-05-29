@@ -185,7 +185,7 @@ export function UserProvider({ children }) {
     else
     {
         //console.log("successfully signed in with Email, ", data)
-        showNotification("Successfully logged in", "success", 3000)
+        showNotification("Successfully logged in", "success", 1000)
         setSession(data.session)
         return {error: undefined, user: data.session.user} 
     }

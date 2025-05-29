@@ -44,14 +44,30 @@ namespace simple_rank_backend.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq)
+        public async Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq)
         {
-            throw new NotImplementedException();
+            var queryResult = await _supabase.Client.From<TableModels.Ranking>()
+                .Where(r => r.RankingId == rq.Id)
+                .Get();
+            if(queryResult.Model != default(TableModels.Ranking) && queryResult.Model != null)
+            {
+                var ranking = new Ranking(queryResult.Model);
+                return Result<Ranking>.Success(ranking, $"Successfully grabbed ranking: {rq.Id}");
+            }
+            else
+            {
+                return Result<Ranking>.Failure(Error.NullValue);
+            }
         }
 
-        public Task<Result<List<Ranking>>> GetUserRankingsAsync(string userId)
+        public async Task<Result<List<Ranking>>> GetUserRankingsAsync(string userId)
         {
-            throw new NotImplementedException();
+            var queryResult = await _supabase.Client.From<TableModels.Ranking>()
+                .Where(r => r.Owner == userId)
+                .Get();
+            
+            var rankings = queryResult.Models.Select(r => new Ranking(r)).ToList();
+            return Result<List<Ranking>>.Success(rankings, $"Successfully pulled {rankings.Count} rankings for user");
         }
 
         public Task<Result> UpdateRankingAsync(UpdateRankingRequest rq)

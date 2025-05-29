@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using simple_rank_backend.Application.Common;
 using simple_rank_backend.Application.Services.Interfaces;
 using simple_rank_backend.DTOs.Ranking;
+using simple_rank_backend.Models;
 using System.Security.Claims;
 
 namespace simple_rank_backend.Controllers
@@ -66,6 +67,34 @@ namespace simple_rank_backend.Controllers
                 return BadRequest();
             }
             
+        }
+
+        [HttpGet("{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetUserRankings(string userId)
+        {
+            string ownerId = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            if (string.IsNullOrEmpty(ownerId))
+            {
+                return Unauthorized("User is not authenticated");
+            }
+
+            if(ownerId != userId)
+            {
+                return Forbid();
+            }
+            else
+            {
+                Result<List<Ranking>> result = await _rankService.GetUserRankingsAsync(ownerId);
+                return HandleResult(result);
+            }   
+        }
+
+        [HttpGet("{rankingId}")]
+        public async Task<IActionResult> GetRanking(string rankingId)
+        {
+            Result<Ranking> result = await _rankService.GetRankingAsync(new GetRankingByIdRequest { Id = rankingId });
+            return HandleResult(result);
         }
 
         private ActionResult HandleResult<T>(Result<T> result)

@@ -61,6 +61,18 @@ namespace simple_rank_backend.Models
             CreatedDate = DateTime.Now;
         }
 
+        public Ranking(TableModels.Ranking ranking)
+        {
+            RankingId = ranking.RankingId;
+            Owner = ranking.Owner;
+            Title = ranking.Name;
+            Description = ranking.Description;
+            ItemCount = ranking.ItemCount;
+            LastUpdated = ranking.LastUpdated.Date;
+            // Assuming we have a method to fetch items by RankingId
+            Items = new List<RankItem>();
+        }
+
         public void AddItem(RankItem item)
         {
             if (item == null || string.IsNullOrEmpty(item.Name) || string.IsNullOrEmpty(item.ItemId))

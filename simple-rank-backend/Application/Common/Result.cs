@@ -8,7 +8,7 @@ namespace simple_rank_backend.Application.Common
         public bool IsSuccess { get; }
         public bool IsFailure => !IsSuccess;
         public Error Error { get; } // Using a dedicated Error class/record
-        public string Message { get; private set; }
+        public string Message { get; protected set; }
 
         protected Result(bool isSuccess, Error error)
         {
@@ -64,6 +64,13 @@ namespace simple_rank_backend.Application.Common
             _value = value;
         }
 
+        protected Result(TValue value, string msg, bool isSuccess, Error error)
+            : base(isSuccess, msg, error)
+        {
+            _value = value;
+        }
+
+        public static Result<TValue> Success(TValue value, string msg) => new Result<TValue>(value, msg, true, Error.None);
         public static Result<TValue> Success(TValue value) => new Result<TValue>(value, true, Error.None);
         public new static Result<TValue> Failure(Error error) => new Result<TValue>(default!, false, error); // `default` for TValue as it's irrelevant on failure
 

@@ -4,13 +4,15 @@ using Supabase.Postgrest.Models;
 
 namespace simple_rank_backend.TableModels
 {
-    [Table("RankingItems")]
+    [Table("RankItems")]
     public class RankingItems : BaseModel
     {
         [PrimaryKey("id")]
         public string ItemId { get; set; } = string.Empty;
 
+
         [Column("ranking_id")]
+        [Reference(typeof(Ranking))]
         public string RankingId { get; set; } = string.Empty;
 
         [Column("item_description")]

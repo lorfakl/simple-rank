@@ -20,6 +20,9 @@ namespace simple_rank_backend.TableModels
         [Column("ranking_desc")]
         public string Description { get; set; } = string.Empty;
 
+        [Reference(typeof(RankingItems), useInnerJoin:false)]
+        public List<RankingItems> RankItems { get; set; }
+
         [Column("item_count")]
         public uint ItemCount { get; set; } = 0;
 
@@ -27,16 +30,6 @@ namespace simple_rank_backend.TableModels
         public DateTime LastUpdated { get; set; } = DateTime.Now;
 
         public Ranking() { }
-
-        public Ranking(string rankingId, string owner, string name, string description, uint itemCount, DateTime lastUpdated)
-        {
-            RankingId = rankingId;
-            Owner = owner;
-            Name = name;
-            Description = description;
-            ItemCount = itemCount;
-            LastUpdated = lastUpdated;
-        }
 
         public Ranking(CreateRankingRequest rq, string owner)
         {

@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using simple_rank_backend.Application.Common;
+using simple_rank_backend.Application.Common.Extensions;
 using simple_rank_backend.Application.Services.Interfaces;
 using simple_rank_backend.DTOs.Ranking;
 using simple_rank_backend.Models;
 using System.Security.Claims;
+
 
 namespace simple_rank_backend.Controllers
 {
@@ -28,12 +30,6 @@ namespace simple_rank_backend.Controllers
             return Ok();
         }
 
-        [HttpGet("{id}")]
-        public string Get(string id)
-        {
-            return "value";
-        }
-
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> CreateRanking([FromBody] CreateRankingRequest rq)
@@ -52,7 +48,7 @@ namespace simple_rank_backend.Controllers
                 else
                 {
                     var result = await _rankService.CreateRankingAsync(rq, ownerId);
-                    return HandleResult(result);
+                    return this.HandleResult(result);
                 }
                     
                 //var name = User?.Identity?.Name;
@@ -86,7 +82,7 @@ namespace simple_rank_backend.Controllers
             else
             {
                 Result<List<Ranking>> result = await _rankService.GetUserRankingsAsync(ownerId);
-                return HandleResult(result);
+                return this.HandleResult(result);
             }   
         }
 
@@ -94,57 +90,53 @@ namespace simple_rank_backend.Controllers
         public async Task<IActionResult> GetRanking(string rankingId)
         {
             Result<Ranking> result = await _rankService.GetRankingAsync(new GetRankingByIdRequest { Id = rankingId });
-            return HandleResult(result);
+            return this.HandleResult(result);
         }
 
-        private ActionResult HandleResult<T>(Result<T> result)
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CreateRankItem([FromBody] UpdateRankItemRequest rq)
         {
-            if (result.IsSuccess)
+            if (ModelState.IsValid)
             {
-                // For GET returning a single item or POST returning the created item
-                if (EqualityComparer<T>.Default.Equals(result.Value, default(T)) && typeof(T) != typeof(IEnumerable<>)) // Check for default(T) for non-collection types
-                {
-                    // This case might be for a successful operation that conceptually returns a value but the value is null (e.g. optional find)
-                    // Depending on your API philosophy, you might still return Ok(null) or treat it as NotFound.
-                    // For simplicity here, if the result is success but value is default, we'll treat it as if it's an OK with that default.
-                    // A more specific GetProductById might treat a successful null find differently.
-                    return Ok(result.Value);
-                }
-                return Ok(result.Value);
+                //check that the caller owns the ranking that owns the rank item attempting to be created
+                Result result = await _rankService.UpdateRankItem(rq);
+                return this.HandleResult(result);
             }
-            return HandleError(result.Error);
+            else
+            {
+                return this.HandleError(Error.InvalidModelState);
+            }
         }
 
-        private ActionResult HandleResult(Result result) // For operations without a return value (PUT, DELETE)
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> EditRankItem([FromBody] UpdateRankItemRequest rq)
         {
-            if (result.IsSuccess)
+            if(ModelState.IsValid)
             {
-                return Ok(new { result.Message });
-                    
+                //check that the caller owns the ranking that owns the rank item attempting to be edited
+                Result result = await _rankService.UpdateRankItem(rq);
+                return this.HandleResult(result);
             }
-            return HandleError(result.Error);
+            else
+            {
+                return this.HandleError(Error.InvalidModelState);
+            }
+                
         }
 
-        private ActionResult HandleError(Error error)
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> DeleteRankItem([FromBody] DeleteRankItemRequest rq)
         {
-            // You can map specific error codes to status codes
-            switch (error.Code)
-            {
-                case "Error.NotFound":
-                    return NotFound(error); // Return the error object in the body
-                case "Error.NullValue":
-                case "Error.Validation":
-                    return BadRequest(error);
-                // Add more specific error mappings as needed
-                default:
-                    if (error.Code.Contains("Product.Name.Required") || error.Code.Contains("Product.Price.Invalid"))
-                    {
-                        return BadRequest(error); // Validation-like errors
-                    }
-                    // For unhandled or generic errors
-                    return StatusCode(StatusCodes.Status500InternalServerError, error);
-            }
+            //check that the caller owns the ranking that owns the rank item attempting to be deleted
+            Result result = await _rankService.DeleteRankItem(rq);
+            return this.HandleResult(result);
         }
+
+        
 
     }
 }

@@ -1,14 +1,13 @@
 import { X, SquarePen, Trash2, Save } from "lucide-react"
 import { Draggable } from "@hello-pangea/dnd"
 import LimitedTextInput from "./LimitedTextInput"
-import { useState, useRef } from 'react'
-function RankItem({id, index, data, onDataChange, handleRemoveRankItem}){
+import { useState, useRef, useEffect, use } from 'react'
+function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditable = false}){
 
-    const [editMode, setEditMode] = useState(false)
+    const [editMode, setEditMode] = useState(isEditable)
     const [showError, setShowError] = useState(false)
     const [rankName, setRankName] = useState("")
     const [rankDescription, setRankDescription] = useState("")
-
 
     const rankItem = useRef({title: "", description: ""})
 
@@ -37,17 +36,25 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem}){
                     {
                         editMode? 
                         <>                            
-                            <div className="card card-border bg-base-100 w-96 card-sm shadow-sm">
+                            <div className="card card-border bg-base-100 w-full card-sm shadow-sm">
                                 <div className="card-body">
                                     <div className="flex flex-col">
                                         
-                                        <LimitedTextInput inputLabel={"item name"} characterLimit={50} placeholderText={data.description} 
+                                        <LimitedTextInput inputLabel={"item name"} characterLimit={50}
                                             handleInputChange={setRankName} 
-                                            textSize={"text-xl"} showRequired={showError}/>
+                                            textSize={"text-xl"} 
+                                            showRequired={showError} 
+                                            useWidthFull={true}
+                                            placeholderText={rankName}
+                                            textValue={rankName}
+                                            />
 
-                                        <LimitedTextInput inputLabel={"item description"} characterLimit={75} placeholderText={data.title} 
+                                        <LimitedTextInput inputLabel={"item description"} characterLimit={75}
                                             handleInputChange={setRankDescription} 
-                                            textSize={"text-xl"} />
+                                            textSize={"text-xl"} 
+                                            useWidthFull={true}
+                                            textValue={rankDescription}
+                                            />
                                     </div>
                                     <div className="card-actions justify-between">
                                         <button className="btn btn-primary" onClick={() => {handleSaveOnClick(id)}}><Save /></button>
@@ -58,10 +65,10 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem}){
                         </> 
                         :
                         <>
-                            <div className="card card-border bg-base-100 w-96 card-sm shadow-sm">
+                            <div className="card card-border bg-base-100 w-120 card-sm shadow-sm">
                                 <div className="card-body">
-                                    <h2 className="card-title">{data.title}</h2>
-                                    <p>{data.description}</p>
+                                    <h2 className="card-title font-bold text-xl">{data.title}</h2>
+                                    <p className="font-semibold text-lg text-pretty text-left">{data.description}</p>
                                     <div className="card-actions justify-between">
                                         <button className="btn btn-primary" onClick={() => {setEditMode(true)}}><SquarePen /></button>
                                         <button className="btn btn-error" onClick={() => {handleRemoveOnClick(id)}}><Trash2/></button>

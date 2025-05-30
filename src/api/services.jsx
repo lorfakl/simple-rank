@@ -17,16 +17,21 @@ export const authService = {
 
 export const rankingService = {
   createRanking: (rankingData) => apiClient.post('/api/Rank/CreateRanking', rankingData),
-  editRanking: (rankingData) => apiClient.put('/api/Rank/EditRanking', rankingData),
+  editRanking: (rankingData) => apiClient.put(`/api/Rank/EditRanking/${rankingData.id}`, rankingData),
   deleteRanking: (id) => apiClient.delete(`/api/Rank/DeleteRanking/${id}`),
   getUserRankings: (user_id) => apiClient.get(`/api/Rank/GetUserRankings/${user_id}`),
   getRankingById: (id) => apiClient.get(`/api/Rank/GetRanking/${id}`),
   getAllRankings: () => apiClient.get('/api/Rank/GetPublicRankings'),
   searchPublicRankings: (searchOptions) => apiClient.post(`/api/Rank/GetRankingByName`, searchOptions),
   updateRankItemPlacement: (rankItemId, newPlacement) => apiClient.post("/api/Rank/UpdateRankItemPlacement", { rankItemId, newPlacement }),
-  editRankItem: (rankItemData) => apiClient.put('/api/Rank/EditRankItem', rankItemData),
-  deleteRankItem: (rankItemId) => apiClient.delete(`/api/Rank/DeleteRankItem/${rankItemId}`),
 };
+
+export const rankItemService = {
+  createRankItem: (rankItem) => apiClient.post('/api/Rank/CreateRankItem', rankItem),
+  editRankItem: (rankItem) => apiClient.put(`/api/Rank/EditRankItem/${rankItem.id}`, rankItem),
+  deleteRankItem: (id) => apiClient.delete(`/api/Rank/DeleteRankItem/${id}`),
+};
+
 
 export const exploreService = {
   getNewRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetNewRankings?page=${page}&pageSize=${pageSize}`),

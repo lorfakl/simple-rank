@@ -10,6 +10,7 @@
         public static readonly Error NullValue = new("Error.NullValue", "A null value was provided unexpectedly.");
         public static readonly Error NotFound = new("Error.NotFound", "The requested resource was not found.");
         public static readonly Error ValidationFailed = new("Error.Validation", "One or more validation errors occurred.");
+        public static readonly Error InvalidModelState = new("Request body is not valid", "One or more properties is null or otherwise invalid.");
         public static Error Custom(string code, string message) => new(code, message);
 
         public Error(string code, string message, int httpStatusCode, Exception? sourceException = null, Exception? innerException = null)

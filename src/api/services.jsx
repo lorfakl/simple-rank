@@ -33,6 +33,11 @@ export const rankItemService = {
   deleteRankItem: (request) => apiClient.post(`/api/Rank/DeleteRankItem/${request.rankItemId}`, request),
 };
 
+export const shareRankService = {
+  getShareableLink: (rankingId) => apiClient.post(`/api/Rank/GetShareableLink/${rankingId}`),
+  getSharedRanking: (sharedId) => apiClient.get(`/api/Rank/GetSharedRanking/${sharedId}`),
+  cloneSharedRanking: (sharedId) => apiClient.post(`/api/Rank/CloneSharedRanking/${sharedId}`),
+}
 
 export const exploreService = {
   getNewRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetNewRankings?page=${page}&pageSize=${pageSize}`),

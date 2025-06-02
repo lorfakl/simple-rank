@@ -11,6 +11,7 @@ import LandingPage from './pages/LandingPage'
 import Navbar from './components/Navbar'
 import CreateRank from './pages/CreateRank'
 import ViewRanking from './pages/ViewRanking'
+import SharedRank from './pages/SharedRank'
 import { SupabaseProvider } from './contexts/SupabaseContext'
 import { UserProvider } from './contexts/UserContext'
 import Login from './pages/Login'
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/Login" element={<Login/>}/>
                 <Route path="/NewRank" element={<CreateRank/>}/>
                 <Route path="/ranking/:id" element={<ViewRanking/>}/>
+                <Route path="/share/:id" element={<SharedRank/>}/>
                 <Route path="/Explore"/>
               </Routes>
             </BrowserRouter>

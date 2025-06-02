@@ -86,7 +86,7 @@ function Home(){
                             <button className="outline-dashed" onClick={() => {navigate("/NewRank")}}>
                                 <div className="flex flex-col items-center">
                                     <Plus size={50}/>
-                                    <p className="font-thin lg:text-5xl text-3xl">Create a New Ranking</p>
+                                    <p className="font-thin lg:text-5xl text-3xl">create a new ranking</p>
                                 </div>
                             </button>
                         </div>

@@ -451,14 +451,14 @@ function ViewRanking(){
 
                     <div className="flex flex-row items-center justify-between gap-x-16">
                         <div className="flex flex-row gap-x-4">
-                            <p className="text-xl font-normal">Created By:</p>
+                            <p className="text-xl font-normal">created by:</p>
                             <p className="text-xl font-semibold">{rankingInfo.createdBy}</p>
                         </div>
 
                         <div className="flex flex-row" >
                             
                             <button className="btn btn-secondary rounded-r-lg" onClick={handleVisibilityOnClick}>
-                                <p className="text-xl font-semibold">{rankingInfo.isPublic ? "Public": "Private"}</p>
+                                <p className="text-xl font-semibold">{rankingInfo.isPublic ? "public": "private"}</p>
                                 {rankingInfo.isPublic ? <><Earth size={32} strokeWidth={1.75} /></>: <><Lock size={32} strokeWidth={1.75} /></> }
                             </button>
                             
@@ -483,7 +483,7 @@ function ViewRanking(){
             
                 <>
                     <div>
-                        <h2 className="">Loading Rank Items</h2>
+                        <h2 className="">loading rank items</h2>
                         <span className="loading loading-spinner loading-xl"></span>
                     </div>
                 </>

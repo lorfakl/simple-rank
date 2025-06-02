@@ -75,26 +75,17 @@ function AuthenticationOptions({isSignUp}){
                     <h1 className="">{isSignUp ? "Sign up" : "Login"}</h1>
             </div>
             <div className="my-12 flex flex-col gap-y-4">
-                {showSignInOptions ? 
-                    <>
-                        {/* Google */}
-                        <GoogleLoginButton onClick={handleGoogleLogin} />
+                {/* Google */}
+                <GoogleLoginButton onClick={handleGoogleLogin} />
 
-                        {/* Discord */}
-                        <DiscordLoginButton onClick={handleDiscordLogin} />
+                {/* Discord */}
+                <DiscordLoginButton onClick={handleDiscordLogin} />
 
-                        <button className="btn bg-white text-black border-[#e5e5e5]" onClick={() => {setShowSignInOptions(false)}}>
-                            <svg aria-label="Email icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" fill="none" stroke="black"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></g></svg>
-                            {isSignUp ? "Sign up" : "Login"}  with Email
-                        </button>
-
-                    </> 
-                    : 
-                    <>
-                        <EmailAuthenticationForm isSignUp={isSignUp} onSuccess={handleAuthSuccess} onFailure={handleAuthFailure} loading={loading} setLoading={setLoading}/>
-                        <button className="btn btn-active btn-secondary" onClick={() => {setShowSignInOptions(true)}}>Choose another option</button>
-                    </>
-                }
+                {/* No more email/password login 
+                <button className="btn bg-white text-black border-[#e5e5e5]" onClick={() => {setShowSignInOptions(false)}}>
+                    <svg aria-label="Email icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" fill="none" stroke="black"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></g></svg>
+                    {isSignUp ? "Sign up" : "Login"}  with Email
+                </button>*/}
             </div>
         </>
     )

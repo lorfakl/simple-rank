@@ -7,12 +7,16 @@ function Navbar()
     const  navigate  = useNavigate()
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [avatarUrl, setAvatarUrl] = useState("")
+    const [fullName, setFullName] = useState("")
 
     useEffect(() => {
         console.log(session)
         if(session)
         {
             console.log("User is authenticated:", session);
+            loadAvatarUrl()
+            loadFullName()
             
         } 
     }, [])
@@ -27,6 +31,8 @@ function Navbar()
         else
         {
             setIsAuthenticated(true)
+            loadAvatarUrl()
+            loadFullName()
         }
     },[session])
     
@@ -35,6 +41,60 @@ function Navbar()
         console.log("Logout was clicked")
         navigate("/Login")
         signOut()
+    }
+
+    function loadAvatarUrl()
+    {
+        const avatarImagePath = localStorage.getItem('avatarUrl'); //get avatar image path
+
+        if(avatarImagePath === null || avatarImagePath === undefined || avatarImagePath === ""){
+            const userData = localStorage.getItem('user'); //get user data
+            if(userData)
+            {
+                const user = JSON.parse(userData);
+                console.log(user.user_metadata.avatar_url, " User avatar URL");
+                setAvatarUrl(user.user_metadata.avatar_url)
+                setFullName(user.user_metadata.full_name)
+                localStorage.setItem('avatarUrl', user.user_metadata.avatar_url); // Store avatar URL in localStorage
+            }
+            else
+            {
+                console.log("No user data found in localStorage")
+                setAvatarUrl("https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp") // Default avatar image
+            }
+        }
+        else
+        {
+            console.log(avatarImagePath, " Avatar image path");
+            setAvatarUrl(avatarImagePath)
+        }
+    }
+
+    function loadFullName()
+    {
+        // Load full name from localStorage
+        const fullNameFromStorage = localStorage.getItem('fullName'); //get full name from localStorage
+
+        if(fullNameFromStorage === null || fullNameFromStorage === undefined || fullNameFromStorage === "")
+        {
+            const userData = localStorage.getItem('user'); //get user data
+            if(userData)
+            {
+                const user = JSON.parse(userData);
+                console.log(user.user_metadata.full_name, " User full name");
+                setFullName(user.user_metadata.full_name)
+            }
+            else
+            {
+                console.log("No user data found in localStorage")
+            }
+        }
+        else
+        {
+            console.log(fullNameFromStorage, " Full name from localStorage");
+            setFullName(fullNameFromStorage)
+        }
+        
     }
 
     return(
@@ -74,11 +134,10 @@ function Navbar()
                                 <div className="w-16 rounded-full">
                                 <img
                                     alt="Tailwind CSS Navbar component"
-                                    src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+                                    src={avatarUrl}/>
                                 </div>
                             </div>
                             <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
-                                <li><Link to="Profile">Profile</Link></li>
                                 <li onClick={handleLogout}><Link to="Login">Logout</Link></li>
                             </ul>
                         </>

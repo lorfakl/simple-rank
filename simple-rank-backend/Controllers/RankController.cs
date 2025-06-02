@@ -5,6 +5,7 @@ using simple_rank_backend.Application.Common;
 using simple_rank_backend.Application.Common.Extensions;
 using simple_rank_backend.Application.Services.Interfaces;
 using simple_rank_backend.DTOs.Ranking;
+using simple_rank_backend.DTOs.Ranking.Responses;
 using simple_rank_backend.Models;
 using System.Security.Claims;
 
@@ -22,7 +23,7 @@ namespace simple_rank_backend.Controllers
             _cache = memoryCache;
             _rankService = rankingService;
         }
-        
+
 
         [HttpOptions]
         public IActionResult Options()
@@ -38,7 +39,7 @@ namespace simple_rank_backend.Controllers
             // This would typically involve saving the ranking to a database
             // and possibly returning the created ranking object or its ID.
 
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 string ownerId = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
                 if (string.IsNullOrEmpty(ownerId))
@@ -50,19 +51,11 @@ namespace simple_rank_backend.Controllers
                     var result = await _rankService.CreateRankingAsync(rq, ownerId);
                     return this.HandleResult(result);
                 }
-                    
-                //var name = User?.Identity?.Name;
-                //return Ok(new
-                //{
-                //    Message = $"{name} created ranking {rq.Title} successfully",
-                //    Request = rq
-                //});
             }
             else
             {
                 return BadRequest();
             }
-            
         }
 
         [HttpGet("{userId}")]
@@ -75,7 +68,7 @@ namespace simple_rank_backend.Controllers
                 return Unauthorized("User is not authenticated");
             }
 
-            if(ownerId != userId)
+            if (ownerId != userId)
             {
                 return Forbid();
             }
@@ -83,8 +76,9 @@ namespace simple_rank_backend.Controllers
             {
                 Result<List<Ranking>> result = await _rankService.GetUserRankingsAsync(ownerId);
                 return this.HandleResult(result);
-            }   
+            }
         }
+
 
         [HttpGet("{rankingId}")]
         public async Task<IActionResult> GetRanking(string rankingId)
@@ -94,15 +88,14 @@ namespace simple_rank_backend.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("{rankingId}")]
         [Authorize]
-        public async Task<IActionResult> CreateRankItem([FromBody] UpdateRankItemRequest rq)
+        public async Task<IActionResult> GetShareableLink(string rankingId)
         {
             if (ModelState.IsValid)
             {
-                //check that the caller owns the ranking that owns the rank item attempting to be created
-                Result result = await _rankService.UpdateRankItem(rq);
-                return this.HandleResult(result);
+                Result<ShareableLinkResponse> result = await _rankService.GetShareableLinkAsync(rankingId);
+                return this.HandleResult<ShareableLinkResponse>(result);
             }
             else
             {
@@ -110,33 +103,72 @@ namespace simple_rank_backend.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut("{rankingId}")]
         [Authorize]
-        public async Task<IActionResult> EditRankItem([FromBody] UpdateRankItemRequest rq)
+        public async Task<IActionResult> EditRanking(string rankingId, [FromBody] UpdateRankingRequest rq)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                //check that the caller owns the ranking that owns the rank item attempting to be edited
-                Result result = await _rankService.UpdateRankItem(rq);
-                return this.HandleResult(result);
+                if (rq.Items.Count == 0)
+                {
+                    Result result = await _rankService.UpdateBasicRankingInfoAsync(rq);
+                    return this.HandleResult(result);
+                }
+                else
+                {
+                    Result result = await _rankService.UpdateRankingAsync(rq);
+                    return this.HandleResult(result);
+                }
             }
             else
             {
                 return this.HandleError(Error.InvalidModelState);
             }
-                
         }
 
-        [HttpPost]
+        [HttpPost("{rankingId}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateRank(string rankingId, [FromBody] UpdateRankingRequest rq)
+        {
+            if (ModelState.IsValid)
+            {
+                if (rq.Items.Count == 0)
+                {
+                    Result result = await _rankService.UpdateBasicRankingInfoAsync(rq);
+                    return this.HandleResult(result);
+                }
+                else
+                {
+                    Result result = await _rankService.UpdateRankingAsync(rq);
+                    return this.HandleResult(result);
+                }
+
+            }
+            else
+            {
+                return this.HandleError(Error.InvalidModelState);
+            }
+        }
+
+        [HttpPost("{rankItemId}")]
         [Authorize]
         public async Task<IActionResult> DeleteRankItem([FromBody] DeleteRankItemRequest rq)
         {
-            //check that the caller owns the ranking that owns the rank item attempting to be deleted
-            Result result = await _rankService.DeleteRankItem(rq);
-            return this.HandleResult(result);
+            if(ModelState.IsValid)
+            {
+                if(string.IsNullOrEmpty(rq.RankingId) || string.IsNullOrEmpty(rq.RankItemId))
+                {
+                    return BadRequest();
+                }
+                //check that the caller owns the ranking that owns the rank item attempting to be deleted
+                Result result = await _rankService.DeleteRankItem(rq);
+                return this.HandleResult(result);
+            }
+            else
+            {
+                return BadRequest();
+            }
+           
         }
-
-        
-
     }
 }

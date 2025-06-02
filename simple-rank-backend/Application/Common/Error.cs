@@ -13,6 +13,12 @@
         public static readonly Error InvalidModelState = new("Request body is not valid", "One or more properties is null or otherwise invalid.");
         public static Error Custom(string code, string message) => new(code, message);
 
+        public static async Task<Error> SupabaseError(HttpResponseMessage response, string msg)
+        {
+            string responseContent = await response.Content.ReadAsStringAsync();
+            return Custom(response.StatusCode.ToString(), $"{msg} : {responseContent}");
+        }
+
         public Error(string code, string message, int httpStatusCode, Exception? sourceException = null, Exception? innerException = null)
             : this(code, message)
         {

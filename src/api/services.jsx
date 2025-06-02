@@ -24,12 +24,13 @@ export const rankingService = {
   getAllRankings: () => apiClient.get('/api/Rank/GetPublicRankings'),
   searchPublicRankings: (searchOptions) => apiClient.post(`/api/Rank/GetRankingByName`, searchOptions),
   updateRankItemPlacement: (rankItemId, newPlacement) => apiClient.post("/api/Rank/UpdateRankItemPlacement", { rankItemId, newPlacement }),
+  getShareableLink: (rankingId) => apiClient.post(`/api/Rank/GetShareableLink/${rankingId}`),
 };
 
 export const rankItemService = {
-  createRankItem: (rankItem) => apiClient.post('/api/Rank/CreateRankItem', rankItem),
+  updateRankItems: (rankingId, rankItems) => apiClient.post(`/api/Rank/UpdateRankItems/${rankingId}`, rankItems),
   editRankItem: (rankItem) => apiClient.put(`/api/Rank/EditRankItem/${rankItem.id}`, rankItem),
-  deleteRankItem: (id) => apiClient.delete(`/api/Rank/DeleteRankItem/${id}`),
+  deleteRankItem: (request) => apiClient.post(`/api/Rank/DeleteRankItem/${request.rankItemId}`, request),
 };
 
 

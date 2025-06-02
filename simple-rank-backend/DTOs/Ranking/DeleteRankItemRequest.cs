@@ -3,12 +3,12 @@
     public class DeleteRankItemRequest
     {
         public string RankingId { get; set; } = string.Empty;
-        public string ItemId { get; set; } = string.Empty;
+        public string RankItemId { get; set; } = string.Empty;
         public DeleteRankItemRequest() { }
         public DeleteRankItemRequest(string rankingId, string itemId)
         {
             RankingId = rankingId;
-            ItemId = itemId;
+            RankItemId = itemId;
         }
     }
 }

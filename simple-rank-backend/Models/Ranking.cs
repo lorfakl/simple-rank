@@ -16,6 +16,7 @@ namespace simple_rank_backend.Models
         public DateTime LastUpdated { get; private set; } = DateTime.Now;
         public DateTime CreatedDate { get; private set; } = DateTime.Now;
         public bool IsPublic { get; private set; } = false;
+        public bool IsShared { get; private set; } = false;
 
         public string Id
         {
@@ -69,8 +70,18 @@ namespace simple_rank_backend.Models
             Description = ranking.Description;
             ItemCount = ranking.ItemCount;
             LastUpdated = ranking.LastUpdated.Date;
+            IsPublic = ranking.IsPublic;
+            IsShared = ranking.IsShared;
             // Assuming we have a method to fetch items by RankingId
-            Items = new List<RankItem>();
+            if(ranking.RankingItems.Any())
+            {
+                Items = ranking.RankingItems.Select(item => new RankItem(item.Name, item.Description, item.Rank, item.ItemId)).ToList();
+            }
+            else
+            {
+                Items = new List<RankItem>();
+            }
+            
         }
 
         public void AddItem(RankItem item)

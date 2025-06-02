@@ -18,6 +18,7 @@ namespace simple_rank_backend.Application.Common.Extensions
                     // A more specific GetProductById might treat a successful null find differently.
                     return controller.Ok(result.Value);
                 }
+
                 return controller.Ok(result.Value);
             }
             return HandleError(controller, result.Error);

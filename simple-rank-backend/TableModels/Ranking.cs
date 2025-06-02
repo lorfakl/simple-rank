@@ -20,14 +20,23 @@ namespace simple_rank_backend.TableModels
         [Column("ranking_desc")]
         public string Description { get; set; } = string.Empty;
 
-        [Reference(typeof(RankingItems), useInnerJoin:false)]
-        public List<RankingItems> RankItems { get; set; }
-
         [Column("item_count")]
         public uint ItemCount { get; set; } = 0;
 
         [Column("last_updated")]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
+
+        [Reference(typeof(RankingItems), useInnerJoin: false, columnName: "ranking_id")]
+        public List<RankingItems> RankingItems { get; set; } = [];
+
+        [Reference(typeof(ShareableLink), useInnerJoin: false, columnName: "ranking_id")]
+        public ShareableLink ShareableId { get; set; }
+
+        [Column("is_public")]
+        public bool IsPublic { get; set; } = false;
+
+        [Column("is_shared")]
+        public bool IsShared { get; set; } = false;
 
         public Ranking() { }
 

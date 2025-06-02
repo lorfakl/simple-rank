@@ -96,6 +96,16 @@ builder.Services.AddSingleton<SupabaseService>(sp =>
     return new SupabaseService(supabaseUrl, supabaseKey, options);
 });
 
+builder.Services.AddScoped<Client>(_ => 
+    new Client(supabaseUrl, supabaseKey, 
+        new SupabaseOptions
+        {
+            AutoRefreshToken = true,
+            AutoConnectRealtime = true,
+            //StorageClientOptions = new Supabase.Storage.ClientOptions()
+        }
+    ));
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IRankService, RankingService>();

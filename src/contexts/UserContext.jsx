@@ -119,6 +119,8 @@ export function UserProvider({ children }) {
         if(error === null || error === undefined)
         {
             setUser(data.session.user)
+            setSession(data.session)
+            setAuthenticated(true)
         }
       }
       catch(error)
@@ -139,6 +141,7 @@ export function UserProvider({ children }) {
       setAuthenticated(true);
       localStorage.setItem('auth_token', session.access_token); // Store token
       localStorage.setItem('user', JSON.stringify(session.user)); // Store user data
+      
     } else {
       setUser({});
       setAuthenticated(false);
@@ -233,7 +236,8 @@ export function UserProvider({ children }) {
     {
         //console.log("successfully signed in with Email, ", data)
         showNotification("Successfully signed in", "success", 3000)
-        setUser(data.session.user)
+        setSession(data.session)
+        console.log("user context: ", data)
         return {error: undefined, user: data.session.user} 
     }
   }
@@ -256,7 +260,7 @@ export function UserProvider({ children }) {
     {
         //console.log("successfully signed in with Email, ", data)
         showNotification("Successfully signed in", "success", 3000)
-        setUser(data.session.user)
+        setSession(data.session)
         return {error: undefined, user: data.session.user} 
     }
   }

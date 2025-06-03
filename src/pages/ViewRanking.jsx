@@ -5,7 +5,7 @@ import RankItem from '../components/RankItem';
 import ConfirmationModel from '../components/ConfirmationModal';
 import ToggleTextInput from '../components/ToggleTextInput';
 import { ChevronDown, Plus, RefreshCw , Earth, Lock } from 'lucide-react';
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, use } from "react"
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
 import { useSupabase } from '../contexts/SupabaseContext';
 import { rankingService, rankItemService } from '../api/services';
@@ -61,6 +61,17 @@ function ViewRanking(){
         previousItemCount.current = itemCount
     }, [itemCount])
 
+    // useEffect(() => {
+    //     const updatePlacement = async () => {
+    //         if(itemCount == previousItemCount.current)
+    //         {
+    //             console.log("Updating rank item placement")
+    //             await updateRankingItemPlace()
+    //         }
+    //     }
+
+    // }, [rankItems])
+
 
     //*Supabase Operations*//
     async function GetRank(rankingId)
@@ -115,20 +126,24 @@ function ViewRanking(){
         setLoading(false)
     }
 
-    async function updateRankingItem(rankingItems)
+    async function updateRankingItemPlace(rankItemsArray)
     {
-        console.log("Updating ranking with the following: ", rankingItems, rankingTitle, rankingDescription)
+        console.log("Updating ranking with the following: ", rankItemsArray)
         setUpdating(true)
 
         // Update the ranking in the database
         try {
-            
-            const response = await rankingService.editRanking({
-                id: id,
-                description: rankingDescription,
-                title: rankingTitle,
-                items: rankingItems
-            })
+            let itemDict = {}
+            for(let i = 0; i < rankItemsArray.length; i++)
+            {
+                itemDict[rankItemsArray[i].itemId] = rankItemsArray[i].rank
+            }
+
+            let rq = {
+                rankingId: id,
+                ItemIdToRank: itemDict
+            }
+            const response = await rankItemService.updateRankItemPlacement(rq)
             
             if(response.error)
             {
@@ -138,6 +153,7 @@ function ViewRanking(){
             }
 
             console.log("Successfully updated ranking: ", response.data)
+            showNotification("Update saved", "success", 750)
             
         }
         catch(error) {
@@ -186,21 +202,6 @@ function ViewRanking(){
 
 
     //*JS Functions*//
-    function removeRank(idToRemove)
-    {
-        setItemCount( itemCount - 1)
-        console.log("Removing rank item: ", idToRemove)
-        delete createdRanks.current[idToRemove]
-        let updatedRankList = rankItems.filter(item => item.id !== idToRemove)
-        updatedRankList = updatedRankList.map((item, index) => {
-            item.rank = index + 1
-            return item
-        })
-
-        console.log("Updated ranks ", updatedRankList)
-        setRankItems(updatedRankList)
-    }
-
     function getNewProtoRank()
     {
         let rankItem = {
@@ -252,6 +253,7 @@ function ViewRanking(){
             //protoRanks[destination.index] = draggedRankItem
             //protoRanks[source.index] = swappedItem
             reorderRanks.forEach((item, index) => item.rank = index + 1)
+            updateRankingItemPlace(reorderRanks)
             setRankItems([...reorderRanks])
         }
     }

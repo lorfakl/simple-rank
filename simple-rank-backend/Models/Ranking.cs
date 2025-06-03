@@ -75,7 +75,10 @@ namespace simple_rank_backend.Models
             // Assuming we have a method to fetch items by RankingId
             if(ranking.RankingItems.Any())
             {
-                Items = ranking.RankingItems.Select(item => new RankItem(item.Name, item.Description, item.Rank, item.ItemId)).ToList();
+                Items = ranking.RankingItems
+                    .Select(item => new RankItem(item.Name, item.Description, item.Rank, item.ItemId))
+                    .OrderBy(i => i.Rank)
+                    .ToList();
             }
             else
             {

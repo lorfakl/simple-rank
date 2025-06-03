@@ -128,21 +128,24 @@ namespace simple_rank_backend.Controllers
 
         [HttpPost("{rankingId}")]
         [Authorize]
-        public async Task<IActionResult> UpdateRank(string rankingId, [FromBody] UpdateRankingRequest rq)
+        public async Task<IActionResult> UpdateRankItemsPlacement(string rankingId, [FromBody] UpdateRankItemPlacementRequest rq)
         {
             if (ModelState.IsValid)
             {
-                if (rq.Items.Count == 0)
+                if(rq.ItemIdToRank.Values.Count == 0 || string.IsNullOrEmpty(rq.RankingId))
                 {
-                    Result result = await _rankService.UpdateBasicRankingInfoAsync(rq);
+                    return this.HandleError(Error.InvalidModelState);
+                }
+
+                if(rankingId == rq.RankingId)
+                {
+                    Result result = await _rankService.UpdateRankItemPlacement(rq);
                     return this.HandleResult(result);
                 }
                 else
                 {
-                    Result result = await _rankService.UpdateRankingAsync(rq);
-                    return this.HandleResult(result);
+                    return this.HandleError(Error.Custom("InvalidRankingId", "The ranking ID in the request body does not match the ranking ID in the URL."));
                 }
-
             }
             else
             {

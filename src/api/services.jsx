@@ -23,7 +23,7 @@ export const rankingService = {
   getRankingById: (id) => apiClient.get(`/api/Rank/GetRanking/${id}`),
   getAllRankings: () => apiClient.get('/api/Rank/GetPublicRankings'),
   searchPublicRankings: (searchOptions) => apiClient.post(`/api/Rank/GetRankingByName`, searchOptions),
-  updateRankItemPlacement: (rankItemId, newPlacement) => apiClient.post("/api/Rank/UpdateRankItemPlacement", { rankItemId, newPlacement }),
+  
   getShareableLink: (rankingId) => apiClient.post(`/api/Rank/GetShareableLink/${rankingId}`),
 };
 
@@ -31,6 +31,7 @@ export const rankItemService = {
   updateRankItems: (rankingId, rankItems) => apiClient.post(`/api/Rank/UpdateRankItems/${rankingId}`, rankItems),
   editRankItem: (rankItem) => apiClient.put(`/api/Rank/EditRankItem/${rankItem.id}`, rankItem),
   deleteRankItem: (request) => apiClient.post(`/api/Rank/DeleteRankItem/${request.rankItemId}`, request),
+  updateRankItemPlacement: (request) => apiClient.post(`/api/Rank/UpdateRankItemsPlacement/${request.rankingId}`, request),
 };
 
 export const shareRankService = {

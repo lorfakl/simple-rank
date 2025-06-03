@@ -210,9 +210,59 @@ namespace simple_rank_backend.Application.Services
             return Result.Success("successfully updated rank items");
         }
 
-        public Task<Result> UpdateRankItemPlacement(UpdateRankItemPlacementRequest rq)
+        public async Task<Result> UpdateRankItemPlacement(UpdateRankItemPlacementRequest rq)
         {
-            throw new NotImplementedException();
+            string ownerId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            if (String.IsNullOrEmpty(ownerId))
+            {
+                return Result.Failure(Error.NullValue, "Unable to determine owner Id");
+            }
+
+            var checkRankOwnerResult = await _supabase.From<TableModels.Ranking>()
+                .Where(r => r.RankingId == rq.RankingId)
+                .Where(r => r.Owner == ownerId)
+                .Get();
+
+            if (!checkRankOwnerResult.ResponseMessage.IsSuccessStatusCode)
+            {
+                return Result.HandleSupabase(checkRankOwnerResult.ResponseMessage, "unable to update item placement, invalid");
+            }
+
+            if(checkRankOwnerResult.Models.Count != 1)
+            {
+                return Result.Failure(Error.ValidationFailed);
+            }
+
+            List<TableModels.RankingItems> itemsToUpdate = rq.ItemIdToRank
+                .Select(pair => new TableModels.RankingItems(pair.Key, rq.RankingId, string.Empty, string.Empty, (uint)pair.Value))
+                .ToList();
+
+            var updateResult = await _supabase.From<TableModels.RankingItems>()
+                .Upsert(itemsToUpdate);
+
+            if (!updateResult.ResponseMessage.IsSuccessStatusCode)
+            {
+                return Result.HandleSupabase(updateResult.ResponseMessage);
+            }
+
+            try
+            {
+                List<string> keys = [.. rq.ItemIdToRank.Keys];
+                await _supabase.From<TableModels.RankingItems>()
+                .Where(item => item.RankingId == rq.RankingId)
+                .Filter(item => item.ItemId, 
+                    Supabase.Postgrest.Constants.Operator.In, 
+                    keys)
+                .Where(item => item.Name == string.Empty)
+                .Where(item => item.Description == string.Empty)
+                .Delete();
+            }
+            catch(Exception ex)
+            {
+                return Result.Failure(Error.Custom("500", ex.Message));
+            }
+
+            return Result.Success("successfully updated rank item placements");
         }
 
         public Task<Result> DeleteRankingAsync(GetRankingByIdRequest rq)

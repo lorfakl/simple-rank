@@ -71,16 +71,16 @@ function CreateRank(){
             if(response.error)
             {
                 console.error("Error saving ranking: ", response.error)
-                return
             }
-    
-            console.log("Successfully saved ranking: ", response.data)
-            //navigate to the new ranking page
-            if(response.data.id !== undefined)
+            else
             {
-                navigate(`/Rank/${response.data.id}`)
+                console.log("Successfully saved ranking: ", response.data)
+                //navigate to the new ranking page
+                if(response.data.id !== undefined)
+                {
+                    //navigate(`/Rank/${response.data.id}`)
+                }
             }
-            
         }
         catch(error) {
             setLoading(false)
@@ -155,6 +155,10 @@ function CreateRank(){
         {
             setRequireTitle(false)
         }
+        else
+        {
+            setRequireTitle(true)
+        }
 
         setProtoRanking({...protoRanking, title: rankingTitle})
     }
@@ -174,11 +178,23 @@ function CreateRank(){
             createdRanks.current[id] = rankItem
         }
 
+        setProtoRanks(protoRanks.map(item => {
+            if(item.id === id)
+            {
+                return {...item, title: title, description: description}
+            }
+            else
+            {
+                return item
+            }
+        }))
+
         if(title.length > 0)
         {
             rankItemTitleErrors.current[id] = false
             setRequireRankItemTitle(false)
         }
+
 
         console.log(createdRanks.current)
     }
@@ -188,7 +204,6 @@ function CreateRank(){
         console.log("Saving ranks: ", createdRanks.current)
         if(protoRanking.title.length === 0)
         {
-            setRequireTitle(true)
             return
         }
 
@@ -233,7 +248,7 @@ function CreateRank(){
             { loading? 
             <>
                 <div>
-                    Creating new ranking: {protoRanking.title}<span className="loading loading-dots loading-lg"></span>
+                    saving new ranking: {protoRanking.title}<span className="loading loading-dots loading-lg"></span>
                 </div>
             </> 
             : 
@@ -241,15 +256,17 @@ function CreateRank(){
                  <div className="flex flex-col gap-y-8 items-center w-full">
 
                 <div className="flex flex-row gap-4">
-                    <button className="btn btn-soft btn-success" onClick={handleSaveRankingOnClick}><Save />Save Ranking</button>
-                    <button className="btn btn-soft btn-error" onClick={() => {handleDiscardRankingOnClick()}}><Trash2 />Discard Ranking</button>
+                    <button className="btn btn-soft btn-success" onClick={handleSaveRankingOnClick}><Save />save ranking</button>
+                    <button className="btn btn-soft btn-error" onClick={() => {handleDiscardRankingOnClick()}}><Trash2 />discard ranking</button>
                 </div>
 
 
-                <LimitedTextArea inputLabel={"ranking title"} characterLimit={25} placeholderText={"title"} handleInputChange={handleRankingTitle} showRequired={requireTitle} />
+                <LimitedTextArea inputLabel={"ranking title"} characterLimit={25} placeholderText={"title"} handleInputChange={handleRankingTitle} showRequired={true}
+                initialValue={protoRanking.title} />
 
 
-                <LimitedTextArea inputLabel={"ranking description"} characterLimit={75} placeholderText={"description"} handleInputChange={handleRankingDescription} />
+                <LimitedTextArea inputLabel={"ranking description"} characterLimit={75} placeholderText={"description"} handleInputChange={handleRankingDescription} 
+                    initialValue={protoRanking.description}/>
 
                 <button className="outline-dashed" onClick={() => {setItemCount( itemCount + 1)}}>
                     <div className="flex flex-row items-center">

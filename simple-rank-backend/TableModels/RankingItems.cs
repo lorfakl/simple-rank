@@ -1,4 +1,6 @@
-﻿using simple_rank_backend.Models;
+﻿using simple_rank_backend.Application.Services;
+using simple_rank_backend.DTOs.Ranking;
+using simple_rank_backend.Models;
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 
@@ -34,6 +36,15 @@ namespace simple_rank_backend.TableModels
             Name = name;
             Description = description;
             Rank = rank;
+        }
+
+        public RankingItems(RankItemDto dto, string rankingId)
+        {
+            RankingId = rankingId;
+            ItemId = dto.Id;
+            Name = dto.Name;
+            Description = dto.Description;
+            Rank = dto.Rank;
         }
 
         public RankingItems(RankItem item, string rankingId)

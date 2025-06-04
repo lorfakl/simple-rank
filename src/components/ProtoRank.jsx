@@ -1,10 +1,18 @@
 import { X } from "lucide-react"
 import { Draggable } from "@hello-pangea/dnd"
 import LimitedTextInput from "./LimitedTextInput"
-import {useRef } from 'react'
+import {use, useRef } from 'react'
 function ProtoRank({id, index, data, onDataChange, handleRemoveRankItem, showInputError = false}){
 
     const protoRankData = useRef({title: "", description: ""})
+
+    useRef(() => {
+        if(data !== undefined && data !== null)
+        {
+            protoRankData.current = {...protoRankData.current, title: data.title, description: data.description}
+        }
+    }, [])
+
 
     function handleRankItemTitleChange(titleText)
     {
@@ -25,15 +33,17 @@ function ProtoRank({id, index, data, onDataChange, handleRemoveRankItem, showInp
                     {...provided.dragHandleProps}
                     ref={provided.innerRef} 
                     className="flex flex-col w-full h-fit rounded-xl border-4 p-4">
-                    <div className="text-3xl font-semibold">Rank: {data.rank}</div>
+                    <div className="text-3xl font-semibold">rank: {data.rank}</div>
                 
                     <LimitedTextInput inputLabel={"item name"} characterLimit={50} placeholderText={"enter rank item name"} 
                         handleInputChange={handleRankItemTitleChange} 
-                        textSize={"text-xl"} showRequired={showInputError}/>
+                        textSize={"text-xl"} showRequired={showInputError}
+                        textValue={data.title}/>
 
                     <LimitedTextInput inputLabel={"item description"} characterLimit={75} placeholderText={"enter rank item description"} 
                         handleInputChange={handleRankItemDescriptionChange} 
-                        textSize={"text-xl"} />
+                        textSize={"text-xl"}
+                        textValue={data.description} />
                     <button className="btn btn-soft btn-error mt-4" onClick={() => handleRemoveRankItem(id)}><X />Remove</button>
                 </div>
             )}

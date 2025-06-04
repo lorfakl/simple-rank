@@ -16,11 +16,11 @@ namespace simple_rank_backend.Models
             ItemId = string.Empty;
         }
 
-        public RankItem(string name, string description, uint rank, string itemId)
+        public RankItem(string name, string description, int rank, string itemId)
         {
             Name = name;
             Description = description;
-            Rank = rank;
+            Rank = (uint)rank;
             ItemId = itemId;
         }
 

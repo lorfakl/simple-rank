@@ -276,13 +276,14 @@ function ViewRanking(){
 
         console.log("Editing rank item: ", idToEdit, name, description)
         let updatedRankItems = rankItems.map(item => {
-            if(item.id === idToEdit)
+            if(item.itemId === idToEdit)
             {
                 item.title = name
                 item.description = description
             }
             return item
         })
+
 
         setRankItems(updatedRankItems)
 
@@ -299,12 +300,13 @@ function ViewRanking(){
             const request = {
                 id: id,
                 items: updatedRankItems.filter(item => item.title && item.title.trim() !== "")
-                .map(item => ({id: item.id, name: item.title, description: item.description, rank: item.rank})),
+                .map(item => ({id: item.itemId, name: item.title, description: item.description, rank: item.rank})),
                 title: rankingInfo.title,
                 description: rankingInfo.description,
                 isPublic: rankingInfo.isPublic
             }
-
+            console.log("Request to update rank items: ", request)
+            setUpdating(true)
             const response = await rankingService.editRanking(request)
 
             if(response.error)
@@ -318,6 +320,7 @@ function ViewRanking(){
                 console.log("Successfully updated rank items: ", response.data)
                 showNotification("Successfully updated rank items", "success", 750)
             }
+            setUpdating(false)
         }
         catch(error) {
             console.error("Error updating rank item title errors: ", error)
@@ -507,7 +510,6 @@ function ViewRanking(){
                                     >
                                         {rankItems.map((item, index) => (
                                             // Pass the item data to your ProtoRank component
-                                            
                                             <RankItem key={item.itemId} id={item.itemId} index={index} data={item} isEditable={item.isEditable}
                                                 onDataChange={handleRankEdit} handleRemoveRankItem={handleRankRemoval}/>
                                         ))}

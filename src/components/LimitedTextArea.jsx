@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react"
 
-function LimitedTextArea({inputLabel, characterLimit, placeholderText, handleInputChange, showRequired = false})
+function LimitedTextArea({inputLabel, initialValue = "", characterLimit, placeholderText, handleInputChange, showRequired = false})
 {
-    const [inputText, setInputText] = useState("")
+    const [inputText, setInputText] = useState(initialValue)
 
     useEffect(() => {
 
-        //console.log("Proto rank order ", protoRanks)
+        console.log("ranking in progress ", inputText)
         
     }, [inputText])
 
@@ -25,13 +25,13 @@ function LimitedTextArea({inputLabel, characterLimit, placeholderText, handleInp
                 <label className="floating-label text-4xl">
                     <textarea 
                         onChange={(e) => {handleTextInput(e.target.value)}} 
-                        className={`textarea lg:text-2xl lg:w-192 w-100 text-xl ${showRequired? "outline-error": "" }`} 
+                        className={`textarea lg:text-2xl lg:w-192 w-100 text-xl ${showRequired && inputText.length === 0 ? "outline-error": "" }`} 
                         placeholder={placeholderText}
                         value={inputText}>
                         </textarea>
                     <span className="text-4xl">{inputLabel}</span>
-                    <div className={`flex w-full ${showRequired? "flex-row justify-between": "flex-row-reverse" }`}>
-                    {showRequired ? 
+                    <div className={`flex w-full ${showRequired && inputText.length === 0? "flex-row justify-between": "flex-row-reverse" }`}>
+                    {showRequired && inputText.length === 0 ? 
                         <>
                             <div className="place-self-start">
                                 <p className="text-error font-semibold lg:text-3xl text-xl">all rankings require a title</p>

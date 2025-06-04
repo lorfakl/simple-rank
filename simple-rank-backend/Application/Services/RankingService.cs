@@ -4,6 +4,8 @@ using simple_rank_backend.DTOs.Ranking;
 using simple_rank_backend.DTOs.Ranking.Responses;
 using simple_rank_backend.Models;
 using Supabase;
+using Supabase.Postgrest.Responses;
+using System.Linq;
 using System.Security.Claims;
 
 namespace simple_rank_backend.Application.Services
@@ -217,52 +219,104 @@ namespace simple_rank_backend.Application.Services
             {
                 return Result.Failure(Error.NullValue, "Unable to determine owner Id");
             }
-
-            var checkRankOwnerResult = await _supabase.From<TableModels.Ranking>()
+            rq.ItemIdToRank = rq.ItemIdToRank.OrderBy(p => p.Value).ToDictionary();
+            var updateItemPlacement = await _supabase.From<TableModels.Ranking>()
                 .Where(r => r.RankingId == rq.RankingId)
                 .Where(r => r.Owner == ownerId)
-                .Get();
+                .Set(r => r.ItemPlacement, rq.ItemIdToRank)
+                .Update();
 
-            if (!checkRankOwnerResult.ResponseMessage.IsSuccessStatusCode)
+            if (updateItemPlacement.ResponseMessage.IsSuccessStatusCode)
             {
-                return Result.HandleSupabase(checkRankOwnerResult.ResponseMessage, "unable to update item placement, invalid");
+                return Result.Success("successfully updated rank item placements");
+            }
+            else
+            {
+                return Result.HandleSupabase(updateItemPlacement.ResponseMessage, "unable to update item placement, invalid");
             }
 
-            if(checkRankOwnerResult.Models.Count != 1)
-            {
-                return Result.Failure(Error.ValidationFailed);
-            }
+            //if(checkRankOwnerResult.Models.Count != 1)
+            //{
+            //    return Result.Failure(Error.ValidationFailed);
+            //}
 
-            List<TableModels.RankingItems> itemsToUpdate = rq.ItemIdToRank
-                .Select(pair => new TableModels.RankingItems(pair.Key, rq.RankingId, string.Empty, string.Empty, (uint)pair.Value))
-                .ToList();
 
-            var updateResult = await _supabase.From<TableModels.RankingItems>()
-                .Upsert(itemsToUpdate);
+            //List<Task<ModeledResponse<TableModels.RankingItems>>> updates = new List<Task<ModeledResponse<TableModels.RankingItems>>>();
+            //foreach(var pair in rq.ItemIdToRank)
+            //{
+            //   var updateTask = _supabase.From<TableModels.RankingItems>()
+            //    .Where(r => r.ItemId == pair.Key)
+            //    .Set(r => r.Rank, (uint)pair.Value)
+            //    .Update();
 
-            if (!updateResult.ResponseMessage.IsSuccessStatusCode)
-            {
-                return Result.HandleSupabase(updateResult.ResponseMessage);
-            }
+            //    updates.Add(updateTask);
 
-            try
-            {
-                List<string> keys = [.. rq.ItemIdToRank.Keys];
-                await _supabase.From<TableModels.RankingItems>()
-                .Where(item => item.RankingId == rq.RankingId)
-                .Filter(item => item.ItemId, 
-                    Supabase.Postgrest.Constants.Operator.In, 
-                    keys)
-                .Where(item => item.Name == string.Empty)
-                .Where(item => item.Description == string.Empty)
-                .Delete();
-            }
-            catch(Exception ex)
-            {
-                return Result.Failure(Error.Custom("500", ex.Message));
-            }
+            //}
 
-            return Result.Success("successfully updated rank item placements");
+            //ModeledResponse<TableModels.RankingItems>[] completedUpdates = await Task.WhenAll(updates);
+
+            //foreach(var result in completedUpdates)
+            //{
+            //    if(!result.ResponseMessage.IsSuccessStatusCode)
+            //    {
+            //        string errorDetails = await result.ResponseMessage.Content.ReadAsStringAsync();
+            //        throw new Exception(errorDetails);
+            //    }
+            //}
+
+            //return Result.Success("successfully updated rank item placements");
+
+            //Dictionary<string, short> rank_updates = new Dictionary<string, short>();
+            //foreach(var pair in rq.ItemIdToRank)
+            //{
+            //    rank_updates.Add(pair.Key, (short)pair.Value);
+            //}
+            ////public.update_ranking_items_batch()
+            //var updateResult = await _supabase.Rpc("update_ranking_items_batch", new Dictionary<string, object>
+            //{
+            //    { "rank_updates", rank_updates }
+            //});
+
+            //if (updateResult.ResponseMessage.IsSuccessStatusCode)
+            //{
+            //    return Result.Success("successfully updated rank item placements");
+            //}
+            //else
+            //{
+            //    return Result.HandleSupabase(updateResult.ResponseMessage, "unable to update item placement, invalid");
+            //}
+
+
+            //List<TableModels.RankingItems> itemsToUpdate = rq.ItemIdToRank
+            //    .Select(pair => new TableModels.RankingItems(pair.Key, rq.RankingId, string.Empty, string.Empty, (uint)pair.Value))
+            //    .ToList();
+
+            //var upsertOptions = new Supabase.Postgrest.QueryOptions();
+            //upsertOptions.OnConflict = "id";
+            //var updateResult = await _supabase.From<TableModels.RankingItems>()
+            //    .Upsert(itemsToUpdate, upsertOptions);
+
+            //if (!updateResult.ResponseMessage.IsSuccessStatusCode)
+            //{
+            //    return Result.HandleSupabase(updateResult.ResponseMessage);
+            //}
+
+            //try
+            //{
+            //    List<string> keys = [.. rq.ItemIdToRank.Keys];
+            //    await _supabase.From<TableModels.RankingItems>()
+            //    .Where(item => item.RankingId == rq.RankingId)
+            //    .Filter(item => item.ItemId, 
+            //        Supabase.Postgrest.Constants.Operator.In, 
+            //        keys)
+            //    .Where(item => item.Name == string.Empty)
+            //    .Where(item => item.Description == string.Empty)
+            //    .Delete();
+            //}
+            //catch(Exception ex)
+            //{
+            //    return Result.Failure(Error.Custom("500", ex.Message));
+            //}
         }
 
         public Task<Result> DeleteRankingAsync(GetRankingByIdRequest rq)

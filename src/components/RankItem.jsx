@@ -9,7 +9,14 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditab
     const [rankName, setRankName] = useState("")
     const [rankDescription, setRankDescription] = useState("")
 
-    const rankItem = useRef({title: "", description: ""})
+    useEffect(() => {
+        if(data !== undefined && data !== null)
+        {
+            setRankName(data.title)
+            setRankDescription(data.description)
+        }
+    }, [])
+
 
     function handleRemoveOnClick(id)
     {
@@ -20,7 +27,6 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditab
     function handleSaveOnClick(id)
     {
         setEditMode(false)
-        rankItem.current
         onDataChange(id, rankName, rankDescription)
     }
 
@@ -31,7 +37,7 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditab
                     {...provided.dragHandleProps}
                     ref={provided.innerRef} 
                     className="flex flex-col w-full h-fit rounded-xl border-4 p-4">
-                    <div className="text-3xl font-semibold">Rank: {data.rank}</div>
+                    <div className="text-3xl font-semibold">rank: {data.rank}</div>
                 
                     {
                         editMode? 

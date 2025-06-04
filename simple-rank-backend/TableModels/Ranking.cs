@@ -38,6 +38,9 @@ namespace simple_rank_backend.TableModels
         [Column("is_shared")]
         public bool IsShared { get; set; } = false;
 
+        [Column("item_place")]
+        public Dictionary<string, int> ItemPlacement {  get; set; }
+
         public Ranking() { }
 
         public Ranking(CreateRankingRequest rq, string owner)
@@ -48,6 +51,16 @@ namespace simple_rank_backend.TableModels
             Description = rq.Description;
             ItemCount = (uint)rq.Items.Length;
             LastUpdated = DateTime.Now;
+            IsPublic = rq.IsPublic;
+            Dictionary<string, int> itemPlaceDictionary = new Dictionary<string, int>();
+            foreach(var item in rq.Items)
+            {
+                RankingItems rankItem = new RankingItems(item, RankingId);
+                itemPlaceDictionary.Add(rankItem.ItemId, (int)rankItem.Rank);
+                RankingItems.Add(rankItem);
+            }
+            ItemPlacement = itemPlaceDictionary;
+            ShareableId = new ShareableLink();
         }
     }
 }

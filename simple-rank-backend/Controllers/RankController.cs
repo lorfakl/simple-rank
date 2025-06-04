@@ -81,6 +81,7 @@ namespace simple_rank_backend.Controllers
 
 
         [HttpGet("{rankingId}")]
+        [Authorize]
         public async Task<IActionResult> GetRanking(string rankingId)
         {
             Result<Ranking> result = await _rankService.GetRankingAsync(new GetRankingByIdRequest { Id = rankingId });

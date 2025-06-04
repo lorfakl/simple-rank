@@ -41,7 +41,7 @@ namespace simple_rank_backend.TableModels
         public RankingItems(RankItemDto dto, string rankingId)
         {
             RankingId = rankingId;
-            ItemId = dto.Id;
+            ItemId = HashService.GenerateRobustHash($"{dto.Id}:{dto.Name}:{dto.Description}:{rankingId}");
             Name = dto.Name;
             Description = dto.Description;
             Rank = dto.Rank;
@@ -54,6 +54,17 @@ namespace simple_rank_backend.TableModels
             Name = item.Name;
             Description = item.Description;
             Rank = item.Rank;
+        }
+
+        public static List<RankingItems> CreateItems(string rankingId, List<RankItemDto> items)
+        {
+            List<RankingItems> createdItems = new List<RankingItems>();
+            foreach(var item in items)
+            {
+                createdItems.Add(new RankingItems(item, rankingId));
+            }
+            return createdItems;
+
         }
     }
 }

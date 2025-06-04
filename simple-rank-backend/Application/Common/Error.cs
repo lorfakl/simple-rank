@@ -1,4 +1,6 @@
-﻿namespace simple_rank_backend.Application.Common
+﻿using System.Net.NetworkInformation;
+
+namespace simple_rank_backend.Application.Common
 {
     public record Error(string Code, string Message)
     {
@@ -11,6 +13,7 @@
         public static readonly Error NotFound = new("Error.NotFound", "The requested resource was not found.");
         public static readonly Error ValidationFailed = new("Error.Validation", "One or more validation errors occurred.");
         public static readonly Error InvalidModelState = new("Request body is not valid", "One or more properties is null or otherwise invalid.");
+        public static readonly Error DuplicateRankingId = new("400", "Duplicate Ranking Id provided, this not allowed");
         public static Error Custom(string code, string message) => new(code, message);
 
         public static async Task<Error> SupabaseError(HttpResponseMessage response, string msg)

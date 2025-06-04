@@ -21,19 +21,56 @@ namespace simple_rank_backend.Application.Services
             _supabase = supabaseService;
         }
 
-        public async Task<Result> CreateRankingAsync(CreateRankingRequest rq, string ownerId)
+        public async Task<Result<CreateRankingResponse>> CreateRankingAsync(CreateRankingRequest rq, string ownerId)
         {
             string userId = ownerId;
             TableModels.Ranking newRanking = new TableModels.Ranking(rq, userId);
+
             var result = await _supabase.From<TableModels.Ranking>().Insert(newRanking);
 
             if (result?.ResponseMessage?.IsSuccessStatusCode == true)
             {
-                return Result.Success($"Successfully created new rank {rq.Title}");
+
+                if (rq.Items.Any())
+                {
+                    var rankItems = TableModels.RankingItems.CreateItems(result.Model.RankingId, rq.Items.ToList());
+                    var insertItemsResult = await _supabase.From<TableModels.RankingItems>().Insert(rankItems);
+
+                    if (insertItemsResult.ResponseMessage.IsSuccessStatusCode && insertItemsResult.Models.Any())
+                    {
+                        var itemPlacement = TableModels.Ranking.CreateItemPlacement(insertItemsResult.Models.OrderBy(i => i.Rank).ToList());
+
+                        var updateItemPlacementResult = await _supabase.From<TableModels.Ranking>()
+                                                        .Where(r => r.RankingId == result.Model.RankingId)
+                                                        .Where(r => r.Owner == ownerId)
+                                                        .Set(r => r.ItemPlacement, itemPlacement)
+                                                        .Update();
+
+                        if(updateItemPlacementResult.ResponseMessage.IsSuccessStatusCode)
+                        {
+                            var successResponse = new CreateRankingResponse(result.Model.RankingId, "Successfully created ranking");
+                            return Result<CreateRankingResponse>.Success(successResponse);
+                        }
+                        else
+                        {
+                            var errorResponse = new CreateRankingResponse("", "Data integritial error detected, aborting");
+                            return Result<CreateRankingResponse>.HandleSupabase(insertItemsResult.ResponseMessage, errorResponse);
+                        }
+                    }
+                    else
+                    {
+                        var errorResponse = new CreateRankingResponse("", "Data integritial error detected, aborting");
+                        return Result<CreateRankingResponse>.HandleSupabase(insertItemsResult.ResponseMessage, errorResponse);
+                    }
+
+                }
+
+                var response = new CreateRankingResponse(result.Model.RankingId, "Successfully created ranking");
+                return Result<CreateRankingResponse>.Success(response);
             }
             else
             {
-                return Result.Failure(new Error(
+                return Result<CreateRankingResponse>.Failure(new Error(
                     Code: result?.ResponseMessage?.StatusCode.ToString() ?? "Unknown",
                     Message: result?.ResponseMessage?.ToString() ?? "No response message"));
             }
@@ -44,6 +81,7 @@ namespace simple_rank_backend.Application.Services
             var queryResult = await _supabase.From<TableModels.Ranking>()
                 .Where(r => r.RankingId == rq.Id)
                 .Get();
+
             if(queryResult.Model != default(TableModels.Ranking) && queryResult.Model != null)
             {
                 var ranking = new Ranking(queryResult.Model);

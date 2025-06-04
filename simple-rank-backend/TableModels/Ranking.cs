@@ -52,15 +52,17 @@ namespace simple_rank_backend.TableModels
             ItemCount = (uint)rq.Items.Length;
             LastUpdated = DateTime.Now;
             IsPublic = rq.IsPublic;
-            Dictionary<string, int> itemPlaceDictionary = new Dictionary<string, int>();
-            foreach(var item in rq.Items)
-            {
-                RankingItems rankItem = new RankingItems(item, RankingId);
-                itemPlaceDictionary.Add(rankItem.ItemId, (int)rankItem.Rank);
-                RankingItems.Add(rankItem);
-            }
-            ItemPlacement = itemPlaceDictionary;
             ShareableId = new ShareableLink();
+        }
+
+        public static Dictionary<string, int> CreateItemPlacement(List<RankingItems> items)
+        {
+            Dictionary<string, int> itemPlaceDictionary = new Dictionary<string, int>();
+            foreach (var item in items)
+            {
+                itemPlaceDictionary.Add(item.ItemId, (int)item.Rank);
+            }
+            return itemPlaceDictionary;
         }
     }
 }

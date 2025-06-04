@@ -64,7 +64,14 @@ function CreateRank(){
             const response = await rankingService.createRanking({
                 title: protoRanking.title,
                 description: protoRanking.description,
-                items: protoRanks
+                items: protoRanks.map(item => {
+                    return {
+                        id: item.id,
+                        rank: item.rank,
+                        name: item.title,
+                        description: item.description,
+                    }
+                }),
             });
 
             setLoading(false)
@@ -78,7 +85,7 @@ function CreateRank(){
                 //navigate to the new ranking page
                 if(response.data.id !== undefined)
                 {
-                    //navigate(`/Rank/${response.data.id}`)
+                    navigate(`/ranking/${response.data.id}`)
                 }
             }
         }

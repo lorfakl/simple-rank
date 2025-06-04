@@ -7,7 +7,7 @@ namespace simple_rank_backend.Application.Services.Interfaces
 {
     public interface IRankService
     {
-        Task<Result> CreateRankingAsync(CreateRankingRequest rq, string ownerId);
+        Task<Result<CreateRankingResponse>> CreateRankingAsync(CreateRankingRequest rq, string ownerId);
         Task<Result> UpdateRankingAsync(UpdateRankingRequest rq);
         Task<Result> UpdateBasicRankingInfoAsync(UpdateRankingRequest rq);
         Task<Result> DeleteRankingAsync(GetRankingByIdRequest rq);

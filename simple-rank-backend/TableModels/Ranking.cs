@@ -26,6 +26,9 @@ namespace simple_rank_backend.TableModels
         [Column("last_updated")]
         public DateTime LastUpdated { get; set; } = DateTime.Now;
 
+        [Column("created_date")]
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+
         [Reference(typeof(RankingItems), useInnerJoin: false, columnName: "ranking_id")]
         public List<RankingItems> RankingItems { get; set; } = [];
 
@@ -37,6 +40,9 @@ namespace simple_rank_backend.TableModels
 
         [Column("is_shared")]
         public bool IsShared { get; set; } = false;
+
+        [Column("is_pinned")]
+        public bool IsPinned { get; set; } = false;
 
         [Column("item_place")]
         public Dictionary<string, int> ItemPlacement {  get; set; }

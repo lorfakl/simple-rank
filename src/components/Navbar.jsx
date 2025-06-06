@@ -27,6 +27,8 @@ function Navbar()
             console.log("User is not authenticated")
             console.log(session)
             setIsAuthenticated(false)
+            localStorage.removeItem('avatarUrl')
+            localStorage.removeItem('fullName')
         }
         else
         {

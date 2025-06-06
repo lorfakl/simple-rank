@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import RankItem from '../components/RankItem';
 import ConfirmationModel from '../components/ConfirmationModal';
 import ToggleTextInput from '../components/ToggleTextInput';
+import { AddRankItemModal } from '../components/AddRankItemModal';
 import { ChevronDown, Plus, RefreshCw , Earth, Lock } from 'lucide-react';
 import { useState, useEffect, useRef, use } from "react"
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
@@ -11,12 +12,13 @@ import { useSupabase } from '../contexts/SupabaseContext';
 import { rankingService, rankItemService } from '../api/services';
 import { useUser } from '../contexts/UserContext';
 import { useNotifications } from '../contexts/NotificationContext';
+import { RankingDetails } from '../components/RankingDetails';
 
 function ViewRanking(){
 
     const [itemCount, setItemCount] = useState(0)
     const [rankItems, setRankItems] = useState([])
-    const [rankingInfo, setRankingInfo] = useState({title: "", description: "", createdBy: "", lastUpdate: "", isPublic: false, isShared: false})
+    const [rankingInfo, setRankingInfo] = useState({title: "", description: "", createdBy: "", creationDate: "", lastUpdate: "", isPublic: false, isShared: false})
     const [loading, setLoading] = useState(false)
     const [updating, setUpdating] = useState(false)
     const [linkLoading, setLinkLoading] = useState(false)
@@ -51,27 +53,20 @@ function ViewRanking(){
 
         if(itemCount > 0 && previousItemCount.current !== undefined && itemCount > previousItemCount.current)
         {
-            let protoRank = getNewProtoRank()
-            setRankItems([...rankItems, protoRank])
-            createdRanks.current[protoRank.itemId] = protoRank
-            console.log(itemCount, "<- item count", createdRanks.current)
-            rankItemTitleErrors.current[protoRank.itemId] = false
+            // let protoRank = getNewProtoRank()
+            // setRankItems([...rankItems, protoRank])
+            // createdRanks.current[protoRank.itemId] = protoRank
+            // console.log(itemCount, "<- item count", createdRanks.current)
+            // rankItemTitleErrors.current[protoRank.itemId] = false
         }
         
         previousItemCount.current = itemCount
     }, [itemCount])
 
-    // useEffect(() => {
-    //     const updatePlacement = async () => {
-    //         if(itemCount == previousItemCount.current)
-    //         {
-    //             console.log("Updating rank item placement")
-    //             await updateRankingItemPlace()
-    //         }
-    //     }
 
-    // }, [rankItems])
-
+    useEffect(()=>{
+        console.log(rankItems)
+    },[rankItems])
 
     //*Supabase Operations*//
     async function GetRank(rankingId)
@@ -98,8 +93,9 @@ function ViewRanking(){
                 setRankingInfo({
                     title: response.data.title, 
                     description: response.data.description, 
-                    createdBy: response.data.owner,
+                    createdBy: response.data.createdBy.displayName,
                     lastUpdate: response.data.lastUpdated,
+                    creationDate: response.data.createdDate,
                     isPublic: response.data.isPublic,
                     isShared: response.data.isShared
                 })
@@ -202,17 +198,6 @@ function ViewRanking(){
 
 
     //*JS Functions*//
-    function getNewProtoRank()
-    {
-        let rankItem = {
-            itemId: uuidv4(), 
-            rank: itemCount, 
-            title: "", 
-            description: "",
-            isEditable: true
-        }
-        return rankItem 
-    }
 
     function blurHtmlElement(elementId){
         const element = document.getElementById(elementId)
@@ -257,7 +242,6 @@ function ViewRanking(){
             setRankItems([...reorderRanks])
         }
     }
-
 
     function handleVisibilityOnClick()
     {
@@ -327,6 +311,23 @@ function ViewRanking(){
         }
     }
 
+    function addNewRankItem(name, desc, rank, imageurl)
+    {
+        let rankItem = {
+            itemId: uuidv4(), 
+            rank: rank, 
+            title: name, 
+            description: desc
+        }
+        
+        createdRanks.current[rankItem.id] = rankItem
+        console.log(itemCount, "<- item count", createdRanks.current)
+
+        setRankItems([...rankItems, rankItem])
+        setItemCount(itemCount + 1)
+        previousItemCount.current = itemCount
+    }
+
     async function handleRankRemoval(idToRemove)
     {
         let rankObjectToRemove = createdRanks.current[idToRemove]
@@ -339,7 +340,7 @@ function ViewRanking(){
         console.log("Does this need to be a backend call?: ", rankObjectToRemove)
         // Update the rank items in the database
 
-        if(rankObjectToRemove.title)
+        if(rankObjectToRemove.title.length > 0)
         {
             const rq = {rankingId: id, rankItemId: idToRemove}
             const response = await rankItemService.deleteRankItem(rq)
@@ -358,18 +359,16 @@ function ViewRanking(){
                 {
                     delete createdRanks.current[idToRemove]
                 }
-
-                setRankItems(rankItems.filter(item => item.itemId !== idToRemove)
-                .map((item, index) => {
-                    item.rank = index + 1
-                    return item
-                }))
-                setItemCount(itemCount - 1)
                 //showNotification("Successfully removed rank item", "success", 750)
             }
         }
 
-        
+        setRankItems(rankItems.filter(item => item.itemId !== idToRemove)
+                    .map((item, index) => {
+                        item.rank = index + 1
+                        return item}))
+
+        setItemCount(itemCount - 1)
     }
 
     function handleDescriptionTextChange(desc){
@@ -435,6 +434,14 @@ function ViewRanking(){
         updateBasicRankingInfo(desc, rankingInfo.title, rankingInfo.isPublic)
     }
 
+    function handleAddRankItemModal(){
+        let addRankModal = document.getElementById("addRankModal")
+        if(addRankModal)
+        {
+            addRankModal.showModal()
+        }
+    }
+
 
     return(
         <>
@@ -454,33 +461,9 @@ function ViewRanking(){
                             handleTextInputChange={handleDescriptionTextChange}
                             showRequired={false}/>
 
-                    <div className="flex flex-row items-center justify-between gap-x-16">
-                        <div className="flex flex-row gap-x-4">
-                            <p className="text-xl font-normal">created by:</p>
-                            <p className="text-xl font-semibold">{rankingInfo.createdBy}</p>
-                        </div>
-
-                        <div className="flex flex-row" >
-                            
-                            <button className="btn btn-secondary rounded-r-lg" onClick={handleVisibilityOnClick}>
-                                <p className="text-xl font-semibold">{rankingInfo.isPublic ? "public": "private"}</p>
-                                {rankingInfo.isPublic ? <><Earth size={32} strokeWidth={1.75} /></>: <><Lock size={32} strokeWidth={1.75} /></> }
-                            </button>
-                            
-                            <div className="dropdown dropdown-end">
-                                <div tabIndex={0} role="button" className="btn btn-secondary btn-soft rounded-l-lg" >
-                                    {linkLoading? 
-                                        <span className="loading loading-spinner loading-xs"></span>
-                                    :    
-                                        <ChevronDown />
-                                    }
-                                </div>
-                                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm" id="shareDropdown">
-                                    <li onClick={()=>{handleShareableLinkCreation()}}><a>{rankingInfo.isShared? "Copy Shareable Link" : "Create Shareable Link"}</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+                    <RankingDetails createdBy={rankingInfo.createdBy} createdDate={rankingInfo.creationDate} lastupateDate={rankingInfo.lastUpdate} 
+                        itemCount={rankItems.length} isPublic={rankingInfo.isPublic} isShared={rankingInfo.isShared} rankingId={id} 
+                        onVisibilityClick={handleVisibilityOnClick} onCreateShareableLink={handleShareableLinkCreation} reactionIsInteractable={false}/>
                 </div>
             </div>
             
@@ -495,7 +478,7 @@ function ViewRanking(){
             :
                 <>
                     <div className="flex flex-col gap-y-8 items-center w-full">
-                        <button className="outline-dashed" onClick={() => {setItemCount( itemCount + 1)}}>
+                        <button className="outline-dashed" onClick={handleAddRankItemModal}>
                             <div className="flex flex-row items-center">
                                 <Plus size={30}/>
                                 <p className="font-thin lg:text-2xl text-3xl">add rank item</p>
@@ -523,7 +506,7 @@ function ViewRanking(){
             }
             <ConfirmationModel dialogId={"changeVisibilityConfirmation"} modalTitle={`Make Ranking ${!rankingInfo.isPublic? "Public" : "Private"}`} modalMessage={`Are you sure you want to make this ranking ${!rankingInfo.isPublic? "Public" : "Private"}`} onConfirm={() => {saveVisibility(!rankingInfo.isPublic)}} onReject={() => {}}/>
             <ConfirmationModel dialogId={"displayShareableId"} modalTitle={`Shareable Link Available`} modalMessage={`Copy this link to share this rank with others: ${shareableLink.current}`} onConfirm={() => {}} onReject={() => {}}/>
-
+            <AddRankItemModal  dialogId={"addRankModal"} onClose={()=>{console.log("Modal closed")}} onSave={addNewRankItem} totalRanks={itemCount} />
         </>
     )
 }

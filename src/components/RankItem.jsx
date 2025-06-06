@@ -1,7 +1,7 @@
 import { X, SquarePen, Trash2, Save } from "lucide-react"
 import { Draggable } from "@hello-pangea/dnd"
 import LimitedTextInput from "./LimitedTextInput"
-import { useState, useRef, useEffect, use } from 'react'
+import { useState, useRef, useEffect } from 'react'
 function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditable = false}){
 
     const [editMode, setEditMode] = useState(isEditable)

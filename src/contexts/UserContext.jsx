@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { useSupabase } from './SupabaseContext';
 import { useNotifications } from './NotificationContext';
+import { authService } from '../api/services';
+
 // Example: Import other contexts you want to use
 // import { useTheme } from './ThemeContext';
 // import { useNotification } from './NotificationContext';
@@ -137,11 +139,13 @@ export function UserProvider({ children }) {
   useEffect(() => {
     // Check if user is authenticated
     if (session) {
+
       setUser(session.user);
       setAuthenticated(true);
       localStorage.setItem('auth_token', session.access_token); // Store token
       localStorage.setItem('user', JSON.stringify(session.user)); // Store user data
-      
+      setUserMetadata(session.user)
+
     } else {
       setUser({});
       setAuthenticated(false);
@@ -150,25 +154,6 @@ export function UserProvider({ children }) {
     }
   }, [session]);
 
-  async function updateUserMetadata(metadata) {
-    const { data, error } = await supabase.auth.updateUser({
-      data: metadata
-    })
-
-    if(error)
-    {
-        console.error("Error updating user metadata: ", error)
-        showNotification(`${error}`, "error", 10000)
-        return {error: error, user: undefined}
-    }
-    else
-    {
-        console.log("User metadata updated successfully: ", data)
-        setUser(data.user)
-        showNotification("User metadata updated successfully", "success", 3000)
-        return {error: undefined, user: data.user} 
-    }
-  }
 
 
   // Email sign in
@@ -242,7 +227,7 @@ export function UserProvider({ children }) {
     }
   }
 
-  // Generic OAuth sign in
+  // Discord OAuth sign in
   async function signInWithDiscord() {
     
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -264,6 +249,31 @@ export function UserProvider({ children }) {
         return {error: undefined, user: data.session.user} 
     }
   }
+
+  async function setUserMetadata(user){
+    let request = {
+      id: user.id,
+      name: user.user_metadata.full_name,
+      avatarUrl: user.user_metadata.avatar_url,
+    }
+
+    try{
+      let response = await authService.setMetadata(request)
+      if(response.error)
+      {
+
+      }
+      else
+      {
+
+      }
+    }
+    catch(error)
+    {
+
+    }
+  }
+
 
   // Sign out
   async function signOut() {

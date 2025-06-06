@@ -1,8 +1,9 @@
 import { useState, useEffect, use } from "react"
 
-function LimitedTextInput({inputLabel, characterLimit, placeholderText, handleInputChange, textSize, textValue = "", showRequired = false, useWidthFull = false})
+function LimitedTextInput({inputLabel, characterLimit, placeholderText, handleInputChange, textSize, textValue = "", 
+    showRequired = false, useWidthFull = false, syncToTextValue = false})
 {
-    const [inputText, setInputText] = useState("")
+    const [inputText, setInputText] = useState(textValue)
 
     useEffect(() => {
         if(textValue !== "")       
@@ -13,9 +14,11 @@ function LimitedTextInput({inputLabel, characterLimit, placeholderText, handleIn
     
     useEffect(() => {
 
-        //console.log("Proto rank order ", protoRanks)
-        
-    }, [inputText])
+        if(syncToTextValue)
+        {
+            setInputText(textValue)
+        }
+    }, [textValue])
 
     function handleTextInput(inputValue)
     {
@@ -28,7 +31,6 @@ function LimitedTextInput({inputLabel, characterLimit, placeholderText, handleIn
 
     return(
         <>
-        {console.log(inputText)}
             <div>
                 <label className={`floating-label ${textSize}`}>
                     {

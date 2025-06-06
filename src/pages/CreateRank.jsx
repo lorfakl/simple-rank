@@ -9,6 +9,7 @@ import { Droppable, DragDropContext } from '@hello-pangea/dnd';
 import { useSupabase } from '../contexts/SupabaseContext';
 import { useUser } from '../contexts/UserContext';
 import { rankingService } from '../api/services';
+import { AddRankItemModal } from '../components/AddRankItemModal';
 
 const RANKING_NAMESPACE = '4e4a4cd7-8a00-42d7-a202-855d413d5e6a'
 const RANK_ITEM_NAMESPACE = '312f0e69-5835-4b88-94c1-03d62ecb2f63'
@@ -32,16 +33,16 @@ function CreateRank(){
 
     useEffect(() => {
 
-        if(itemCount > 0 && previousItemCount.current !== undefined && itemCount > previousItemCount.current)
-        {
-            let protoRank = getNewProtoRank()
-            setProtoRanks([...protoRanks, protoRank])
-            createdRanks.current[protoRank.id] = protoRank
-            console.log(itemCount, "<- item count", createdRanks.current)
-            rankItemTitleErrors.current[protoRank.id] = false
-        }
+        // if(itemCount > 0 && previousItemCount.current !== undefined && itemCount > previousItemCount.current)
+        // {
+        //     let protoRank = getNewProtoRank()
+        //     setProtoRanks([...protoRanks, protoRank])
+        //     createdRanks.current[protoRank.id] = protoRank
+        //     console.log(itemCount, "<- item count", createdRanks.current)
+        //     rankItemTitleErrors.current[protoRank.id] = false
+        // }
         
-        previousItemCount.current = itemCount
+        //previousItemCount.current = itemCount
     }, [itemCount])
 
     useEffect(() => {
@@ -246,6 +247,31 @@ function CreateRank(){
         document.getElementById("discardConfirmation").showModal()
     }
 
+    function addNewRankItem(name, desc, rank, imageurl)
+    {
+        let rankItem = {
+            id: uuidv4(), 
+            rank: rank, 
+            title: name, 
+            description: desc
+        }
+        
+        createdRanks.current[rankItem.id] = rankItem
+        console.log(itemCount, "<- item count", createdRanks.current)
+        
+        setProtoRanks([...protoRanks, rankItem])
+        setItemCount(itemCount + 1)
+        previousItemCount.current = itemCount
+    }
+
+    function handleAddRankItemModal(){
+        let addRankModal = document.getElementById("addRankModal")
+        if(addRankModal)
+        {
+            addRankModal.showModal()
+        }
+    }
+
     return(
         <>
             <div className="mt-18 mb-8">
@@ -275,7 +301,7 @@ function CreateRank(){
                 <LimitedTextArea inputLabel={"ranking description"} characterLimit={75} placeholderText={"description"} handleInputChange={handleRankingDescription} 
                     initialValue={protoRanking.description}/>
 
-                <button className="outline-dashed" onClick={() => {setItemCount( itemCount + 1)}}>
+                <button className="outline-dashed" onClick={() => {handleAddRankItemModal(true)}}>
                     <div className="flex flex-row items-center">
                         <Plus size={30}/>
                         <p className="font-thin lg:text-2xl text-3xl">add rank item</p>
@@ -302,7 +328,7 @@ function CreateRank(){
                 </DragDropContext>
                 </div>
                 <ConfirmationModel dialogId={"discardConfirmation"} modalTitle={"Discard Ranking?"} modalMessage={"Are you sure you want to discard this ranking?"} onConfirm={() => {navigate("/Home")}} onReject={() => {}}/>
-
+                <AddRankItemModal  dialogId={"addRankModal"} onClose={()=>{console.log("Modal closed")}} onSave={addNewRankItem} totalRanks={itemCount} />
             </> 
             }
         </>

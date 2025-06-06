@@ -13,10 +13,12 @@ namespace simple_rank_backend.Models
         public string Description { get; private set; } = string.Empty;
         public List<RankItem> Items { get; private set; } = new List<RankItem>();
         public uint ItemCount { get; private set; } = 0;
-        public DateTime LastUpdated { get; private set; } = DateTime.Now;
-        public DateTime CreatedDate { get; private set; } = DateTime.Now;
+        public DateTime LastUpdated { get; private set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
         public bool IsPublic { get; private set; } = false;
         public bool IsShared { get; private set; } = false;
+        public bool IsPinned { get; private set; } = false;
+        public UserMetadata CreatedBy { get; set; } = default;
 
         public string Id
         {
@@ -35,8 +37,8 @@ namespace simple_rank_backend.Models
             IsPublic = rq.IsPublic;
             Items = rq.Items.Select(item => new RankItem(item.Name, RankingId, owner, item.Description, item.Rank)).ToList();
             ItemCount = (uint)Items.Count;
-            LastUpdated = DateTime.Now;
-            CreatedDate = DateTime.Now;
+            LastUpdated = DateTime.UtcNow;
+            CreatedDate = DateTime.UtcNow;
         }
 
         public Ranking(string owner, string name, string description)
@@ -46,8 +48,8 @@ namespace simple_rank_backend.Models
             Title = name;
             Description = description;
             ItemCount = 0;
-            LastUpdated = DateTime.Now;
-            CreatedDate = DateTime.Now;
+            LastUpdated = DateTime.UtcNow;
+            CreatedDate = DateTime.UtcNow;
         }
 
         public Ranking(string owner, string name, string description, List<RankItem> items)
@@ -58,8 +60,8 @@ namespace simple_rank_backend.Models
             Description = description;
             ItemCount = (uint)items.Count;
             Items = items;
-            LastUpdated = DateTime.Now;
-            CreatedDate = DateTime.Now;
+            LastUpdated = DateTime.UtcNow;
+            CreatedDate = DateTime.UtcNow;
         }
 
         public Ranking(TableModels.Ranking ranking)
@@ -69,9 +71,11 @@ namespace simple_rank_backend.Models
             Title = ranking.Name;
             Description = ranking.Description;
             ItemCount = ranking.ItemCount;
-            LastUpdated = ranking.LastUpdated.Date;
+            LastUpdated = ranking.LastUpdated;
+            CreatedDate = ranking.CreatedDate;
             IsPublic = ranking.IsPublic;
             IsShared = ranking.IsShared;
+            IsPinned = ranking.IsPinned;
             // Assuming we have a method to fetch items by RankingId
             if(ranking.RankingItems.Any())
             {
@@ -102,7 +106,7 @@ namespace simple_rank_backend.Models
             item.Rank = ItemCount + 1;
             Items.Add(item);
             ItemCount++;
-            LastUpdated = DateTime.Now;
+            LastUpdated = DateTime.UtcNow;
         }
 
         public void RemoveItem(string itemId)
@@ -112,7 +116,7 @@ namespace simple_rank_backend.Models
             {
                 Items.Remove(item);
                 ItemCount--;
-                LastUpdated = DateTime.Now;
+                LastUpdated = DateTime.UtcNow;
             }
             else
             {
@@ -129,7 +133,7 @@ namespace simple_rank_backend.Models
                     throw new ArgumentOutOfRangeException("Rank must be between 1 and the total number of items.");
 
                 item.Rank = newRank;
-                LastUpdated = DateTime.Now;
+                LastUpdated = DateTime.UtcNow;
             }
             else
             {

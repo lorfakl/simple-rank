@@ -9,9 +9,7 @@ export const userService = {
 };
 
 export const authService = {
-  login: (credentials) => apiClient.post('/api/auth/login', credentials),
-  logout: () => apiClient.post('/api/auth/logout'),
-  register: (userData) => apiClient.post('/api/auth/register', userData),
+  setMetadata: (request) => apiClient.post("/api/user/SetUserMetadata", request)
 };
 
 
@@ -23,8 +21,8 @@ export const rankingService = {
   getRankingById: (id) => apiClient.get(`/api/Rank/GetRanking/${id}`),
   getAllRankings: () => apiClient.get('/api/Rank/GetPublicRankings'),
   searchPublicRankings: (searchOptions) => apiClient.post(`/api/Rank/GetRankingByName`, searchOptions),
-  
   getShareableLink: (rankingId) => apiClient.post(`/api/Rank/GetShareableLink/${rankingId}`),
+  getRankingMetadata: (rankingId) => apiClient.get(`/api/Rank/GetRankingMetadata/${rankingId}`)
 };
 
 export const rankItemService = {
@@ -38,6 +36,12 @@ export const shareRankService = {
   getShareableLink: (rankingId) => apiClient.post(`/api/Rank/GetShareableLink/${rankingId}`),
   getSharedRanking: (sharedId) => apiClient.get(`/api/Rank/GetSharedRanking/${sharedId}`),
   cloneSharedRanking: (sharedId) => apiClient.post(`/api/Rank/CloneSharedRanking/${sharedId}`),
+}
+
+export const statisticService = {
+  recordView: (request) => apiClient.post(`/api/Statistic/RecordView/${request.rankingId}`, request),
+  recordReaction: (request) => apiClient.post(`/api/Statistic/React/${request.rankingId}`, request),
+  getRankStatistics: (rankingId) => apiClient.get(`/api/Statistic/Get/${rankingId}`)
 }
 
 export const exploreService = {

@@ -104,6 +104,26 @@ namespace simple_rank_backend.Controllers
             }
         }
 
+        [HttpPost("{rankingId}")]
+        public async Task<IActionResult> GetSharedRanking(string rankingId)
+        {
+            if (ModelState.IsValid)
+            {
+                Result<ShareableLinkResponse> result = await _rankService.GetShareableLinkAsync(rankingId);
+                return this.HandleResult<ShareableLinkResponse>(result);
+            }
+            else
+            {
+                return this.HandleError(Error.InvalidModelState);
+            }
+        }
+
+        //[HttpGet("{rankingId}")]
+        //public async Task<IActionResult> GetRankingMetadata(string rankingId)
+        //{
+            
+        //}
+
         [HttpPut("{rankingId}")]
         [Authorize]
         public async Task<IActionResult> EditRanking(string rankingId, [FromBody] UpdateRankingRequest rq)

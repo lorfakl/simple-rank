@@ -14,6 +14,7 @@ namespace simple_rank_backend.Application.Services.Interfaces
         Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq);
         Task<Result<List<Ranking>>> GetUserRankingsAsync(string userId);
         Task<Result<ShareableLinkResponse>> GetShareableLinkAsync(string rankingId);
+        Task<Result<SharedRankResponse>> GetSharedRankAsync(string rankingId);
         //Task<Result<List<Ranking>>> GetPublicRankingsAsync(GetRankingsRequest rq);
         Task<Result> DeleteRankItem(DeleteRankItemRequest rq);
         Task<Result> UpdateRankItemPlacement(UpdateRankItemPlacementRequest rq);

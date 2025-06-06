@@ -78,17 +78,20 @@ function Home(){
                 <DragDropContext onDragEnd={handleDragEnd}>
                     <div className="my-12 flex flex-col gap-y-4">
                         <div className="px-8 flex flex-col w-full h-full justify-center gap-4 lg:grid lg:grid-cols-4">
-                            {
-                                currentRankings.map((item, index)=>{
-                                return(<Rankings key={index} id={item.id} title={item.title} description={item.description} rankItems={item.items} creator={"You"} lastUpdate={item.lastUpdated}/>)
-                            })}
-
+                            
                             <button className="outline-dashed" onClick={() => {navigate("/NewRank")}}>
                                 <div className="flex flex-col items-center">
                                     <Plus size={50}/>
                                     <p className="font-thin lg:text-5xl text-3xl">create a new ranking</p>
                                 </div>
                             </button>
+
+                            {
+                                currentRankings.map((item, index)=>{
+                                return(<Rankings key={index} id={item.id} title={item.title} description={item.description} rankItems={item.items} creator={"You"} lastUpdate={item.lastUpdated}/>)
+                            })}
+
+                            
                         </div>
                     </div>
                 </DragDropContext>

@@ -22,6 +22,11 @@ namespace simple_rank_backend.Application.Common
             return Custom(response.StatusCode.ToString(), $"{msg} : {responseContent}");
         }
 
+        public static Error Exception(string code, Exception ex)
+        {
+            return Custom(code, ex.Message);
+        }
+
         public Error(string code, string message, int httpStatusCode, Exception? sourceException = null, Exception? innerException = null)
             : this(code, message)
         {

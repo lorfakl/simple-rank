@@ -9,8 +9,19 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Newtonsoft.Json;
 using simple_rank_backend.Application.Services.Interfaces;
+using Microsoft.Extensions.Configuration;
+using simple_rank_backend.Application.Configuration;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .WriteTo.Console()
+    .WriteTo.File("logs/app-.txt", rollingInterval: RollingInterval.Day));
+
 
 // Add services to the container.
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -84,17 +95,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //        policy.RequireClaim(ClaimTypes.Role, "User", "Admin"));
 //});
 
-builder.Services.AddMemoryCache();
-builder.Services.AddSingleton<SupabaseService>(sp =>
-{
-    var options = new SupabaseOptions
-    {
-        AutoRefreshToken = true,
-        AutoConnectRealtime = true
-    };
+builder.Services.AddMemoryCache( options => { options.SizeLimit = 1000; });
+builder.Services.Configure<UserCacheOptions>(builder.Configuration.GetSection("UserCache"));
 
-    return new SupabaseService(supabaseUrl, supabaseKey, options);
-});
 
 builder.Services.AddScoped<Client>(_ => 
     new Client(supabaseUrl, supabaseKey, 
@@ -109,6 +112,9 @@ builder.Services.AddScoped<Client>(_ =>
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IRankService, RankingService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IStatisticService, StatisticService>();
+builder.Services.AddSingleton<IUserCacheService, UserCacheService>();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -193,10 +199,18 @@ else
 }
 
 
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].FirstOrDefault());
+    };
+});
 
 
-
-    app.UseRateLimiter();
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

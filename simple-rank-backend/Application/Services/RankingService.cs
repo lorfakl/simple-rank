@@ -13,12 +13,14 @@ namespace simple_rank_backend.Application.Services
     public class RankingService : IRankService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserCacheService _userCache;
         private readonly Client _supabase;
 
-        public RankingService(IHttpContextAccessor httpContextAccessor, Client supabaseService)
+        public RankingService(IHttpContextAccessor httpContextAccessor, IUserCacheService userCache, Client supabaseService)
         {
             _httpContextAccessor = httpContextAccessor;
             _supabase = supabaseService;
+            _userCache = userCache;
         }
 
         public async Task<Result<CreateRankingResponse>> CreateRankingAsync(CreateRankingRequest rq, string ownerId)
@@ -82,9 +84,14 @@ namespace simple_rank_backend.Application.Services
                 .Where(r => r.RankingId == rq.Id)
                 .Get();
 
+
             if(queryResult.Model != default(TableModels.Ranking) && queryResult.Model != null)
             {
                 var ranking = new Ranking(queryResult.Model);
+                UserMetadata ownerInfo = await _userCache.GetUserAsync(ranking.Owner);
+
+                ranking.CreatedBy = ownerInfo;
+
                 return Result<Ranking>.Success(ranking, $"Successfully grabbed ranking: {rq.Id}");
             }
             else
@@ -174,6 +181,11 @@ namespace simple_rank_backend.Application.Services
 
         }
 
+        public Task<Result<SharedRankResponse>> GetSharedRankAsync(string rankingId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<Result<List<Ranking>>> GetUserRankingsAsync(string userId)
         {
             var queryResult = await _supabase.From<TableModels.Ranking>()
@@ -181,6 +193,14 @@ namespace simple_rank_backend.Application.Services
                 .Get();
             
             var rankings = queryResult.Models.Select(r => new Ranking(r)).ToList();
+
+            foreach(Ranking r in rankings)
+            {
+                UserMetadata ownerInfo = await _userCache.GetUserAsync(r.Owner);
+                r.CreatedBy = ownerInfo;
+            }
+            
+
             return Result<List<Ranking>>.Success(rankings, $"Successfully pulled {rankings.Count} rankings for user");
         }
 
@@ -198,6 +218,7 @@ namespace simple_rank_backend.Application.Services
                 .Set(r => r.Description, rq.Description)
                 .Set(r => r.Name, rq.Title)
                 .Set(r => r.IsPublic, rq.IsPublic)
+                .Set( r=> r.LastUpdated, DateTime.UtcNow)
                 .Update();
 
             string msg = updateResult.ResponseMessage.IsSuccessStatusCode ? $"successfully updated {updateResult.Models.Count} rankings" : "failed to update basic ranking information";
@@ -240,6 +261,7 @@ namespace simple_rank_backend.Application.Services
                 .Where(r => r.RankingId == rq.Id)
                 .Where(r => r.Owner == ownerId)
                 .Set(r => r.ItemCount, (uint)rq.Items.Count)
+                .Set(r => r.LastUpdated, DateTime.UtcNow)
                 .Update();
 
             if(!updateItemCountResult.ResponseMessage.IsSuccessStatusCode)
@@ -262,6 +284,7 @@ namespace simple_rank_backend.Application.Services
                 .Where(r => r.RankingId == rq.RankingId)
                 .Where(r => r.Owner == ownerId)
                 .Set(r => r.ItemPlacement, rq.ItemIdToRank)
+                .Set(r => r.LastUpdated, DateTime.UtcNow)
                 .Update();
 
             if (updateItemPlacement.ResponseMessage.IsSuccessStatusCode)
@@ -272,89 +295,6 @@ namespace simple_rank_backend.Application.Services
             {
                 return Result.HandleSupabase(updateItemPlacement.ResponseMessage, "unable to update item placement, invalid");
             }
-
-            //if(checkRankOwnerResult.Models.Count != 1)
-            //{
-            //    return Result.Failure(Error.ValidationFailed);
-            //}
-
-
-            //List<Task<ModeledResponse<TableModels.RankingItems>>> updates = new List<Task<ModeledResponse<TableModels.RankingItems>>>();
-            //foreach(var pair in rq.ItemIdToRank)
-            //{
-            //   var updateTask = _supabase.From<TableModels.RankingItems>()
-            //    .Where(r => r.ItemId == pair.Key)
-            //    .Set(r => r.Rank, (uint)pair.Value)
-            //    .Update();
-
-            //    updates.Add(updateTask);
-
-            //}
-
-            //ModeledResponse<TableModels.RankingItems>[] completedUpdates = await Task.WhenAll(updates);
-
-            //foreach(var result in completedUpdates)
-            //{
-            //    if(!result.ResponseMessage.IsSuccessStatusCode)
-            //    {
-            //        string errorDetails = await result.ResponseMessage.Content.ReadAsStringAsync();
-            //        throw new Exception(errorDetails);
-            //    }
-            //}
-
-            //return Result.Success("successfully updated rank item placements");
-
-            //Dictionary<string, short> rank_updates = new Dictionary<string, short>();
-            //foreach(var pair in rq.ItemIdToRank)
-            //{
-            //    rank_updates.Add(pair.Key, (short)pair.Value);
-            //}
-            ////public.update_ranking_items_batch()
-            //var updateResult = await _supabase.Rpc("update_ranking_items_batch", new Dictionary<string, object>
-            //{
-            //    { "rank_updates", rank_updates }
-            //});
-
-            //if (updateResult.ResponseMessage.IsSuccessStatusCode)
-            //{
-            //    return Result.Success("successfully updated rank item placements");
-            //}
-            //else
-            //{
-            //    return Result.HandleSupabase(updateResult.ResponseMessage, "unable to update item placement, invalid");
-            //}
-
-
-            //List<TableModels.RankingItems> itemsToUpdate = rq.ItemIdToRank
-            //    .Select(pair => new TableModels.RankingItems(pair.Key, rq.RankingId, string.Empty, string.Empty, (uint)pair.Value))
-            //    .ToList();
-
-            //var upsertOptions = new Supabase.Postgrest.QueryOptions();
-            //upsertOptions.OnConflict = "id";
-            //var updateResult = await _supabase.From<TableModels.RankingItems>()
-            //    .Upsert(itemsToUpdate, upsertOptions);
-
-            //if (!updateResult.ResponseMessage.IsSuccessStatusCode)
-            //{
-            //    return Result.HandleSupabase(updateResult.ResponseMessage);
-            //}
-
-            //try
-            //{
-            //    List<string> keys = [.. rq.ItemIdToRank.Keys];
-            //    await _supabase.From<TableModels.RankingItems>()
-            //    .Where(item => item.RankingId == rq.RankingId)
-            //    .Filter(item => item.ItemId, 
-            //        Supabase.Postgrest.Constants.Operator.In, 
-            //        keys)
-            //    .Where(item => item.Name == string.Empty)
-            //    .Where(item => item.Description == string.Empty)
-            //    .Delete();
-            //}
-            //catch(Exception ex)
-            //{
-            //    return Result.Failure(Error.Custom("500", ex.Message));
-            //}
         }
 
         public Task<Result> DeleteRankingAsync(GetRankingByIdRequest rq)

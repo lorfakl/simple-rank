@@ -1,5 +1,7 @@
-﻿using simple_rank_backend.Application.Common;
+﻿using Serilog;
+using simple_rank_backend.Application.Common;
 using simple_rank_backend.Application.Services.Interfaces;
+using simple_rank_backend.DTOs;
 using simple_rank_backend.DTOs.Ranking;
 using simple_rank_backend.DTOs.Ranking.Responses;
 using simple_rank_backend.Models;
@@ -15,12 +17,14 @@ namespace simple_rank_backend.Application.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserCacheService _userCache;
         private readonly Client _supabase;
+        private readonly Serilog.ILogger _log;
 
-        public RankingService(IHttpContextAccessor httpContextAccessor, IUserCacheService userCache, Client supabaseService)
+        public RankingService(IHttpContextAccessor httpContextAccessor, IUserCacheService userCache, Client supabaseService, Serilog.ILogger logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _supabase = supabaseService;
             _userCache = userCache;
+            _log = logger;
         }
 
         public async Task<Result<CreateRankingResponse>> CreateRankingAsync(CreateRankingRequest rq, string ownerId)
@@ -77,6 +81,57 @@ namespace simple_rank_backend.Application.Services
                     Message: result?.ResponseMessage?.ToString() ?? "No response message"));
             }
         }
+
+        public async Task<Result<ResponseBase>> CreateRankItemAsync(CreateRankingItemRequest rq, string ownerId)
+        {
+            var checkOwnerResult = await _supabase.From<TableModels.Ranking>()
+                .Where(r => r.RankingId == rq.RankingId)
+                .Where(r => r.Owner == ownerId)
+                .Get();
+
+            if(checkOwnerResult.ResponseMessage.IsSuccessStatusCode && checkOwnerResult.Models.Any())
+            {
+                TableModels.RankingItems newItem = new TableModels.RankingItems(rq.Item, rq.RankingId);
+                
+                var rankItemInsertResult = await _supabase.From<TableModels.RankingItems>().Insert(newItem);
+
+                if(rankItemInsertResult.ResponseMessage.IsSuccessStatusCode && rankItemInsertResult.Models.Any())
+                {
+                    var itemPlacementDict = checkOwnerResult.Model.ItemPlacement;
+                    itemPlacementDict.Add(rankItemInsertResult.Model.ItemId, (int)rq.Item.Rank);
+
+                    var updateRankingPlacement = await _supabase.From<TableModels.Ranking>()
+                        .Where(r => r.RankingId == rq.RankingId)
+                        .Where(r => r.Owner == ownerId)
+                        .Set(r => r.ItemPlacement, itemPlacementDict)
+                        .Set(r => r.ItemCount, checkOwnerResult.Model.ItemCount + 1)
+                        .Set(r => r.LastUpdated, DateTime.UtcNow)
+                        .Update();
+
+                    if(updateRankingPlacement.ResponseMessage.IsSuccessStatusCode)
+                    {
+                        ResponseBase response = new ResponseBase("Create rank item success");
+                        return Result<ResponseBase>.Success(response);
+                    }
+                    else
+                    {
+                        var supaBaseError = await Error.SupabaseError(updateRankingPlacement.ResponseMessage, "Unable to create ranking", _log);
+                        return Result<ResponseBase>.Failure(supaBaseError);
+                    }
+                }
+                else
+                {
+                    var supaBaseError = await Error.SupabaseError(rankItemInsertResult.ResponseMessage, "Unable to create ranking", _log);
+                    return Result<ResponseBase>.Failure(supaBaseError);
+                }
+            }
+            else
+            {
+                var supaBaseError = await Error.SupabaseError(checkOwnerResult.ResponseMessage, "Unable to create ranking", _log);
+                return Result<ResponseBase>.Failure(supaBaseError);
+            }
+        }
+
 
         public async Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq)
         {
@@ -181,9 +236,59 @@ namespace simple_rank_backend.Application.Services
 
         }
 
-        public Task<Result<SharedRankResponse>> GetSharedRankAsync(string rankingId)
+        public async Task<Result<SharedRankResponse>> GetSharedRankAsync(string rankingId)
         {
-            throw new NotImplementedException();
+            var shareLinkResult = await _supabase.From<TableModels.ShareableLink>()
+                .Where(l => l.SharedLinkId == rankingId)
+                .Get();
+
+            if(shareLinkResult.ResponseMessage.IsSuccessStatusCode && shareLinkResult.Models.Any())
+            {
+                var rankingResult = await _supabase.From<TableModels.Ranking>()
+                    .Where(r => r.RankingId == shareLinkResult.Model.RankingId)
+                    .Get();
+                
+                if(rankingResult.ResponseMessage.IsSuccessStatusCode && rankingResult.Models.Any())
+                {
+                    var user = await _userCache.GetUserAsync(rankingResult.Model.Owner);
+                    SharedRankResponse properResponse = new SharedRankResponse(rankingResult.Model, user);
+
+                    try
+                    {
+                        string callerId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.NewGuid().ToString();
+
+                        TableModels.Stats statEntry = new TableModels.Stats(Statistics.VIEW, callerId, rankingResult.Model.RankingId);
+                        var result = await _supabase.From<TableModels.Stats>().Insert(statEntry);
+
+                        if (!result.ResponseMessage.IsSuccessStatusCode)
+                        {
+                            Error supabaseError = await Error.SupabaseError(result.ResponseMessage, "Error recording stat");
+                            _log.Error<Error>("Supabase api error response", supabaseError);
+                        }
+                        else
+                        {
+                            var updateResult = await _supabase.From<TableModels.Statistics>()
+                            .Where(s => s.Id == rankingId)
+                            .Set(s => s.LastUpdate, DateTime.UtcNow)
+                            .Update();
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        _log.Error(ex, "Exception thrown while attempting update statistics");
+                    }
+                    
+                    return Result<SharedRankResponse>.Success(properResponse, "Successfully gotten ranking info");
+                }
+                else
+                {
+                    SharedRankResponse noRankingResponse = new SharedRankResponse();
+                    return Result<SharedRankResponse>.HandleSupabase(rankingResult.ResponseMessage, noRankingResponse);
+                }
+            }
+
+            SharedRankResponse response = new SharedRankResponse();
+            return Result<SharedRankResponse>.HandleSupabase(shareLinkResult.ResponseMessage, response);
         }
 
         public async Task<Result<List<Ranking>>> GetUserRankingsAsync(string userId)
@@ -297,9 +402,71 @@ namespace simple_rank_backend.Application.Services
             }
         }
 
-        public Task<Result> DeleteRankingAsync(GetRankingByIdRequest rq)
+        public async Task<Result<ResponseBase>> PinRankingAsync(string rankingId, bool isPinned = true)
         {
-            throw new NotImplementedException();
+            string ownerId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            if (String.IsNullOrEmpty(ownerId))
+            {
+                return Result<ResponseBase>.Failure(Error.NullValue, "Unable to determine owner Id");
+            }
+
+            var updateResult = await _supabase.From<TableModels.Ranking>()
+                .Where(r => r.RankingId == rankingId)
+                .Where(r => r.Owner == ownerId)
+                .Set(r => r.IsPinned, isPinned)
+                .Set(r => r.LastUpdated, DateTime.UtcNow)
+                .Update();
+
+            if (updateResult.ResponseMessage.IsSuccessStatusCode)
+            {
+                string action = isPinned ? "pinned" : "unpinned";
+                ResponseBase response = new ResponseBase($"Successfully {action} ranking");
+                return Result<ResponseBase>.Success(response);
+            }
+            else
+            {
+                var supaBaseError = await Error.SupabaseError(updateResult.ResponseMessage, "Unable to update ranking pin status", _log);
+                return Result<ResponseBase>.Failure(supaBaseError);
+            }
+        }
+
+        public async Task<Result<ResponseBase>> DeleteRankingAsync(string rankingId)
+        {
+            string ownerId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            if (String.IsNullOrEmpty(ownerId))
+            {
+                return Result<ResponseBase>.Failure(Error.NullValue, "Unable to determine owner Id");
+            }
+
+            // First verify ownership
+            var checkOwnerResult = await _supabase.From<TableModels.Ranking>()
+                .Where(r => r.RankingId == rankingId)
+                .Where(r => r.Owner == ownerId)
+                .Get();
+
+            if (checkOwnerResult.ResponseMessage.IsSuccessStatusCode && checkOwnerResult.Models.Any())
+            {
+                try
+                {
+                    await _supabase.From<TableModels.Ranking>()
+                    .Where(r => r.RankingId == rankingId)
+                    .Where(r => r.Owner == ownerId)
+                    .Delete();
+
+                    ResponseBase successResponse = new ResponseBase($"Successfully deleted ranking: {rankingId}");
+                    return Result<ResponseBase>.Success(successResponse);
+                }
+                catch (Exception ex)
+                {
+                    var exceptionError = Error.Exception("500", ex, _log);
+                    return Result<ResponseBase>.Failure(exceptionError);
+                }
+            }
+            else
+            {
+                var supaBaseError = await Error.SupabaseError(checkOwnerResult.ResponseMessage, "Unable to delete ranking", _log);
+                return Result<ResponseBase>.Failure(supaBaseError);
+            } 
         }
 
         public async Task<Result> DeleteRankItem(DeleteRankItemRequest rq)
@@ -330,8 +497,20 @@ namespace simple_rank_backend.Application.Services
                 .Where(item => item.ItemId == rq.RankItemId)
                 .Delete();
 
+            var itemPlacementDict = checkRankOwnerResult.Model.ItemPlacement;
+            itemPlacementDict.Remove(rq.RankItemId);
+
+            var updateRanking = await _supabase.From<TableModels.Ranking>()
+                .Where(r => r.RankingId == rq.RankingId)
+                .Where(r => r.Owner == ownerId)
+                .Set(r => r.ItemPlacement, itemPlacementDict)
+                .Set(r => r.ItemCount, checkRankOwnerResult.Model.ItemCount - 1)
+                .Set(r => r.LastUpdated, DateTime.UtcNow)
+                .Update();
             return Result.Success("removed rank item");
 
         }
+
+        
     }
 }

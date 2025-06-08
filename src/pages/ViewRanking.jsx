@@ -65,7 +65,9 @@ function ViewRanking(){
 
 
     useEffect(()=>{
-        console.log(rankItems)
+        const dateString = `${new Date().toISOString()}`
+        console.log(dateString)
+        setRankingInfo(prev => ({...prev, lastUpdate: dateString}));
     },[rankItems])
 
     //*Supabase Operations*//
@@ -194,7 +196,38 @@ function ViewRanking(){
         setUpdating(false)
     }
 
-    
+    async function addRankItem(rankItem)
+    {
+        const request = {
+            item: {
+                id: rankItem.itemId,
+                rank: rankItem.rank,
+                name: rankItem.title,
+                description: rankItem.description
+            },
+            rankingId: id
+        }
+
+        try
+        {
+            setUpdating(true)
+            const response = await rankItemService.createRankItem(request)
+            if(response.error)
+            {
+                showNotification("Error saving rank item ", "error", 1500)
+            }
+            else
+            {
+                showNotification("successfully saved rank item", "success", 750)
+            }
+        }
+        catch(error)
+        {
+            showNotification("Error saving rank item ", "error", 1500)
+            console.log(error)
+        }
+        setUpdating(false)
+    }
 
 
     //*JS Functions*//
@@ -325,7 +358,11 @@ function ViewRanking(){
 
         setRankItems([...rankItems, rankItem])
         setItemCount(itemCount + 1)
+        
         previousItemCount.current = itemCount
+
+
+        addRankItem(rankItem)
     }
 
     async function handleRankRemoval(idToRemove)
@@ -338,9 +375,19 @@ function ViewRanking(){
         
 
         console.log("Does this need to be a backend call?: ", rankObjectToRemove)
-        // Update the rank items in the database
+        
+        setRankItems(prev => prev.filter(item => item.itemId !== idToRemove).map((item, index) => {
+                        item.rank = index + 1
+                        return item}))
 
-        if(rankObjectToRemove.title.length > 0)
+        setItemCount(itemCount - 1)
+
+        if(rankObjectToRemove === undefined)
+        {
+            return
+        }
+
+        if(rankObjectToRemove.title)
         {
             const rq = {rankingId: id, rankItemId: idToRemove}
             const response = await rankItemService.deleteRankItem(rq)
@@ -363,12 +410,7 @@ function ViewRanking(){
             }
         }
 
-        setRankItems(rankItems.filter(item => item.itemId !== idToRemove)
-                    .map((item, index) => {
-                        item.rank = index + 1
-                        return item}))
-
-        setItemCount(itemCount - 1)
+        
     }
 
     function handleDescriptionTextChange(desc){

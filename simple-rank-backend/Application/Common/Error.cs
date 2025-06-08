@@ -22,8 +22,22 @@ namespace simple_rank_backend.Application.Common
             return Custom(response.StatusCode.ToString(), $"{msg} : {responseContent}");
         }
 
+        public static async Task<Error> SupabaseError(HttpResponseMessage response, string msg, Serilog.ILogger log)
+        {
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Error error =  Custom(response.StatusCode.ToString(), $"{msg} : {responseContent}");
+            log.Error($"Supabase api error, {msg}", error);
+            return error;
+        }
+
         public static Error Exception(string code, Exception ex)
         {
+            return Custom(code, ex.Message);
+        }
+
+        public static Error Exception(string code, Exception ex, Serilog.ILogger log)
+        {
+            log.Error("Exception caught ", ex);
             return Custom(code, ex.Message);
         }
 

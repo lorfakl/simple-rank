@@ -1,8 +1,9 @@
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid'
 import { useNavigate } from 'react-router';
 import { useParams } from 'react-router';
-import RankItem from '../components/RankItem';
-import ConfirmationModel from '../components/ConfirmationModal';
+import ReacOnlyRankItem from '../components/ReadOnlyRankItem'
+import { ReactionPicker } from '../components/ReactionPicker';
+import { RankingDetails } from '../components/RankingDetails';
 import ToggleTextInput from '../components/ToggleTextInput';
 import { ChevronDown, Share, RefreshCw , Earth, Lock } from 'lucide-react';
 import { useState, useEffect, useRef, use } from "react"
@@ -15,7 +16,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 function SharedRank(){
 
     const [rankItems, setRankItems] = useState([])
-    const [rankingInfo, setRankingInfo] = useState({title: "", description: "", createdBy: "", lastUpdate: "", isPublic: false, isShared: false})
+    const [rankingInfo, setRankingInfo] = useState({title: "", description: "", createdBy: "", creationDate: "", lastUpdate: "", isPublic: false, isShared: false})
     const [loading, setLoading] = useState(false)
     const [copyState, setCopyState] = useState(false)
 
@@ -72,15 +73,23 @@ function SharedRank(){
                 const rankItems = response.data.items.map(item => ({itemId: item.itemId, title: item.name, description: item.description, rank: item.rank}))
 
                 setRankItems(rankItems)
-                setRankingInfo({
+                try
+                {
+                    setRankingInfo({
                     title: response.data.title, 
                     description: response.data.description, 
-                    createdBy: response.data.owner,
+                    createdBy: response.data.createdBy.displayName,
                     lastUpdate: response.data.lastUpdated,
+                    creationDate: response.data.createdDate,
                     isPublic: response.data.isPublic,
                     isShared: response.data.isShared
-                })
+                    })
+                }
+                catch(error)
+                {
 
+                }
+                
             }
         }
         catch(error) {
@@ -193,43 +202,36 @@ function SharedRank(){
         }
     }
 
+    function onReactionSelected(reactionSelected)
+    {
+        console.log(reactionSelected)
+    }
+
     return(
         <>
             <div className="mt-18 mb-8 w-full">
-                
-                <div className="flex flex-col gap-y-4">
+
+                <div className="flex flex-col gap-y-4 items-center">
                     
-                    <h1 className="font-semibold text-3xl lg:text-5xl self-center">{rankingInfo.title}</h1>
-                    <h2 className="text-xl font-normal self-center">{rankingInfo.description}</h2>  
+                    <header className="font-semibold text-xl lg:text-xl self-center">
+                        <h1>{rankingInfo.title === ""? "Ranking Not Found" : rankingInfo.title}</h1>
+                        <h2 className='text-4xl'>{rankingInfo.description}</h2>
+                    </header>  
 
-                    <div className="flex flex-row items-center justify-between gap-x-16">
-                        <div className="flex flex-row gap-x-4">
-                            <p className="text-xl font-normal">created by:</p>
-                            <p className="text-xl font-semibold">{rankingInfo.createdBy}</p>
-                        </div>
+                    <RankingDetails createdBy={rankingInfo.createdBy} createdDate={rankingInfo.creationDate} lastupateDate={rankingInfo.lastUpdate} 
+                        itemCount={rankItems.length} isPublic={rankingInfo.isPublic} isShared={rankingInfo.isShared} rankingId={id} 
+                        onVisibilityClick={()=>{console.log("clicked")}} onCreateShareableLink={handleShareableLinkCreation} showShareStatus={false}
+                        onCopyShareableLink={copyShareableLinkToClipboard} showReactions={false}/>
 
-                        <div className="flex flex-row gap-x-4">
-                            <p className="text-xl font-normal">last update:</p>
-                            <p className="text-xl font-semibold">{rankingInfo.lastUpdate}</p>
-                        </div>
-
-                        <div className="flex flex-row" >
-                            <button className={`btn btn-soft rounded-r-lg ${copyState ? "btn-success" : "btn-secondary" }` } onClick={copyShareableLinkToClipboard}>
-                                <p className="text-xl font-semibold">{copyState? "Link Copied" : "Shared"}</p>
-                                <Share />
-                            </button>
-                        </div>
-
-                        <div className="flex flex-row gap-x-4">
-                            <p className="text-xl font-normal">items:</p>
-                            <p className="text-xl font-semibold">{rankItems.length}</p>
-                        </div>
+                    <div className="">
+                        <ReactionPicker onReaction={onReactionSelected} rankingId={id}/>
                     </div>
+                    
+
                 </div>
             </div>
             
             {loading ? 
-            
                 <>
                     <div>
                         <h2 className="">Loading Rank Items</h2>
@@ -249,8 +251,7 @@ function SharedRank(){
                                         {rankItems.map((item, index) => (
                                             // Pass the item data to your ProtoRank component
                                             
-                                            <RankItem key={item.itemId} id={item.itemId} index={index} data={item} isEditable={item.isEditable}
-                                                onDataChange={handleRankEdit} handleRemoveRankItem={handleRankRemoval}/>
+                                            <ReacOnlyRankItem key={item.itemId} id={item.itemId} index={index} data={item}/>
                                         ))}
                                         {provided.placeholder}
                                     </div>

@@ -58,6 +58,45 @@ namespace simple_rank_backend.Controllers
             }
         }
 
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CreateRankItem([FromBody] CreateRankingItemRequest rq)
+        {
+            if (ModelState.IsValid)
+            {
+                string ownerId = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+                if (string.IsNullOrEmpty(ownerId))
+                {
+                    return Unauthorized("User is not authenticated");
+                }
+                else
+                {
+                    if(string.IsNullOrEmpty(rq.Item.Id))
+                    {
+                        return BadRequest();
+                    }
+
+                    if (string.IsNullOrEmpty(rq.Item.Name))
+                    {
+                        return BadRequest();
+                    }
+
+                    if (string.IsNullOrEmpty(rq.Item.Description))
+                    {
+                        return BadRequest();
+                    }
+
+                    var result = await _rankService.CreateRankItemAsync(rq, ownerId);
+                    return this.HandleResult(result);
+                }
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
         [HttpGet("{userId}")]
         [Authorize]
         public async Task<IActionResult> GetUserRankings(string userId)
@@ -104,13 +143,13 @@ namespace simple_rank_backend.Controllers
             }
         }
 
-        [HttpPost("{rankingId}")]
+        [HttpGet("{rankingId}")]
         public async Task<IActionResult> GetSharedRanking(string rankingId)
         {
             if (ModelState.IsValid)
             {
-                Result<ShareableLinkResponse> result = await _rankService.GetShareableLinkAsync(rankingId);
-                return this.HandleResult<ShareableLinkResponse>(result);
+                Result<SharedRankResponse> result = await _rankService.GetSharedRankAsync(rankingId);
+                return this.HandleResult<SharedRankResponse>(result);
             }
             else
             {

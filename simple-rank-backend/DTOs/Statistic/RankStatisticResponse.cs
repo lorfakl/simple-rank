@@ -1,4 +1,6 @@
-﻿namespace simple_rank_backend.DTOs.Statistic
+﻿using simple_rank_backend.Application.Services.Interfaces;
+
+namespace simple_rank_backend.DTOs.Statistic
 {
     public class RankStatisticResponse
     {
@@ -23,6 +25,18 @@
             WowCount = statistics.WowReactions;
             SadCount = statistics.SadReactions;
             AngryCount = statistics.AngryReactions;
+        }
+
+        public RankStatisticResponse(Dictionary<Statistics, int> statCollection)
+        {
+            Views = statCollection[Statistics.VIEW];
+            Clones = statCollection[Statistics.CLONE];
+            LikeCount = statCollection[Statistics.LIKE];
+            LoveCount = statCollection[Statistics.LOVE];
+            LaughCount = statCollection[Statistics.LAUGH];
+            WowCount = statCollection[Statistics.WOW];
+            SadCount = statCollection[Statistics.SAD];
+            AngryCount = statCollection[Statistics.ANGRY];
         }
     }
 }

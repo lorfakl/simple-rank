@@ -26,7 +26,7 @@ export const rankingService = {
 };
 
 export const rankItemService = {
-  updateRankItems: (rankingId, rankItems) => apiClient.post(`/api/Rank/UpdateRankItems/${rankingId}`, rankItems),
+  createRankItem: (request) => apiClient.post(`/api/Rank/CreateRankItem`, request),
   editRankItem: (rankItem) => apiClient.put(`/api/Rank/EditRankItem/${rankItem.id}`, rankItem),
   deleteRankItem: (request) => apiClient.post(`/api/Rank/DeleteRankItem/${request.rankItemId}`, request),
   updateRankItemPlacement: (request) => apiClient.post(`/api/Rank/UpdateRankItemsPlacement/${request.rankingId}`, request),
@@ -41,7 +41,8 @@ export const shareRankService = {
 export const statisticService = {
   recordView: (request) => apiClient.post(`/api/Statistic/RecordView/${request.rankingId}`, request),
   recordReaction: (request) => apiClient.post(`/api/Statistic/React/${request.rankingId}`, request),
-  getRankStatistics: (rankingId) => apiClient.get(`/api/Statistic/Get/${rankingId}`)
+  getRankStatistics: (rankingId) => apiClient.get(`/api/Statistic/Get/${rankingId}`),
+  getSharedRankStatistics: (rankingId) => apiClient.get(`/api/Statistic/GetShared/${rankingId}`)
 }
 
 export const exploreService = {

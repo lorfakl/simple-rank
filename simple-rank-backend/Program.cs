@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using simple_rank_backend.Application.Configuration;
 using Serilog;
 using Serilog.Events;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,7 +98,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddMemoryCache( options => { options.SizeLimit = 1000; });
 builder.Services.Configure<UserCacheOptions>(builder.Configuration.GetSection("UserCache"));
-
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 
 builder.Services.AddScoped<Client>(_ => 
     new Client(supabaseUrl, supabaseKey, 

@@ -33,7 +33,6 @@ function ViewRanking(){
     const { showNotification } = useNotifications()
     const { id } = useParams()
 
-
     useEffect(() => {
         //load User Rank Data
         const getCurrentRank = async () => {
@@ -48,7 +47,6 @@ function ViewRanking(){
 
     }, [])
 
-
     useEffect(() => {
 
         if(itemCount > 0 && previousItemCount.current !== undefined && itemCount > previousItemCount.current)
@@ -62,7 +60,6 @@ function ViewRanking(){
         
         previousItemCount.current = itemCount
     }, [itemCount])
-
 
     useEffect(()=>{
         const dateString = `${new Date().toISOString()}`
@@ -229,9 +226,7 @@ function ViewRanking(){
         setUpdating(false)
     }
 
-
     //*JS Functions*//
-
     function blurHtmlElement(elementId){
         const element = document.getElementById(elementId)
         if(element)
@@ -372,8 +367,6 @@ function ViewRanking(){
         console.log("Removing rank item: ", idToRemove)
         //removeRank(idToRemove)
 
-        
-
         console.log("Does this need to be a backend call?: ", rankObjectToRemove)
         
         setRankItems(prev => prev.filter(item => item.itemId !== idToRemove).map((item, index) => {
@@ -409,8 +402,6 @@ function ViewRanking(){
                 //showNotification("Successfully removed rank item", "success", 750)
             }
         }
-
-        
     }
 
     function handleDescriptionTextChange(desc){
@@ -484,24 +475,22 @@ function ViewRanking(){
         }
     }
 
-
     return(
         <>
             <div className="mt-18 mb-8 w-full">
                 
                 <div className="flex flex-col gap-y-4">
-                    
+                
                     <header className="font-semibold text-3xl lg:text-5xl self-center">{rankingInfo.title}
                         {updating ? <> <span className="inline-block"> <RefreshCw  size={30} className="animate-spin" /></span></> : null}
                     </header>  
-                    
 
                     <ToggleTextInput inputFieldLabel="Description"
-                            textToDisplay={rankingInfo.description} 
-                            editButtonLabel={"edit"}
-                            handleFinishEdit={saveDescription}
-                            handleTextInputChange={handleDescriptionTextChange}
-                            showRequired={false}/>
+                        textToDisplay={rankingInfo.description} 
+                        editButtonLabel={"edit"}
+                        handleFinishEdit={saveDescription}
+                        handleTextInputChange={handleDescriptionTextChange}
+                        showRequired={false}/>
 
                     <RankingDetails createdBy={rankingInfo.createdBy} createdDate={rankingInfo.creationDate} lastupateDate={rankingInfo.lastUpdate} 
                         itemCount={rankItems.length} isPublic={rankingInfo.isPublic} isShared={rankingInfo.isShared} rankingId={id} 
@@ -526,11 +515,12 @@ function ViewRanking(){
                                 <p className="font-thin lg:text-2xl text-3xl">add rank item</p>
                             </div>
                         </button>
+                        
                         <DragDropContext onDragEnd={handleDragEnd}>
                             <Droppable droppableId='viewRanking'>
                                 {(provided) => (
                                     <div {...provided.droppableProps} 
-                                        className="w-fit h-120 flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
+                                        className="h-120 w-120 flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
                                         ref={provided.innerRef}
                                     >
                                         {rankItems.map((item, index) => (

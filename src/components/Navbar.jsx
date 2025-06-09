@@ -112,8 +112,8 @@ function Navbar()
                     className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
                     <li><Link to="Home">my rankings</Link></li>
                     <li><Link to="NewRank">create new rank</Link></li>
-                    <li><Link to="Explore">explore</Link></li>
-                    <li><Link to="About">about</Link></li>
+                    {/* <li><Link to="Explore">explore</Link></li>
+                    <li><Link to="About">about</Link></li>*/}
                 </ul>
                 </div>
             </div>
@@ -121,8 +121,8 @@ function Navbar()
             <div className="navbar-start hidden lg:flex flex-row gap-4">
                 <Link to="Home">my rankings</Link>
                 <Link to="NewRank">create new rank</Link>
-                <Link to="Explore">explore</Link>
-                <Link to="About">about</Link>
+                {/* <Link to="xplore">explore</Link>
+                <Link to="About">about</Link>*/}
             </div>
             <div className="navbar-center mx-auto">
                 <a className="btn btn-ghost text-xl">simple rank</a>

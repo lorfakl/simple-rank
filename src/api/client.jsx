@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { useNotifications } from '../contexts/NotificationContext';
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL, // Replace with your API base URL
     timeout: 10000, // Request timeout in milliseconds
@@ -34,7 +34,6 @@ client.interceptors.response.use(
         return response;
     },
     (error) => {
-        // Any status codes outside the range of 2xx trigger this function
         return Promise.reject(error);
     }
 );

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useSupabase } from '../contexts/SupabaseContext';
 import { useUser } from "../contexts/UserContext";
 import { DiscordLoginButton, GoogleLoginButton } from "react-social-login-buttons";
+import { Medal } from 'lucide-react';
 import EmailAuthenticationForm from "../components/EmailAuthenticationForm";
 
 function AuthenticationOptions({isSignUp}){
@@ -70,9 +71,13 @@ function AuthenticationOptions({isSignUp}){
     
     return(
         <>
-            <div className="w-full my-18">
-                    <h1>Insert Logo</h1>
-                    <h1 className="">{isSignUp ? "Sign up" : "Login"}</h1>
+            <div className="flex justify-center items-center mb-8">
+                <div className="bg-gradient-to-r from-purple-400 to-blue-400 p-3 rounded-2xl mr-4">
+                    <Medal className="w-8 h-8 text-white" />
+                </div>
+                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                    simple rank
+                </h1>
             </div>
             <div className="my-12 flex flex-col gap-y-4">
                 {/* Google */}

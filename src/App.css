@@ -1,8 +1,5 @@
 @import "tailwindcss";
 @plugin "daisyui";
-
-
-
 @plugin "daisyui/theme" {
   name: "mytheme";
   default: true;
@@ -12,13 +9,13 @@
   --color-base-200: oklch(96% 0.001 286.375);
   --color-base-300: oklch(92% 0.004 286.32);
   --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: #084C61;
+  --color-primary: oklch(38.85% 0.070 225.35);
   --color-primary-content: oklch(98% 0.026 102.212);
   --color-secondary: F0F8FF;
   --color-secondary-content: oklch(100% 0 0);
-  --color-accent: #7A2E7A;
+  --color-accent: oklch(44.01% 0.143 327.67);
   --color-accent-content: oklch(96% 0.015 12.422);
-  --color-neutral: #9BA1A7;
+  --color-neutral: oklch(70.60% 0.011 247.99);
   --color-neutral-content: oklch(98% 0 0);
   --color-info: oklch(78% 0.154 211.53);
   --color-info-content: oklch(30% 0.056 229.695);

@@ -20,7 +20,9 @@ function Signup({}){
         <>
             <div className="my-12 flex flex-col gap-y-4 place-items-center">
                 <AuthenticationOptions isSignUp={true} />
-                <p className="text-center w-1/2">By creating an account you agree to our <a href="https://linkToTermsofService.com">Terms of Service</a> and <a href="https://linkToTermsofService.com">Privacy Policy.</a> Already have an account? <a href="/Login">Login</a></p>
+                {/*<p className="text-center w-1/2">
+                    By creating an account you agree to our <a href="https://linkToTermsofService.com">Terms of Service</a> and <a href="https://linkToTermsofService.com">Privacy Policy.</a> Already have an account? <a href="/Login">Login</a>
+                </p>*/}
             </div>
         </>
     )

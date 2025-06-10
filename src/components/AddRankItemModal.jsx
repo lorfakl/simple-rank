@@ -62,17 +62,22 @@ export function AddRankItemModal({ dialogId, onClose, onSave, totalRanks}) {
 
   return (
     <dialog id={dialogId} className="modal">
-        <div className="modal-box w-1/2 flex flex-col gap-y-6">
+        <div className="modal-box modal-top md:modal-middle w-full flex flex-col gap-y-6">
             
             <h3 className="font-bold text-lg">add new item</h3>
 
-            <LimitedTextInput inputLabel={"item title"} characterLimit={150} handleInputChange={setTitle} textSize={"text-xl"} showRequired={false} 
-                useWidthFull={true} placeholderText={"item title"} textValue={title} syncToTextValue={true}/>
-
-            <LimitedTextArea inputLabel={"item description"} characterLimit={255} placeholderText={"description"} handleInputChange={setDescription} 
+            <div className="w-full">
+              <LimitedTextInput inputLabel={"item title"} characterLimit={150} handleInputChange={setTitle} textSize={"text-xl"} showRequired={false} 
+                  useWidthFull={true} placeholderText={"item title"} textValue={title} syncToTextValue={true}/>
+            </div>
+            
+            <div className="w-full">
+              <LimitedTextArea inputLabel={"item description"} characterLimit={255} placeholderText={"description"} handleInputChange={setDescription} 
                     initialValue={description} useFullWidth={true} textSize='text-xl' syncToInitialValue={true}/>
+            </div>
+            
 
-            <label className="floating-label text-xl">
+            <label className="floating-label text-xl w-full">
                 <span>enter item rank</span>
                 <input type="number" className="input validator text-xl" required placeholder={`type a number between 1 to ${totalRanks + 1}`} 
                     min="1" max={totalRanks + 1} title={`must be between be 1 ${totalRanks + 1}`} value={rank} onChange={(e)=>{handRankChange(e.target.value)}}/>

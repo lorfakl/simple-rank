@@ -7,6 +7,7 @@ import { rankingService } from '../api/services';
 import { dateTimeHelper } from "../helper/helper";
 import { useUser } from '../contexts/UserContext';
 import ConfirmationModel from '../components/ConfirmationModal';
+import { useNotifications } from '../contexts/NotificationContext';
 
 function Home(){
 
@@ -14,7 +15,9 @@ function Home(){
     const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
-    const { user } = useUser()
+    const { showNotification } = useNotifications()
+
+    const { user, session } = useUser()
     const rankingToDelete = useRef({ id: null, title: "" })
 
     useEffect(()=>{
@@ -22,7 +25,7 @@ function Home(){
         // console.log(nationalParksRanking)
         // setCurrentRankings([programmingLanguagesRanking, nationalParksRanking])
         const getRankings = async () => {
-            if(user.id === undefined || user.id === null)
+            if(session.user.id === undefined || session.user.id === null)
             {
                 console.error("User ID is not defined")
                 return
@@ -32,7 +35,7 @@ function Home(){
 
         getRankings()
     },
-    [])
+    [session])
 
     useEffect(() => {
 

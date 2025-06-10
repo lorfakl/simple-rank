@@ -107,6 +107,7 @@ function Rankings({id, title, data, description, rankItems, onPinned, onDelete})
 
     function navigateToRankingDetails()
     {
+        console.log("Navigating to ranking details for ID: ", id)
         navigate(`/ranking/${id}`)
     }
 
@@ -114,13 +115,13 @@ function Rankings({id, title, data, description, rankItems, onPinned, onDelete})
     return(
         <>
             <div className="rounded-lg flex flex-col gap-4 hover:shadow-xl cursor-pointer bg-base-300 border-4  lg:aspect-square"> 
-                <div className="font-bold text-xl" onClick={() => {navigateToRankingDetails}}>{title}</div>
-                <p className="font-semibold" onClick={() => {navigateToRankingDetails}}>{description}</p>
-                <div className="flex flex-row justify-between px-2" onClick={() => {navigateToRankingDetails}}>
+                <div className="font-bold text-xl" onClick={() => {navigateToRankingDetails()}}>{title}</div>
+                <p className="font-semibold" onClick={() => {navigateToRankingDetails()}}>{description}</p>
+                <div className="flex flex-row justify-between px-2" onClick={() => {navigateToRankingDetails()}}>
                     <div>rank items: {rankItems.length}</div>
                     <div>creator: {data.createdBy.displayName}</div>
                 </div>
-                <div className="flex flex-row justify-between px-2" onClick={() => {navigateToRankingDetails}}>
+                <div className="flex flex-row justify-between px-2" onClick={() => {navigateToRankingDetails()}}>
                     <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                         <div className="w-16 rounded-full">
                         <img
@@ -133,8 +134,8 @@ function Rankings({id, title, data, description, rankItems, onPinned, onDelete})
                         <p className="pr-2">{data.isPublic ? "public": "private"}</p>
                     </div>
                 </div>
-                <div className="self-start px-2" onClick={() => {navigateToRankingDetails}}>last updated: {dateTimeHelper.convertStringToLocalTime(data.lastUpdated)}</div>
-                <div className="self-start px-2" onClick={() => {navigateToRankingDetails}}>created: {dateTimeHelper.convertStringToLocalTime(data.createdDate)}</div>
+                <div className="self-start px-2" onClick={() => {navigateToRankingDetails()}}>last updated: {dateTimeHelper.convertStringToLocalTime(data.lastUpdated)}</div>
+                <div className="self-start px-2" onClick={() => {navigateToRankingDetails()}}>created: {dateTimeHelper.convertStringToLocalTime(data.createdDate)}</div>
                 <div className="flex flex-row justify-around">
                     <div>
                         <IconSwap onIcon={<Pin size={36} />} offIcon={<PinOff size={36} />} onSwapCallback={handlePinnedRanking} defaultOn={data.isPinned}/>

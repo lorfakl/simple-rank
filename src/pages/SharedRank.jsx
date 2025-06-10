@@ -222,12 +222,7 @@ function SharedRank(){
                         itemCount={rankItems.length} isPublic={rankingInfo.isPublic} isShared={rankingInfo.isShared} rankingId={id} 
                         onVisibilityClick={()=>{console.log("clicked")}} onCreateShareableLink={handleShareableLinkCreation} showShareStatus={false}
                         onCopyShareableLink={copyShareableLinkToClipboard} showReactions={false}/>
-
-                    <div className="">
-                        <ReactionPicker onReaction={onReactionSelected} rankingId={id}/>
-                    </div>
                     
-
                 </div>
             </div>
             

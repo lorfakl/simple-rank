@@ -6,6 +6,7 @@ using simple_rank_backend.DTOs;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Server.HttpSys;
+using simple_rank_backend.DTOs.Statistic;
 
 namespace simple_rank_backend.Controllers
 {
@@ -27,6 +28,19 @@ namespace simple_rank_backend.Controllers
             return Ok();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetRankingsCount()
+        {
+            var result = await _statisticService.GetTotalRankingsCountAsync();
+            return this.HandleResult(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserCount()
+        {
+            var result = await _statisticService.GetTotalUsersCountAsync();
+            return this.HandleResult(result);
+        }
 
         [Authorize]
         [HttpGet("{rankingId}")]
@@ -45,6 +59,7 @@ namespace simple_rank_backend.Controllers
         }
 
         [HttpPost("{rankingId}")]
+        [Authorize]
         public async Task<IActionResult> React([FromBody] ReactDto rq, string rankingId)
         {
             if (ModelState.IsValid)

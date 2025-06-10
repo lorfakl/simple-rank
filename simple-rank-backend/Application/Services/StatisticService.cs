@@ -175,5 +175,64 @@ namespace simple_rank_backend.Application.Services
             ResponseBase response = new ResponseBase("Successfully recorded view");
             return Result<ResponseBase>.Success(response);
         }
+
+        public async Task<Result<RankingsCountResponse>> GetTotalRankingsCountAsync()
+        {
+            try
+            {
+                // Get total count of all rankings in the system
+                var countResult = await _supabase.From<TableModels.Ranking>()
+                    .Count(Supabase.Postgrest.Constants.CountType.Exact);
+
+                if (countResult != null)
+                {
+                    var response = new RankingsCountResponse
+                    {
+                        TotalCount = (int)countResult,
+                        Message = "Successfully retrieved total rankings count"
+                    };
+                    return Result<RankingsCountResponse>.Success(response);
+                }
+                else
+                {
+                    return Result<RankingsCountResponse>.Failure(Error.NullValue, "Unable to retrieve rankings count");
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Error retrieving total rankings count");
+                return Result<RankingsCountResponse>.Failure(new Error("CountError", "Failed to retrieve rankings count"));
+            }
+        }
+
+        public async Task<Result<UsersCountResponse>> GetTotalUsersCountAsync()
+        {
+            try
+            {
+                // Get total count of all users in the system
+                // Note: This assumes you have a Users table. Adjust table name as needed.
+                var countResult = await _supabase.From<TableModels.UserMetadata>()
+                    .Count(Supabase.Postgrest.Constants.CountType.Exact);
+
+                if (countResult != null)
+                {
+                    var response = new UsersCountResponse
+                    {
+                        TotalCount = (int)countResult,
+                        Message = "Successfully retrieved total users count"
+                    };
+                    return Result<UsersCountResponse>.Success(response);
+                }
+                else
+                {
+                    return Result<UsersCountResponse>.Failure(Error.NullValue, "Unable to retrieve users count");
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Error retrieving total users count");
+                return Result<UsersCountResponse>.Failure(new Error("CountError", "Failed to retrieve users count"));
+            }
+        }
     }
 }

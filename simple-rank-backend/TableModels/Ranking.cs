@@ -24,10 +24,13 @@ namespace simple_rank_backend.TableModels
         public uint ItemCount { get; set; } = 0;
 
         [Column("last_updated")]
-        public DateTime LastUpdated { get; set; } = DateTime.Now;
+        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
         [Column("created_date")]
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+
+        [Column("pinned_time")]
+        public DateTime PinnedTime { get; set; }
 
         [Reference(typeof(RankingItems), useInnerJoin: false, columnName: "ranking_id")]
         public List<RankingItems> RankingItems { get; set; } = [];

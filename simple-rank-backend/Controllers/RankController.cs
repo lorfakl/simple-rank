@@ -213,6 +213,48 @@ namespace simple_rank_backend.Controllers
             }
         }
 
+        [HttpPost("{rankingId}")]
+        [Authorize]
+        public async Task<IActionResult> PinRanking([FromBody] PinRankingRequest rq, string rankingId)
+        {
+            if(ModelState.IsValid)
+            {
+                if(String.IsNullOrEmpty(rq.RankingId))
+                {
+                    return BadRequest();
+                }
+
+                if(rankingId == rq.RankingId)
+                {
+                    var result = await _rankService.PinRankingAsync(rankingId, rq.PinOperation);
+                    return this.HandleResult(result);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpDelete("{rankingId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteRanking(string rankingId)
+        {
+            if(Guid.TryParse(rankingId, out _))
+            {
+                var result = await _rankService.DeleteRankingAsync(rankingId);
+                return this.HandleResult(result);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
         [HttpPost("{rankItemId}")]
         [Authorize]
         public async Task<IActionResult> DeleteRankItem([FromBody] DeleteRankItemRequest rq)

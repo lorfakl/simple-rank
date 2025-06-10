@@ -34,6 +34,8 @@ namespace simple_rank_backend.Application.Services.Interfaces
         Task<Result<RankStatisticResponse>> GetSharedRankStatistics(string rankingId);
         Task<Result<ResponseBase>> RecordView(string rankingId);
         Task<Result<ResponseBase>> RecordReaction(ReactDto rq, string rankingId);
+        Task<Result<RankingsCountResponse>> GetTotalRankingsCountAsync();
+        Task<Result<UsersCountResponse>> GetTotalUsersCountAsync();
 
 
     }

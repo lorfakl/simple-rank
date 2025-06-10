@@ -124,6 +124,16 @@ export function UserProvider({ children }) {
             setSession(data.session)
             setAuthenticated(true)
         }
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          console.log("Auth state changed: ", event, session);
+          setSession(session)
+        });
+        
+        return () => {
+          subscription.unsubscribe();
+        };
+
       }
       catch(error)
       {

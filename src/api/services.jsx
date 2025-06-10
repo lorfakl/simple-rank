@@ -22,7 +22,8 @@ export const rankingService = {
   getAllRankings: () => apiClient.get('/api/Rank/GetPublicRankings'),
   searchPublicRankings: (searchOptions) => apiClient.post(`/api/Rank/GetRankingByName`, searchOptions),
   getShareableLink: (rankingId) => apiClient.post(`/api/Rank/GetShareableLink/${rankingId}`),
-  getRankingMetadata: (rankingId) => apiClient.get(`/api/Rank/GetRankingMetadata/${rankingId}`)
+  getRankingMetadata: (rankingId) => apiClient.get(`/api/Rank/GetRankingMetadata/${rankingId}`),
+  setRankingPin: (request) => apiClient.post(`/api/Rank/PinRanking/${request.rankingId}`, request),
 };
 
 export const rankItemService = {
@@ -42,25 +43,27 @@ export const statisticService = {
   recordView: (request) => apiClient.post(`/api/Statistic/RecordView/${request.rankingId}`, request),
   recordReaction: (request) => apiClient.post(`/api/Statistic/React/${request.rankingId}`, request),
   getRankStatistics: (rankingId) => apiClient.get(`/api/Statistic/Get/${rankingId}`),
-  getSharedRankStatistics: (rankingId) => apiClient.get(`/api/Statistic/GetShared/${rankingId}`)
+  getSharedRankStatistics: (rankingId) => apiClient.get(`/api/Statistic/GetShared/${rankingId}`),
+  getUserCount: () => apiClient.get(`/api/Statistic/GetUserCount`),
+  getRankingCount: () => apiClient.get(`/api/Statistic/GetRankingsCount`),
 }
 
-export const exploreService = {
-  getNewRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetNewRankings?page=${page}&pageSize=${pageSize}`),
-  getPopularRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetPopularRankings?page=${page}&pageSize=${pageSize}`),
-  getTrendingRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetTrendingRankings?page=${page}&pageSize=${pageSize}`),
-  getTopRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetTopRankings?page=${page}&pageSize=${pageSize}`),
-}
+// export const exploreService = {
+//   getNewRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetNewRankings?page=${page}&pageSize=${pageSize}`),
+//   getPopularRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetPopularRankings?page=${page}&pageSize=${pageSize}`),
+//   getTrendingRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetTrendingRankings?page=${page}&pageSize=${pageSize}`),
+//   getTopRankings: (page = 1, pageSize = 10) => apiClient.get(`/api/Explore/GetTopRankings?page=${page}&pageSize=${pageSize}`),
+// }
 
-export const commentService = {
-  createComment: (commentData) => apiClient.post('/api/Comment/CreateComment', commentData),
-  editComment: (commentData) => apiClient.put('/api/Comment/EditComment', commentData),
-  deleteComment: (id) => apiClient.delete(`/api/Comment/DeleteComment/${id}`),
-  getCommentsByRankingId: (rankingId) => apiClient.get(`/api/Comment/GetCommentsByRankingId/${rankingId}`),
-};
+// export const commentService = {
+//   createComment: (commentData) => apiClient.post('/api/Comment/CreateComment', commentData),
+//   editComment: (commentData) => apiClient.put('/api/Comment/EditComment', commentData),
+//   deleteComment: (id) => apiClient.delete(`/api/Comment/DeleteComment/${id}`),
+//   getCommentsByRankingId: (rankingId) => apiClient.get(`/api/Comment/GetCommentsByRankingId/${rankingId}`),
+// };
 
-export const notificationService = {
-  getNotifications: (userId) => apiClient.get(`/api/Notification/GetNotifications/${userId}`),
-  markAsRead: (notificationId) => apiClient.post(`/api/Notification/MarkAsRead/${notificationId}`),
-  deleteNotification: (notificationId) => apiClient.delete(`/api/Notification/DeleteNotification/${notificationId}`),
-};
+// export const notificationService = {
+//   getNotifications: (userId) => apiClient.get(`/api/Notification/GetNotifications/${userId}`),
+//   markAsRead: (notificationId) => apiClient.post(`/api/Notification/MarkAsRead/${notificationId}`),
+//   deleteNotification: (notificationId) => apiClient.delete(`/api/Notification/DeleteNotification/${notificationId}`),
+// };

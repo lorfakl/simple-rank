@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react"
+import { use, useEffect, useState } from "react"
 import { useNavigate } from 'react-router';
 import { Plus } from 'lucide-react';
 import { programmingLanguagesRanking, nationalParksRanking } from "../components/exampledata"
 import { DragDropContext } from "@hello-pangea/dnd";
 import Rankings from "../components/Rankings"
 import { rankingService } from '../api/services';
+import { dateTimeHelper } from "../helper/helper";
 import { useUser } from '../contexts/UserContext';
 
 function Home(){
@@ -32,6 +33,10 @@ function Home(){
     },
     [])
 
+    useEffect(() => {
+
+    }, [currentRankings])
+
     async function getRankingsForUser()
     {
         setLoading(true)
@@ -46,11 +51,13 @@ function Home(){
                 return
             }
     
-            console.log("Successfully saved ranking: ", response.data)
             //navigate to the new ranking page
             if(response.data !== undefined)
             {
-                setCurrentRankings(response.data)
+                const rankings = response.data.map(item => ({ ...item, pinnedTime: new Date(item.pinnedTime) }));
+                console.log("Successfully saved ranking: ", response.data)
+                console.log("Rankings: post map", rankings)
+                setCurrentRankings(rankings)
             }
         }
         catch(error) {
@@ -60,8 +67,29 @@ function Home(){
         setLoading(false)
     }
 
-    function handleDragEnd(result) {
+    function handleDragEnd(result) {}
 
+    function onRankingPinned(id, pinned) {
+        console.log(`Ranking with ID: ${id} was pinned: ${pinned}`)
+        // Update the pinned state of the ranking in the currentRankings state
+        console.log("Pre Rankings: ", currentRankings)
+        let sortedRanking = currentRankings.map(ranking => ranking.id === id ? { ...ranking, isPinned: pinned, pinnedTime: new Date() } : ranking)
+                .toSorted((a, b) => {
+                    if (a.isPinned !== b.isPinned)
+                    {
+                        return b.isPinned - a.isPinned; // Sort pinned rankings first
+                    } 
+
+
+                    if (a.isPinned && b.isPinned)
+                    {
+                        return a.pinnedTime - b.pinnedTime; // Sort by pinned time if both are pinned
+                    }
+
+                    return new Date(b.lastUpdated) - new Date(a.lastUpdated); // Sort by pinned time if both are pinned
+            })
+        console.log("Sorted Rankings: ", sortedRanking)
+        setCurrentRankings(sortedRanking);
     }
 
     return(
@@ -75,7 +103,7 @@ function Home(){
                     <p className="text-2xl font-semibold">Loading...</p>
                 </div> 
                 : 
-                <DragDropContext onDragEnd={handleDragEnd}>
+                <DragDropContext onDragEnd={(handleDragEnd)}>
                     <div className="my-12 flex flex-col gap-y-4">
                         <div className="px-8 flex flex-col w-full h-full justify-center gap-4 lg:grid lg:grid-cols-4">
                             
@@ -88,7 +116,8 @@ function Home(){
 
                             {
                                 currentRankings.map((item, index)=>{
-                                return(<Rankings key={index} id={item.id} title={item.title} description={item.description} rankItems={item.items} creator={"You"} lastUpdate={item.lastUpdated}/>)
+                                return(<Rankings key={index} id={item.id} data={item} title={item.title} 
+                                    description={item.description} rankItems={item.items} onPinned={onRankingPinned}/>)
                             })}
 
                             

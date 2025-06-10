@@ -110,22 +110,40 @@ function Navbar()
                 <ul
                     tabIndex={0}
                     className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-                    <li><Link to="Home">my rankings</Link></li>
-                    <li><Link to="NewRank">create new rank</Link></li>
-                    {/* <li><Link to="Explore">explore</Link></li>
-                    <li><Link to="About">about</Link></li>*/}
+                        { isAuthenticated ? 
+                        <>
+                            <li><Link to="Home">my rankings</Link></li>
+                            <li><Link to="NewRank">create new rank</Link></li>
+                            {/* <li><Link to="Explore">explore</Link></li>
+                            <li><Link to="About">about</Link></li>*/}
+                        </>
+                        : 
+                        <>
+                            <li><Link to="SignUp">sign in</Link></li>
+                        </>
+                        }
+                    
                 </ul>
                 </div>
             </div>
             {/*Large format navbar*/}
             <div className="navbar-start hidden lg:flex flex-row gap-4">
-                <Link to="Home">my rankings</Link>
-                <Link to="NewRank">create new rank</Link>
-                {/* <Link to="xplore">explore</Link>
-                <Link to="About">about</Link>*/}
+                { isAuthenticated ? 
+                <>
+                    <Link to="Home">my rankings</Link>
+                    <Link to="NewRank">create new rank</Link>
+                    {/* <Link to="xplore">explore</Link>
+                    <Link to="About">about</Link>*/}
+                </>
+                : 
+                <>
+                    <Link to="SignUp">sign in</Link>
+                </>
+                }
+
             </div>
             <div className="navbar-center mx-auto">
-                <a className="btn btn-ghost text-xl">simple rank</a>
+                <a className="btn btn-ghost text-xl" onClick={() => {navigate("/")}}>simple rank</a>
             </div>
             <div className="navbar-end">
                 <div className="dropdown dropdown-end">

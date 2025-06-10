@@ -15,6 +15,7 @@ namespace simple_rank_backend.Models
         public uint ItemCount { get; private set; } = 0;
         public DateTime LastUpdated { get; private set; } = DateTime.UtcNow;
         public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
+        public DateTime PinnedTime { get; private set; }
         public bool IsPublic { get; private set; } = false;
         public bool IsShared { get; private set; } = false;
         public bool IsPinned { get; private set; } = false;
@@ -73,6 +74,7 @@ namespace simple_rank_backend.Models
             ItemCount = ranking.ItemCount;
             LastUpdated = ranking.LastUpdated;
             CreatedDate = ranking.CreatedDate;
+            PinnedTime = ranking.PinnedTime;
             IsPublic = ranking.IsPublic;
             IsShared = ranking.IsShared;
             IsPinned = ranking.IsPinned;

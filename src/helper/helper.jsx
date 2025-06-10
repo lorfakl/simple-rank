@@ -25,3 +25,9 @@ export const dateTimeHelper ={
         return localDate
     }
 }
+
+export const userHelper = {
+    getLoggedInAvatarUrl: () => {
+        return 
+    }
+}

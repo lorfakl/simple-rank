@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router';
 import { useSupabase } from '../contexts/SupabaseContext';
+import { statisticService } from '../api/services';
 import { Medal, ArrowRight } from 'lucide-react';
 import { Plus } from 'lucide-react';
 import { programmingLanguagesRanking, nationalParksRanking } from "../components/exampledata"
@@ -11,17 +12,95 @@ import Rankings from "../components/Rankings"
 function LandingPage(){
 
     const [currentRankings, setCurrentRankings] = useState([])
+    const [totalRankings, setTotalRankings] = useState(0)
+    const [totalUsers, setTotalUsers] = useState(0)
+    const [bannerTagLine, setBannerTagLine] = useState("for weirdos that just wanna rank things...that's literally it")
+    const [userTagLine, setUserTagLine] = useState("Giga-autists")
+
+
     const navigate = useNavigate()
     const supabase = useSupabase()
     
     useEffect(()=>{
+        
+        const getStartingStats = async () => {
+            const totalRankingsCount = await getTotalRankings();
+            setTotalRankings(totalRankingsCount);
+            const totalUsersCount = await getTotalUsers();
+            setTotalUsers(totalUsersCount);
+        }
+        
         if(localStorage.getItem("auth_token") != null || localStorage.getItem("auth_token") != undefined || localStorage.getItem("auth_token") != "")
         {
             console.log(localStorage.getItem("auth_token"))
             //navigate("/Home")
         }
+
+        getStartingStats();
     },
     [])
+
+    useEffect(() => {
+        const tagLineTimeout = setTimeout(() => {
+            const rankingPhrases = [
+                "for weirdos that just wanna rank things...that's literally it",
+                "because why not rank your favorite memes?",
+                "the only ranking site that matters or exists, that I could find",
+                "where your opinions are the rankings",
+                "rank anything, anytime, anywhere",
+                "seriously, just rank it",
+                "the ultimate ranking playground"
+            ];
+
+            const tagLines = [
+                "List-Obsessed Rankaholics",
+                "Tier-List Tyrants",
+                "Orderly Oddballs",
+                "Ranking Rascals",
+                "Hierarchy Hooligans",
+                "Listicle Lunatics",
+                "Pecking-Order Pundits",
+                "Giga-autists"
+            ]
+            const randomTagLineIndex = Math.floor(Math.random() * tagLines.length);
+            const randomPhaseIndex = Math.floor(Math.random() * rankingPhrases.length);
+            setUserTagLine(tagLines[randomTagLineIndex]);
+            setBannerTagLine(rankingPhrases[randomPhaseIndex]);
+        }, 10000);
+
+
+        return () => clearTimeout(tagLineTimeout);
+    }, [userTagLine, bannerTagLine]);
+
+    async function getTotalRankings()
+    {
+        try {
+            const response = await statisticService.getRankingCount();
+            if (response.error) {
+                console.error("Error fetching total rankings:", response.error);
+                return 0;
+            }
+            return response.data.totalCount || 0;
+        } catch (error) {
+            console.error("Error in getTotalRankings:", error);
+            return 0;
+        }
+    }
+
+    async function getTotalUsers()
+    {
+        try {
+            const response = await statisticService.getUserCount();
+            if (response.error) {
+                console.error("Error fetching total users:", response.error);
+                return 0;
+            }
+            return response.data.totalCount || 0;
+        } catch (error) {
+            console.error("Error in getTotalUsers:", error);
+            return 0;
+        }
+    }
 
 
 return(
@@ -43,7 +122,7 @@ return(
 
         {/* Hero Headline */}
         <h3 className="text-xl md:text-3xl font-semibold mb-6 leading-tight">
-        for weirdos that just wanna do that
+        {bannerTagLine}
         <br />
         </h3>
 
@@ -60,14 +139,13 @@ return(
         {/* Social Proof */}
         <div className="flex justify-center items-center space-x-8 text-gray-400">
             <div className="text-center">
-                <div className="text-2xl font-bold text-white">10K+</div>
-                <div className="text-sm">Rankings Created</div>
+                <div className="text-2xl font-bold text-white">{totalRankings}</div>
+                <div className="text-lg">Rankings Created</div>
             </div>
             <div className="w-px h-12 bg-gray-600"></div>
-            <div className="w-px h-12 bg-gray-600"></div>
             <div className="text-center">
-                <div className="text-2xl font-bold text-white">5K+</div>
-                <div className="text-sm">Happy Users</div>
+                <div className="text-2xl font-bold text-white">{totalUsers}</div>
+                <div className="text-lg">{userTagLine}</div>
             </div>
         </div>
     </>

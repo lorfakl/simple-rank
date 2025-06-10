@@ -296,8 +296,11 @@ namespace simple_rank_backend.Application.Services
             var queryResult = await _supabase.From<TableModels.Ranking>()
                 .Where(r => r.Owner == userId)
                 .Get();
-            
-            var rankings = queryResult.Models.Select(r => new Ranking(r)).ToList();
+
+            var rankings = queryResult.Models.Select(r => new Ranking(r))
+                .OrderByDescending(r => r.IsPinned)
+                .ThenBy(r => r.IsPinned ? r.PinnedTime : r.LastUpdated)
+                .ToList();
 
             foreach(Ranking r in rankings)
             {
@@ -415,6 +418,7 @@ namespace simple_rank_backend.Application.Services
                 .Where(r => r.Owner == ownerId)
                 .Set(r => r.IsPinned, isPinned)
                 .Set(r => r.LastUpdated, DateTime.UtcNow)
+                .Set(r => r.PinnedTime, DateTime.UtcNow)
                 .Update();
 
             if (updateResult.ResponseMessage.IsSuccessStatusCode)

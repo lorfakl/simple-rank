@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router';
 import { dateTimeHelper } from '../helper/helper';
-import { ChevronDown, PinOff, Pin, Earth, Lock } from 'lucide-react';
+import { ChevronDown,Trash2, PinOff, Pin, Earth, Lock } from 'lucide-react';
 import { IconSwap } from './IconSwap';
 import { useEffect, useState } from 'react';
 import { rankingService } from '../api/services';
 import { useNotifications } from '../contexts/NotificationContext';
-function Rankings({id, title, data, description, rankItems, onPinned})
+
+function Rankings({id, title, data, description, rankItems, onPinned, onDelete})
 {
 
     // useEffect(()=>{
@@ -116,8 +117,8 @@ function Rankings({id, title, data, description, rankItems, onPinned})
                 <div className="font-bold text-xl" onClick={() => {navigateToRankingDetails}}>{title}</div>
                 <p className="font-semibold" onClick={() => {navigateToRankingDetails}}>{description}</p>
                 <div className="flex flex-row justify-between px-2" onClick={() => {navigateToRankingDetails}}>
-                    <div>Rank Items: {rankItems.length}</div>
-                    <div>Creator: {data.createdBy.displayName}</div>
+                    <div>rank items: {rankItems.length}</div>
+                    <div>creator: {data.createdBy.displayName}</div>
                 </div>
                 <div className="flex flex-row justify-between px-2" onClick={() => {navigateToRankingDetails}}>
                     <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
@@ -132,12 +133,20 @@ function Rankings({id, title, data, description, rankItems, onPinned})
                         <p className="pr-2">{data.isPublic ? "public": "private"}</p>
                     </div>
                 </div>
-                <div className="self-start px-2">Last Updated: {dateTimeHelper.convertStringToLocalTime(data.lastUpdated)}</div>
-                <div className="self-start px-2">Created: {dateTimeHelper.convertStringToLocalTime(data.createdDate)}</div>
-                <div className="flex flex-row ">
-                    <IconSwap onIcon={<Pin size={32} />} offIcon={<PinOff size={32} />} onSwapCallback={handlePinnedRanking} defaultOn={data.isPinned}/>
+                <div className="self-start px-2" onClick={() => {navigateToRankingDetails}}>last updated: {dateTimeHelper.convertStringToLocalTime(data.lastUpdated)}</div>
+                <div className="self-start px-2" onClick={() => {navigateToRankingDetails}}>created: {dateTimeHelper.convertStringToLocalTime(data.createdDate)}</div>
+                <div className="flex flex-row justify-around">
+                    <div>
+                        <IconSwap onIcon={<Pin size={36} />} offIcon={<PinOff size={36} />} onSwapCallback={handlePinnedRanking} defaultOn={data.isPinned}/>
+                        {data.isPinned ? <p className="text-sm">click to unpin</p> : <p className="text-sm">click to pin</p>}
+                    </div>
+
+                    <div onClick={() => {onDelete(id, title)}} className="flex flex-col items-center">
+                        <Trash2 size={36} className="text-error"/>
+                    </div>
                 </div>
             </div>
+            
         </>
     )
 }

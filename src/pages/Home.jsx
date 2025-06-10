@@ -1,12 +1,12 @@
-import { use, useEffect, useState } from "react"
+import { useRef, useEffect, useState } from "react"
 import { useNavigate } from 'react-router';
 import { Plus } from 'lucide-react';
-import { programmingLanguagesRanking, nationalParksRanking } from "../components/exampledata"
 import { DragDropContext } from "@hello-pangea/dnd";
 import Rankings from "../components/Rankings"
 import { rankingService } from '../api/services';
 import { dateTimeHelper } from "../helper/helper";
 import { useUser } from '../contexts/UserContext';
+import ConfirmationModel from '../components/ConfirmationModal';
 
 function Home(){
 
@@ -15,6 +15,7 @@ function Home(){
 
     const navigate = useNavigate()
     const { user } = useUser()
+    const rankingToDelete = useRef({ id: null, title: "" })
 
     useEffect(()=>{
         // console.log(programmingLanguagesRanking)
@@ -58,6 +59,7 @@ function Home(){
                 console.log("Successfully saved ranking: ", response.data)
                 console.log("Rankings: post map", rankings)
                 setCurrentRankings(rankings)
+                showNotification("user rankings loaded", "success", 750)
             }
         }
         catch(error) {
@@ -65,6 +67,24 @@ function Home(){
             console.error("Error saving ranking: ", error)
         }
         setLoading(false)
+    }
+
+    async function deleteRanking(id)
+    {
+        console.log("Deleting ranking with ID: ", id)
+        try {
+            const response = await rankingService.deleteRanking(id)
+            if(response.error)
+            {
+                console.error("Error deleting ranking: ", response.error)
+                return
+            }
+            console.log("successfully deleted ranking: ", response.data)
+            showNotification("Ranking has been successfully deleted", "success", 750)
+            setCurrentRankings(prev => prev.filter(ranking => ranking.id !== id))
+        } catch (error) {
+            console.error("Error deleting ranking: ", error)
+        }
     }
 
     function handleDragEnd(result) {}
@@ -86,12 +106,31 @@ function Home(){
                         return a.pinnedTime - b.pinnedTime; // Sort by pinned time if both are pinned
                     }
 
+                    console.log("are these dates?", new Date(b.lastUpdated), new Date(a.lastUpdated))
                     return new Date(b.lastUpdated) - new Date(a.lastUpdated); // Sort by pinned time if both are pinned
             })
         console.log("Sorted Rankings: ", sortedRanking)
         setCurrentRankings(sortedRanking);
     }
 
+    function onRankingDelete(id, title) {
+        rankingToDelete.current = { id: id, title: title }
+        console.log("Ranking to delete: ", rankingToDelete.current)
+        const modal = document.getElementById("deleteConfirmation");
+        if(modal)
+        {
+            modal.showModal()
+        }
+    }
+
+    function onConfirmDelete() {
+        console.log("Deleting ranking: ", rankingToDelete.current)
+        deleteRanking(rankingToDelete.current.id)
+    }
+
+    function onRejectDelete() { }
+
+    
     return(
         <>
             <div className="w-full my-18">
@@ -117,7 +156,7 @@ function Home(){
                             {
                                 currentRankings.map((item, index)=>{
                                 return(<Rankings key={index} id={item.id} data={item} title={item.title} 
-                                    description={item.description} rankItems={item.items} onPinned={onRankingPinned}/>)
+                                    description={item.description} rankItems={item.items} onPinned={onRankingPinned} onDelete={onRankingDelete}/>)
                             })}
 
                             
@@ -125,7 +164,8 @@ function Home(){
                     </div>
                 </DragDropContext>
             }
-            
+            <ConfirmationModel dialogId={"deleteConfirmation"} modalTitle={"Are you sure?"} modalMessage={`Are you sure you want to delete ranking: ${rankingToDelete.current.title}`} 
+            onConfirm={onConfirmDelete} onReject={onRejectDelete} autoClose={true}/>
         </>
     )
 }

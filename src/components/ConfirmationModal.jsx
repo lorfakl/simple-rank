@@ -1,16 +1,34 @@
-function ConfirmationModel({dialogId, modalTitle, modalMessage, onConfirm, onReject})
+function ConfirmationModel({dialogId, modalTitle, modalMessage, onConfirm, onReject, autoClose = false})
 {
 
     function handleRejectButtonClicked()
     {
         console.log("No was clicked")
         onReject()
+        if(autoClose)
+        {
+            handleCloseModal()
+        }
     }
 
     function handleConfirmButtonClicked()
     {
         console.log("Yes was clicked")
         onConfirm()
+        if(autoClose)
+        {
+            handleCloseModal()
+        }
+    }
+
+    function handleCloseModal()
+    {
+        console.log("Close was clicked")
+        const modal = document.getElementById(dialogId);
+        if(modal)
+        {
+            modal.close()
+        }
     }
 
     return(<>

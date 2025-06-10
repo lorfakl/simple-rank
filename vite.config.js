@@ -20,5 +20,13 @@ export default defineConfig({
       }
     },
     open: true // This will automatically open the browser when you run npm run dev
+  },
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true // This will remove console logs in production build
+      }
+    },
   }
 })

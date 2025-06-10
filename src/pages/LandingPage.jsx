@@ -49,18 +49,17 @@ function LandingPage(){
                 "where your opinions are the rankings",
                 "rank anything, anytime, anywhere",
                 "seriously, just rank it",
-                "the ultimate ranking playground"
+                "you know you need, a live ranking of your friends"
             ];
 
             const tagLines = [
-                "List-Obsessed Rankaholics",
-                "Tier-List Tyrants",
-                "Orderly Oddballs",
-                "Ranking Rascals",
-                "Hierarchy Hooligans",
-                "Listicle Lunatics",
-                "Pecking-Order Pundits",
-                "Giga-autists"
+                "list-obsessed rankaholics",
+                "tier-List tyrants",
+                "orderly oddballs",
+                "ranking rascals",
+                "hierarchy hooligans",
+                "listicle lunatics",
+                "pecking-Order pundits"
             ]
             const randomTagLineIndex = Math.floor(Math.random() * tagLines.length);
             const randomPhaseIndex = Math.floor(Math.random() * rankingPhrases.length);
@@ -140,14 +139,16 @@ return(
         <div className="flex justify-center items-center space-x-8 text-gray-400">
             <div className="text-center">
                 <div className="text-2xl font-bold text-white">{totalRankings}</div>
-                <div className="text-lg">Rankings Created</div>
+                <div className="text-lg">rankings created</div>
             </div>
             <div className="w-px h-12 bg-gray-600"></div>
             <div className="text-center">
                 <div className="text-2xl font-bold text-white">{totalUsers}</div>
                 <div className="text-lg">{userTagLine}</div>
             </div>
+
         </div>
+        <div className="">This whole project is available on <span><a href="https://github.com/lorfakl/simple-rank">Github</a></span> there's no logging on this so feel free to report any issues</div>
     </>
     )
 }

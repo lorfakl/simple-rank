@@ -30,6 +30,7 @@ function ViewRanking(){
 
     const navigate = useNavigate()
     const supabase = useSupabase()
+    const { session } = useUser()
     const { showNotification } = useNotifications()
     const { id } = useParams()
 
@@ -45,7 +46,7 @@ function ViewRanking(){
         }
         getCurrentRank()
 
-    }, [])
+    }, [session])
 
     useEffect(() => {
 

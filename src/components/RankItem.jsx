@@ -36,7 +36,7 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditab
                 <div {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     ref={provided.innerRef} 
-                    className="flex flex-col h-fit rounded-xl border-4 p-1 bg-base-300">
+                    className="flex flex-col w-full rounded-xl border-4 p-1 bg-base-300">
                     <div className="text-3xl font-semibold">rank: {data.rank}</div>
                     {editMode? 
                         <>                            

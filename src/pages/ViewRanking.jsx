@@ -521,7 +521,7 @@ function ViewRanking(){
                             <Droppable droppableId='viewRanking'>
                                 {(provided) => (
                                     <div {...provided.droppableProps} 
-                                        className="h-120 flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
+                                        className="h-120 w-full flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
                                         ref={provided.innerRef}
                                     >
                                         {rankItems.map((item, index) => (

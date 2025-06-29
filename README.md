@@ -82,9 +82,9 @@ npm run dev
 
 ```
 src/
-├── components/          # Reusable React components
+├── components/         # Reusable React components
 ├── pages/              # Main application pages
-├── contexts/              # Custom React Contexts
+├── contexts/           # Custom React Contexts
 ├── services/           # API communication layer
 └── App.jsx             # Main application component
 ```
@@ -97,14 +97,6 @@ The frontend communicates with the C# backend through RESTful API endpoints:
 - `POST /api/rankings` - Create new ranking  
 - `GET /api/rankings/{id}` - Get specific ranking
 - `PUT /api/rankings/{id}` - Update ranking
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 

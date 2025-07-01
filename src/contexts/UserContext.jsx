@@ -1,103 +1,14 @@
-import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useSupabase } from './SupabaseContext';
 import { useNotifications } from './NotificationContext';
 import { authService } from '../api/services';
 
-// Example: Import other contexts you want to use
-// import { useTheme } from './ThemeContext';
-// import { useNotification } from './NotificationContext';
-// import { useSettings } from './SettingsContext';
-
-// Authentication API endpoints - replace with your actual API URLs
-const API_ENDPOINTS = {
-  EMAIL_SIGNIN: '/api/auth/email/signin',
-  EMAIL_SIGNUP: '/api/auth/email/signup',
-  GOOGLE_SIGNIN: '/api/auth/google',
-  OAUTH_SIGNIN: '/api/auth/oauth', // Generic OAuth endpoint
-  GET_USER: '/api/auth/user',
-  LOGOUT: '/api/auth/logout',
-  REFRESH_TOKEN: '/api/auth/refresh'
-};
-
-// Auth states
-const AUTH_ACTIONS = {
-  SIGN_IN_START: 'SIGN_IN_START',
-  SIGN_IN_SUCCESS: 'SIGN_IN_SUCCESS',
-  SIGN_IN_ERROR: 'SIGN_IN_ERROR',
-  SIGN_OUT: 'SIGN_OUT',
-  SET_USER: 'SET_USER',
-  SET_LOADING: 'SET_LOADING'
-};
-
-// Initial state
-const initialState = {
-  user: null,
-  isAuthenticated: false,
-  isLoading: true,
-  error: null,
-  token: localStorage.getItem('auth_token')
-};
-
-// Reducer
-function authReducer(state, action) {
-  switch (action.type) {
-    case AUTH_ACTIONS.SIGN_IN_START:
-      return {
-        ...state,
-        isLoading: true,
-        error: null
-      };
-    case AUTH_ACTIONS.SIGN_IN_SUCCESS:
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null
-      };
-    case AUTH_ACTIONS.SIGN_IN_ERROR:
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: action.payload
-      };
-    case AUTH_ACTIONS.SIGN_OUT:
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null
-      };
-    case AUTH_ACTIONS.SET_USER:
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: !!action.payload,
-        isLoading: false
-      };
-    case AUTH_ACTIONS.SET_LOADING:
-      return {
-        ...state,
-        isLoading: action.payload
-      };
-    default:
-      return state;
-  }
-}
 
 // Create context
 const UserContext = createContext();
 
-
 // Provider component
 export function UserProvider({ children }) {
-  const [state, dispatch] = useReducer(authReducer, initialState);
 
   const [user, setUser] = useState({})
   const [session, setSession] = useState(null)
@@ -106,11 +17,6 @@ export function UserProvider({ children }) {
 
   const supabase = useSupabase()
   const { showNotification } = useNotifications()
-
-  // Example: Using other contexts within UserContext
-  // const { setTheme } = useTheme();
-  // const { showNotification } = useNotification();
-  // const { getUserSettings, updateSettings } = useSettings();
 
   // Check if user is authenticated on mount
   useEffect(() => {
@@ -217,7 +123,10 @@ export function UserProvider({ children }) {
   async function signInWithGoogle() {
     
     const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google'
+        provider: 'google',
+        options: {
+            redirectTo: `${window.location.origin}/Home` // Redirect to the current origin after sign in
+        }
     })
 
     if(error)
@@ -241,7 +150,10 @@ export function UserProvider({ children }) {
   async function signInWithDiscord() {
     
     const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'discord'
+        provider: 'discord', 
+        options: {
+            redirectTo: `${window.location.origin}/Home` // Redirect to the current origin after sign in
+        }
     })
     
     if(error)
@@ -307,8 +219,6 @@ export function UserProvider({ children }) {
     user: user,
     session: session,
     isAuthenticated: authenticated,
-    isLoading: state.isLoading,
-    error: state.error,
 
     // Auth functions
     signInWithEmail,

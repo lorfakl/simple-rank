@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router';
-import { useSupabase } from '../contexts/SupabaseContext';
+import { useUser } from '../contexts/UserContext';
 import { statisticService } from '../api/services';
 import { Medal, ArrowRight } from 'lucide-react';
 import { Plus } from 'lucide-react';
@@ -11,15 +11,37 @@ import Rankings from "../components/Rankings"
 
 function LandingPage(){
 
+    const rankingPhrases = [
+        "for weirdos that just wanna rank things...that's literally it",
+        "because why not rank your favorite memes?",
+        "the only ranking site that matters or exists, that I could find",
+        "where your opinions are the rankings",
+        "rank anything, anytime, anywhere",
+        "seriously, just rank it",
+        "you know you need, a live ranking of your friends"
+    ];
+
+    const tagLines = [
+        "list-obsessed rankaholics",
+        "tier-List tyrants",
+        "orderly oddballs",
+        "ranking rascals",
+        "hierarchy hooligans",
+        "listicle lunatics",
+        "pecking-Order pundits",
+        "Giga-autists"
+    ]
+
+    const { isAuthenticated } = useUser()
+
     const [currentRankings, setCurrentRankings] = useState([])
     const [totalRankings, setTotalRankings] = useState(0)
     const [totalUsers, setTotalUsers] = useState(0)
     const [bannerTagLine, setBannerTagLine] = useState("for weirdos that just wanna rank things...that's literally it")
-    const [userTagLine, setUserTagLine] = useState("Giga-autists")
+    const [userTagLine, setUserTagLine] = useState(getRandomUserTagLine())
 
 
     const navigate = useNavigate()
-    const supabase = useSupabase()
     
     useEffect(()=>{
         
@@ -42,27 +64,10 @@ function LandingPage(){
 
     useEffect(() => {
         const tagLineTimeout = setTimeout(() => {
-            const rankingPhrases = [
-                "for weirdos that just wanna rank things...that's literally it",
-                "because why not rank your favorite memes?",
-                "the only ranking site that matters or exists, that I could find",
-                "where your opinions are the rankings",
-                "rank anything, anytime, anywhere",
-                "seriously, just rank it",
-                "you know you need, a live ranking of your friends"
-            ];
-
-            const tagLines = [
-                "list-obsessed rankaholics",
-                "tier-List tyrants",
-                "orderly oddballs",
-                "ranking rascals",
-                "hierarchy hooligans",
-                "listicle lunatics",
-                "pecking-Order pundits"
-            ]
+            
             const randomTagLineIndex = Math.floor(Math.random() * tagLines.length);
             const randomPhaseIndex = Math.floor(Math.random() * rankingPhrases.length);
+
             setUserTagLine(tagLines[randomTagLineIndex]);
             setBannerTagLine(rankingPhrases[randomPhaseIndex]);
         }, 10000);
@@ -101,6 +106,11 @@ function LandingPage(){
         }
     }
 
+    function getRandomUserTagLine() {
+        const randomIndex = Math.floor(Math.random() * tagLines.length);
+        return tagLines[randomIndex];
+    }
+
 
 return(
     <>
@@ -127,12 +137,24 @@ return(
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <button 
-                onClick={() => {navigate("/SignUp")}} 
-                className="group bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center">
-                start ranking now
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+
+            { isAuthenticated ?
+                <>  
+                    <button 
+                        onClick={() => {navigate("/Home")}} 
+                        className="group bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center">
+                        go to my rankings
+                        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </>
+                :
+                <button 
+                    onClick={() => {navigate("/SignUp")}} 
+                    className="group bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center">
+                    start ranking now
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+            }   
         </div>
 
         {/* Social Proof */}

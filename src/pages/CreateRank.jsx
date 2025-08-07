@@ -295,11 +295,11 @@ function CreateRank(){
 
 
                 <LimitedTextArea inputLabel={"ranking title"} characterLimit={155} placeholderText={"title"} handleInputChange={handleRankingTitle} showRequired={true}
-                initialValue={protoRanking.title} />
+                initialValue={protoRanking.title} useFullWidth={true} />
 
 
                 <LimitedTextArea inputLabel={"ranking description"} characterLimit={255} placeholderText={"description"} handleInputChange={handleRankingDescription} 
-                    initialValue={protoRanking.description}/>
+                    initialValue={protoRanking.description} useFullWidth={true} />
 
                 <button className="outline-dashed" onClick={() => {handleAddRankItemModal(true)}}>
                     <div className="flex flex-row items-center">

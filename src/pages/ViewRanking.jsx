@@ -478,7 +478,7 @@ function ViewRanking(){
 
     return(
         <>
-            <div className="mt-18 mb-8 w-full">
+            <div className="mt-18 mb-8">
                 
                 <div className="flex flex-col gap-y-4">
                 

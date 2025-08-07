@@ -143,6 +143,7 @@ function Home(){
                 loading ? 
                 <div className="flex justify-center">
                     <p className="text-2xl font-semibold">Loading...</p>
+                    <span className="loading loading-spinner loading-xl"></span>
                 </div> 
                 : 
                 <DragDropContext onDragEnd={(handleDragEnd)}>

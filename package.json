@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "concurrently \"npm run server\" \"npm run vite\" ",
-    "server": "cd simple-rank-backend && dotnet run"
+    "server": "cd ../simple-rank-backend && dotnet run"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

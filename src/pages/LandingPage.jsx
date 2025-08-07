@@ -35,8 +35,8 @@ function LandingPage(){
     const { isAuthenticated } = useUser()
 
     const [currentRankings, setCurrentRankings] = useState([])
-    const [totalRankings, setTotalRankings] = useState(0)
-    const [totalUsers, setTotalUsers] = useState(0)
+    const [totalRankings, setTotalRankings] = useState(-1)
+    const [totalUsers, setTotalUsers] = useState(-1)
     const [bannerTagLine, setBannerTagLine] = useState("for weirdos that just wanna rank things...that's literally it")
     const [userTagLine, setUserTagLine] = useState(getRandomUserTagLine())
 
@@ -160,12 +160,26 @@ return(
         {/* Social Proof */}
         <div className="flex justify-center items-center space-x-8 text-gray-400">
             <div className="text-center">
-                <div className="text-2xl font-bold text-white">{totalRankings}</div>
+                <div className="text-2xl font-bold text-white">
+                    {totalRankings === -1 ? 
+                    <>
+                        <span className="loading loading-spinner loading-sm"></span>
+                    </> 
+                    : 
+                    totalRankings}
+                </div>
                 <div className="text-lg">rankings created</div>
             </div>
             <div className="w-px h-12 bg-gray-600"></div>
             <div className="text-center">
-                <div className="text-2xl font-bold text-white">{totalUsers}</div>
+                <div className="text-2xl font-bold text-white">
+                    {totalUsers === -1 ? 
+                    <>
+                        <span className="loading loading-spinner loading-sm"></span>
+                    </> 
+                    : 
+                    totalUsers}
+                </div>
                 <div className="text-lg">{userTagLine}</div>
             </div>
 

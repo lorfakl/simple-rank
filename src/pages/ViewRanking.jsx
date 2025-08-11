@@ -13,6 +13,7 @@ import { rankingService, rankItemService } from '../api/services';
 import { useUser } from '../contexts/UserContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { RankingDetails } from '../components/RankingDetails';
+import { EditRankDetailsModal } from '../components/EditRankDetailsModal';
 
 function ViewRanking(){
 
@@ -405,10 +406,6 @@ function ViewRanking(){
         }
     }
 
-    function handleDescriptionTextChange(desc){
-        console.log("Description text changed: ", desc)
-        setRankingInfo({...rankingInfo, description: desc})
-    }
 
     async function handleShareableLinkCreation(){
         blurHtmlElement("shareDropdown")
@@ -461,11 +458,21 @@ function ViewRanking(){
         updateBasicRankingInfo(rankingInfo.description, rankingInfo.title, visibilityToSet)
     }
 
-    function saveDescription(desc)
+    function saveTitleAndDescription(desc, title)
     {
-        console.log("Saving description: ", desc)
-        setRankingInfo({...rankingInfo, description: desc})
-        updateBasicRankingInfo(desc, rankingInfo.title, rankingInfo.isPublic)
+        console.log("Saving description: ", desc, " and title: ", title)
+        setRankingInfo({...rankingInfo, description: desc, title: title})
+        updateBasicRankingInfo(desc, title, rankingInfo.isPublic)
+    }
+
+    function handleBasicInfoSave(title, desc)
+    {
+        saveTitleAndDescription(desc, title)
+        const dialog = document.getElementById("editRankDetailsModal")
+        if(dialog)
+        {
+            dialog.close()
+        }
     }
 
     function handleAddRankItemModal(){
@@ -476,23 +483,31 @@ function ViewRanking(){
         }
     }
 
+    function handleEditRankingDetails()
+    {
+        let editRankDetailsModal = document.getElementById("editRankDetailsModal")
+        if(editRankDetailsModal)
+        {
+            editRankDetailsModal.showModal()
+        }
+    }
+
     return(
         <>
             <div className="mt-18 mb-8">
                 
                 <div className="flex flex-col gap-y-4">
                 
+                <div className="flex flex-col gap-y-5 items-center" onClick={handleEditRankingDetails}>
                     <header className="font-semibold text-3xl lg:text-5xl self-center">{rankingInfo.title}
                         {updating ? <> <span className="inline-block"> <RefreshCw  size={30} className="animate-spin" /></span></> : null}
                     </header>  
 
-                    <ToggleTextInput inputFieldLabel="Description"
-                        textToDisplay={rankingInfo.description} 
-                        editButtonLabel={"edit"}
-                        handleFinishEdit={saveDescription}
-                        handleTextInputChange={handleDescriptionTextChange}
-                        showRequired={false}/>
-
+                    <div className="flex flex-col gap-x-2 items-center">
+                        <div className=" font-semibold text-lg">{rankingInfo.description}</div>
+                    </div>
+                </div>
+                    
                     <RankingDetails createdBy={rankingInfo.createdBy} createdDate={rankingInfo.creationDate} lastupateDate={rankingInfo.lastUpdate} 
                         itemCount={rankItems.length} isPublic={rankingInfo.isPublic} isShared={rankingInfo.isShared} rankingId={id} 
                         onVisibilityClick={handleVisibilityOnClick} onCreateShareableLink={handleShareableLinkCreation} reactionIsInteractable={false}/>
@@ -540,6 +555,7 @@ function ViewRanking(){
             <ConfirmationModel dialogId={"changeVisibilityConfirmation"} modalTitle={`Make Ranking ${!rankingInfo.isPublic? "Public" : "Private"}`} modalMessage={`Are you sure you want to make this ranking ${!rankingInfo.isPublic? "Public" : "Private"}`} onConfirm={() => {saveVisibility(!rankingInfo.isPublic)}} onReject={() => {}}/>
             <ConfirmationModel dialogId={"displayShareableId"} modalTitle={`Shareable Link Available`} modalMessage={`Copy this link to share this rank with others: ${shareableLink.current}`} onConfirm={() => {}} onReject={() => {}}/>
             <AddRankItemModal  dialogId={"addRankModal"} onClose={()=>{console.log("Modal closed")}} onSave={addNewRankItem} totalRanks={itemCount} />
+            <EditRankDetailsModal dialogId={"editRankDetailsModal"} rankTitle={rankingInfo.title} rankDescription={rankingInfo.description} onSave={handleBasicInfoSave} onClose={()=>{console.log("Edit Rank Details Modal closed")}} />
         </>
     )
 }

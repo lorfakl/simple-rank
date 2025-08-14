@@ -1,4 +1,4 @@
-import { X, SquarePen, Trash2, Save } from "lucide-react"
+import { X, SquarePen, Trash2, Save, GripHorizontal } from "lucide-react"
 import { Draggable } from "@hello-pangea/dnd"
 import LimitedTextInput from "./LimitedTextInput"
 import { useState, useRef, useEffect } from 'react'
@@ -34,10 +34,19 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditab
         <Draggable draggableId={id} index={index}>
             {(provided) => (
                 <div {...provided.draggableProps}
-                    {...provided.dragHandleProps}
                     ref={provided.innerRef} 
                     className="flex flex-col w-full rounded-xl border-4 p-1 bg-base-300">
-                    <div className="text-3xl font-semibold">rank: {data.rank}</div>
+                        <div className="flex flex-row  justify-between items-center" {...provided.dragHandleProps}>
+                            <div className="drag-handle" >
+                                <GripHorizontal className="w-10 h-10" color="grey" />
+                            </div>
+                            <div className="text-3xl font-semibold">rank: {data.rank}</div>
+                            <div className="drag-handle"> 
+                                <GripHorizontal className="w-10 h-10"  color="grey" />
+                            </div>
+                        </div>
+                    
+                    
                     {editMode? 
                         <>                            
                             <div className="card card-border bg-base-100 w-full card-sm shadow-sm">

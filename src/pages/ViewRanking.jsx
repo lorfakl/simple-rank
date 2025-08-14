@@ -497,8 +497,8 @@ function ViewRanking(){
             <div className="mt-18 mb-8">
                 
                 <div className="flex flex-col gap-y-4">
-                
-                <div className="flex flex-col gap-y-5 items-center" onClick={handleEditRankingDetails}>
+
+                <div className="flex flex-col gap-y-5 items-center rounded-lg hover:cursor-pointer hover:outline-4 hover:outline-secondary hover:outline-offset-2" onClick={handleEditRankingDetails}>
                     <header className="font-semibold text-3xl lg:text-5xl self-center">{rankingInfo.title}
                         {updating ? <> <span className="inline-block"> <RefreshCw  size={30} className="animate-spin" /></span></> : null}
                     </header>  

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, CirclePlus, CircleMinus } from 'lucide-react';
 import LimitedTextInput from './LimitedTextInput';
 import LimitedTextArea from './LimitedTextArea';
 
@@ -18,6 +18,11 @@ export function AddRankItemModal({ dialogId, onClose, onSave, totalRanks}) {
     }
     
   },[])
+
+  useEffect(()=>{
+    setRank(totalRanks + 1)
+    
+  },[totalRanks])
 
   useEffect(() => {
     console.log("modal input data", title, description, imageUrl)
@@ -55,9 +60,54 @@ export function AddRankItemModal({ dialogId, onClose, onSave, totalRanks}) {
     setRank(prevRank => prevRank + 1)
   }
 
-  function handRankChange(rankValue){
+  function handRankChangeButtons(rankValue, goUp ) {
     console.log("rank value ", rankValue)
-    setRank(prevRank => prevRank + 1)
+    if(goUp)
+    {
+      if(rankValue >= totalRanks + 1)
+      {
+        setRank(totalRanks + 1)
+        return
+      }
+
+      setRank(prevRank => prevRank + 1)
+    }
+    else
+    {
+      if(rankValue <= 1)
+      {
+        setRank(1)
+        return
+      }
+
+      setRank(prevRank => prevRank - 1)
+    }
+  }
+
+  function handRankChange(rankValue) {
+    console.log(rankValue)
+    console.log("rank value ", rankValue)
+    
+    if(rankValue === "")
+    {
+      setRank("")
+      console.log("rank value is empty")
+      return
+    }
+
+    if(rankValue >= totalRanks + 1)
+    {
+      setRank(totalRanks + 1)
+      return
+    }
+
+    if(rankValue <= 1)
+    {
+      setRank(1)
+      return
+    }
+
+    setRank(rankValue) 
   }
 
   return (
@@ -76,14 +126,19 @@ export function AddRankItemModal({ dialogId, onClose, onSave, totalRanks}) {
                     initialValue={description} useFullWidth={true} textSize='text-xl' syncToInitialValue={true}/>
             </div>
             
+            <div className='font-semibold select-none'>enter item rank</div>
+            <div className="flex flex-row justify-between place-items-start gap-x-4">
+              <CircleMinus className="w-10 h-10 cursor-pointer justify-self-start hover:textslate-400" onClick={() => {handRankChangeButtons(rank, false)}} />
 
-            <label className="floating-label text-xl w-full">
-                <span>enter item rank</span>
-                <input type="number" className="input validator text-xl" required placeholder={`type a number between 1 to ${totalRanks + 1}`} 
-                    min="1" max={totalRanks + 1} title={`must be between be 1 ${totalRanks + 1}`} value={rank} onChange={(e)=>{handRankChange(e.target.value)}}/>
+                <label className="floating-label text-xl ">
+                  
+                  <input type="number" className="input validator text-4xl text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" required
+                      min="1" max={totalRanks + 1} title={`must be between be 1 ${totalRanks + 1}`} value={rank} onChange={(e)=>{handRankChange(e.target.value)}}/>
+                  <p className="validator-hint">{`must be between 1 ${totalRanks + 1}`}</p>
+                </label>
 
-                <p className="validator-hint">{`must be between 1 ${totalRanks + 1}`}</p>
-            </label>
+              <CirclePlus className="w-10 h-10 cursor-pointer" onClick={() => {handRankChangeButtons(rank, true)}} />
+            </div>
 
             <div className="flex flex-row gap-x-6 justify-end">
                 <button className="btn btn-neutral" onClick={handleClose}>Close</button>

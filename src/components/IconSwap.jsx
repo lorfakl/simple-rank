@@ -1,6 +1,6 @@
 import { act, useEffect, useState } from "react"
 
-export function IconSwap({onIcon, offIcon, defaultOn, onSwapCallback})
+export function IconSwap({onIcon, offIcon, defaultOn, onSwapCallback, parentControlSwap = false})
 {
     const [active, setActive] = useState(defaultOn)
 
@@ -16,11 +16,29 @@ export function IconSwap({onIcon, offIcon, defaultOn, onSwapCallback})
         onSwapCallback(!active)
     }
 
+    function handleOnClickParent()
+    {
+        console.log("Parent control swap happened")
+        defaultOn = !defaultOn
+        onSwapCallback(defaultOn)
+    }
+    
     return(
     <>
-        <label className={`swap swap-rotate ${active? "swap-active":""}`} onClick={handleOnClick}>
-            <div className="swap-on">{onIcon}</div>
-            <div className="swap-off">{offIcon}</div>
-        </label>
+        {parentControlSwap? 
+            <> 
+                <label className={`swap swap-rotate ${defaultOn? "swap-active":""}`} onClick={handleOnClickParent}>
+                    <div className="swap-on">{onIcon}</div>
+                    <div className="swap-off">{offIcon}</div>
+                </label>
+            </> 
+            : 
+            <>
+                <label className={`swap swap-rotate ${active? "swap-active":""}`} onClick={handleOnClick}>
+                    <div className="swap-on">{onIcon}</div>
+                    <div className="swap-off">{offIcon}</div>
+                </label>
+            </>}
+        
     </>)
 }

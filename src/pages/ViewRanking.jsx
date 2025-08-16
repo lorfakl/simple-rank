@@ -401,6 +401,7 @@ function ViewRanking(){
                 {
                     delete createdRanks.current[idToRemove]
                 }
+                await updateRankingItemPlace(rankItems)
                 //showNotification("Successfully removed rank item", "success", 750)
             }
         }

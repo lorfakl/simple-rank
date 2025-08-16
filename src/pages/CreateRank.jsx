@@ -286,20 +286,20 @@ function CreateRank(){
             </> 
             : 
             <>
-                 <div className="flex flex-col gap-y-8 items-center w-full">
+                <div className="flex flex-col gap-y-8 items-center w-full max-h-screen">
 
-                <div className="flex flex-row gap-4">
-                    <button className="btn btn-soft btn-success" onClick={handleSaveRankingOnClick}><Save />save ranking</button>
-                    <button className="btn btn-soft btn-error" onClick={() => {handleDiscardRankingOnClick()}}><Trash2 />discard ranking</button>
+                <div className="flex flex-row gap-4 justify-between w-fit">
+                    <button className="btn btn-soft btn-success w-1/2" onClick={handleSaveRankingOnClick}><Save />save ranking</button>
+                    <button className="btn btn-soft btn-error w-1/2" onClick={() => {handleDiscardRankingOnClick()}}><Trash2 />discard ranking</button>
                 </div>
 
 
                 <LimitedTextArea inputLabel={"ranking title"} characterLimit={155} placeholderText={"title"} handleInputChange={handleRankingTitle} showRequired={true}
-                initialValue={protoRanking.title} useFullWidth={true} />
+                initialValue={protoRanking.title} useFullWidth={false} />
 
 
                 <LimitedTextArea inputLabel={"ranking description"} characterLimit={255} placeholderText={"description"} handleInputChange={handleRankingDescription} 
-                    initialValue={protoRanking.description} useFullWidth={true} />
+                    initialValue={protoRanking.description} useFullWidth={false} />
 
                 <button className="outline-dashed" onClick={() => {handleAddRankItemModal(true)}}>
                     <div className="flex flex-row items-center">

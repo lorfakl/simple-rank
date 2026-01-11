@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { useNotifications } from '../contexts/NotificationContext';
+import { useNavigate } from 'react-router-dom';
+
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL, // Replace with your API base URL
     timeout: 10000, // Request timeout in milliseconds
@@ -34,6 +36,13 @@ client.interceptors.response.use(
         return response;
     },
     (error) => {
+        const navigate = useNavigate()
+        const { showNotification } = useNotifications()
+        
+        if(error.response && (error.response.status === 401 || error.response.status === 403)) {
+            navigate('/SignUp')
+            showNotification("You are not signed in, please sign in to continue", "info", 3000)
+        }
         return Promise.reject(error);
     }
 );

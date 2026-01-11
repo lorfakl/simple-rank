@@ -184,6 +184,7 @@ return(
             </div>
 
         </div>
+        <div className="text-center text-sm font-semibold mt-4 underline">Backend server hibernates to save money🤑, so if the stats don't load, please refresh.</div>
         <div className="">This whole project is available on <span><a href="https://github.com/lorfakl/simple-rank">Github</a></span> there's no logging on this so feel free to report any issues</div>
     </>
     )

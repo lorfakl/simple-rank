@@ -9,7 +9,11 @@ export const userService = {
 };
 
 export const authService = {
-  setMetadata: (request) => apiClient.post("/api/user/SetUserMetadata", request)
+  signUp: (request) => apiClient.post("/api/Auth/SignUp", request),
+  signIn: (request) => apiClient.post("/api/Auth/SignIn", request),
+  me: () => apiClient.get("/api/Auth/Me"),
+  signOut: () => apiClient.post("/api/Auth/SignOut"),
+  setMetadata: (request) => apiClient.post("/api/User/SetUserMetadata", request)
 };
 
 

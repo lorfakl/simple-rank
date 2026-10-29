@@ -1,240 +1,157 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useSupabase } from './SupabaseContext';
 import { useNotifications } from './NotificationContext';
 import { authService } from '../api/services';
 
-
-// Create context
 const UserContext = createContext();
 
-// Provider component
-export function UserProvider({ children }) {
+function normalizeUser(raw) {
+  const metadata = raw?.user_metadata || raw?.userMetadata || {};
+  return {
+    id: raw?.id || '',
+    email: raw?.email || '',
+    user_metadata: {
+      full_name: metadata.full_name || metadata.fullName || raw?.email || 'anonymous',
+      avatar_url: metadata.avatar_url || metadata.avatarUrl || ''
+    }
+  };
+}
 
+export function UserProvider({ children }) {
   const [user, setUser] = useState({})
   const [session, setSession] = useState(null)
-
   const [authenticated, setAuthenticated] = useState(false)
 
-  const supabase = useSupabase()
   const { showNotification } = useNotifications()
 
-  // Check if user is authenticated on mount
   useEffect(() => {
-    const getSession = async () => {
-      try
-      {
-        const {data, error} = await supabase.auth.getSession()
-        if(error === null || error === undefined)
-        {
-            setUser(data.session.user)
-            setSession(data.session)
-            setAuthenticated(true)
-        }
+    const token = localStorage.getItem('auth_token');
+    const userRaw = localStorage.getItem('user');
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          console.log("Auth state changed: ", event, session);
-          setSession(session)
-        });
-        
-        return () => {
-          subscription.unsubscribe();
-        };
-
-      }
-      catch(error)
-      {
-        console.error(error)
-      }
-      
+    if (!token || !userRaw) {
+      return;
     }
-    
-    getSession()
+
+    try {
+      const parsed = normalizeUser(JSON.parse(userRaw));
+      const currentSession = { access_token: token, user: parsed };
+      setUser(parsed);
+      setSession(currentSession);
+      setAuthenticated(true);
+
+      authService.me().catch(() => {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        setUser({});
+        setSession(null);
+        setAuthenticated(false);
+      });
+    } catch {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+    }
   }, []);
-  
 
   useEffect(() => {
-    // Check if user is authenticated
-    if (session) {
-
+    if (session && session.user) {
       setUser(session.user);
       setAuthenticated(true);
-      localStorage.setItem('auth_token', session.access_token); // Store token
-      localStorage.setItem('user', JSON.stringify(session.user)); // Store user data
+      localStorage.setItem('auth_token', session.access_token);
+      localStorage.setItem('user', JSON.stringify(session.user));
+      localStorage.setItem('fullName', session.user.user_metadata.full_name || '');
+      localStorage.setItem('avatarUrl', session.user.user_metadata.avatar_url || '');
       setUserMetadata(session.user)
-
     } else {
       setUser({});
       setAuthenticated(false);
-      localStorage.removeItem('auth_token'); // Clear token if no session
-      localStorage.removeItem('user'); // Clear user data
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('fullName');
+      localStorage.removeItem('avatarUrl');
     }
   }, [session]);
 
-
-
-  // Email sign in
   async function signInWithEmail(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-    })
-    console.log(" user context: ", data, error)
-    if(error != null)
-    {
-        //console.log("error on sign in with Email ", error)
-        showNotification(`${error}`, "error", 10000)
-        return {error: error, user: undefined}
-        
-    }
-    else
-    {
-        //console.log("successfully signed in with Email, ", data)
-        showNotification("Successfully logged in", "success", 1000)
-        setSession(data.session)
-        return {error: undefined, user: data.session.user} 
+    try {
+      const { data } = await authService.signIn({ email, password });
+      const authUser = normalizeUser(data.session.user);
+      setSession({ access_token: data.session.access_token, user: authUser });
+      showNotification('Successfully logged in', 'success', 1000);
+      return { error: undefined, user: authUser };
+    } catch (error) {
+      showNotification('Invalid credentials', 'error', 5000);
+      return { error, user: undefined };
     }
   }
 
-  // Email sign up
-  async function signUpWithEmail(email, password, additionalData = {}) {
-    console.log(supabase)
-    const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password
-    })
-
-    console.log(data, error)
-    if(error)
-    {
-        console.log("error on sign in with Email ", error)
-        showNotification(`${error}`, "error", 10000)
-        return {error: error, user: undefined}
-    }
-    else
-    {
-        //console.log("successfully signed in with Email, ", data)
-        showNotification("Successfully signed up, welcome", "success", 3000)
-        setSession(data.session)
-        return {error: undefined, user: data.user} 
+  async function signUpWithEmail(email, password) {
+    try {
+      const { data } = await authService.signUp({ email, password });
+      const authUser = normalizeUser(data.session.user);
+      setSession({ access_token: data.session.access_token, user: authUser });
+      showNotification('Successfully signed up, welcome', 'success', 3000);
+      return { error: undefined, user: authUser };
+    } catch (error) {
+      showNotification('Unable to sign up', 'error', 5000);
+      return { error, user: undefined };
     }
   }
 
-  // Google sign in
   async function signInWithGoogle() {
-    
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-            redirectTo: `${window.location.origin}/Home` // Redirect to the current origin after sign in
-        }
-    })
-
-    if(error)
-    {
-        //console.log("error on sign in with Email ", error)
-        showNotification(`${error}`, "error", 10000)
-        return {error: error, user: undefined}
-        
-    }
-    else
-    {
-        //console.log("successfully signed in with Email, ", data)
-        showNotification("Successfully signed in", "success", 3000)
-        setSession(data.session)
-        console.log("user context: ", data)
-        return {error: undefined, user: data.session.user} 
-    }
+    showNotification('Google OAuth is not configured in this local migration build', 'info', 4000)
+    return { error: 'oauth_not_configured', user: undefined }
   }
 
-  // Discord OAuth sign in
   async function signInWithDiscord() {
-    
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'discord', 
-        options: {
-            redirectTo: `${window.location.origin}/Home` // Redirect to the current origin after sign in
-        }
-    })
-    
-    if(error)
-    {
-        //console.log("error on sign in with Email ", error)
-        showNotification(`${error}`, "error", 10000)
-        return {error: error, user: undefined}
-        
+    showNotification('Discord OAuth is not configured in this local migration build', 'info', 4000)
+    return { error: 'oauth_not_configured', user: undefined }
+  }
+
+  async function setUserMetadata(currentUser){
+    const fullName = currentUser?.user_metadata?.full_name || currentUser?.email || 'anonymous';
+    const avatarUrl = currentUser?.user_metadata?.avatar_url || '';
+
+    const request = {
+      id: currentUser.id,
+      name: fullName,
+      avatarUrl,
     }
-    else
-    {
-        //console.log("successfully signed in with Email, ", data)
-        showNotification("Successfully signed in", "success", 3000)
-        setSession(data.session)
-        return {error: undefined, user: data.session.user} 
+
+    try {
+      await authService.setMetadata(request)
+    } catch {
+      // best-effort
     }
   }
 
-  async function setUserMetadata(user){
-    let request = {
-      id: user.id,
-      name: user.user_metadata.full_name,
-      avatarUrl: user.user_metadata.avatar_url,
-    }
-
-    try{
-      let response = await authService.setMetadata(request)
-      if(response.error)
-      {
-
-      }
-      else
-      {
-
-      }
-    }
-    catch(error)
-    {
-
-    }
-  }
-
-
-  // Sign out
   async function signOut() {
-    const { error } = await supabase.auth.signOut()
+    try {
+      await authService.signOut()
+    } catch {
+      // ignore
+    }
     setUser({})
     setSession(null)
-    if(error)
-    {
-        showNotification(`${error}`, "error", 10000)
-    }
   }
 
-  // Get current user information
   function getCurrentUser() {
     return user;
   }
 
-
   const value = {
-    // State
-    user: user,
-    session: session,
+    user,
+    session,
     isAuthenticated: authenticated,
-
-    // Auth functions
     signInWithEmail,
     signUpWithEmail,
     signInWithGoogle,
     signInWithDiscord,
     signOut,
-
-    // User functions
     getCurrentUser
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
-// Custom hook to use the context
 export function useUser() {
   const context = useContext(UserContext);
   if (!context) {
@@ -243,17 +160,12 @@ export function useUser() {
   return context;
 }
 
-// Higher-order component for protected routes
 export function withAuth(Component) {
   return function AuthenticatedComponent(props) {
-    const { isAuthenticated, isLoading } = useUser();
-
-    if (isLoading) {
-      return <div>Loading...</div>; // Replace with your loading component
-    }
+    const { isAuthenticated } = useUser();
 
     if (!isAuthenticated) {
-      return <div>Please sign in to access this page.</div>; // Replace with redirect to login
+      return <div>Please sign in to access this page.</div>;
     }
 
     return <Component {...props} />;

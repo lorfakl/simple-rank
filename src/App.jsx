@@ -1,10 +1,5 @@
 import './App.css'
-import { useState, useEffect } from 'react'
-
-import { BrowserRouter, Routes, Route, Router } from 'react-router-dom'
-import { createClient } from '@supabase/supabase-js'
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Signup from './pages/Signup'
 import LandingPage from './pages/LandingPage'

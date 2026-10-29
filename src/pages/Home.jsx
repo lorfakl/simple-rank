@@ -25,7 +25,7 @@ function Home(){
         // console.log(nationalParksRanking)
         // setCurrentRankings([programmingLanguagesRanking, nationalParksRanking])
         const getRankings = async () => {
-            if(session.user.id === undefined || session.user.id === null)
+            if(!session?.user?.id)
             {
                 console.error("User ID is not defined")
                 return
@@ -46,7 +46,7 @@ function Home(){
         setLoading(true)
         try {
             console.log("Getting all rankings: ")
-            const response = await rankingService.getUserRankings(user.id) // Replace 1 with the actual user ID
+            const response = await rankingService.getUserRankings(session.user.id) // Replace 1 with the actual user ID
 
             setLoading(false)
             if(response.error)

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using simple_rank_backend.NewApp.Common;
 using simple_rank_backend.NewApp.Data;
 using simple_rank_backend.NewApp.DTOs;
 using simple_rank_backend.NewApp.Models;
@@ -19,7 +20,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateRanking([FromBody] CreateRankingRequest rq)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = new Ranking
@@ -51,7 +52,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateRankItem([FromBody] CreateRankingItemRequest rq)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = await db.Rankings.Include(r => r.Items).FirstOrDefaultAsync(r => r.Id == rq.RankingId && r.OwnerId == ownerId);
@@ -77,7 +78,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpGet("{userId}")]
     public async Task<IActionResult> GetUserRankings(string userId)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
         if (ownerId != userId) return Forbid();
 
@@ -97,7 +98,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpGet("{rankingId}")]
     public async Task<IActionResult> GetRanking(string rankingId)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = await db.Rankings.Include(r => r.Items).FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
@@ -111,7 +112,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpPost("{rankingId}")]
     public async Task<IActionResult> GetShareableLink(string rankingId)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = await db.Rankings.Include(r => r.ShareableLink).FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
@@ -146,7 +147,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpPut("{rankingId}")]
     public async Task<IActionResult> EditRanking(string rankingId, [FromBody] UpdateRankingRequest rq)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = await db.Rankings.Include(r => r.Items).FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
@@ -192,7 +193,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpPost("{rankingId}")]
     public async Task<IActionResult> UpdateRankItemsPlacement(string rankingId, [FromBody] UpdateRankItemPlacementRequest rq)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = await db.Rankings.Include(r => r.Items).FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
@@ -215,7 +216,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpPost("{rankingId}")]
     public async Task<IActionResult> PinRanking([FromBody] PinRankingRequest rq, string rankingId)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = await db.Rankings.FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
@@ -233,7 +234,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpDelete("{rankingId}")]
     public async Task<IActionResult> DeleteRanking(string rankingId)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = await db.Rankings.FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
@@ -248,7 +249,7 @@ public class RankController(AppDbContext db) : ControllerBase
     [HttpPost("{rankItemId}")]
     public async Task<IActionResult> DeleteRankItem([FromBody] DeleteRankItemRequest rq)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ownerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
 
         var ranking = await db.Rankings.FirstOrDefaultAsync(r => r.Id == rq.RankingId && r.OwnerId == ownerId);
@@ -261,6 +262,74 @@ public class RankController(AppDbContext db) : ControllerBase
         ranking.LastUpdated = DateTime.UtcNow;
         await db.SaveChangesAsync();
         return Ok(new ResponseBase { Message = "removed rank item" });
+    }
+
+    [Authorize]
+    [HttpPut("{rankItemId}")]
+    public async Task<IActionResult> EditRankItem(string rankItemId, [FromBody] EditRankItemRequest rq)
+    {
+        var ownerId = User.GetUserId();
+        if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
+
+        var item = await db.RankItems
+            .Include(i => i.Ranking)
+            .FirstOrDefaultAsync(i => i.ItemId == rankItemId && i.Ranking != null && i.Ranking.OwnerId == ownerId);
+
+        if (item is null || item.Ranking is null) return NotFound();
+        if (!string.IsNullOrWhiteSpace(rq.RankingId) && rq.RankingId != item.RankingId) return BadRequest();
+
+        item.Name = rq.Name;
+        item.Description = rq.Description;
+        item.Rank = rq.Rank;
+        item.Ranking.LastUpdated = DateTime.UtcNow;
+
+        await db.SaveChangesAsync();
+        return Ok(new ResponseBase { Message = "updated rank item" });
+    }
+
+    [Authorize]
+    [HttpPost("{sharedId}")]
+    public async Task<IActionResult> CloneSharedRanking(string sharedId)
+    {
+        var ownerId = User.GetUserId();
+        if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
+
+        var link = await db.ShareableLinks.FirstOrDefaultAsync(s => s.SharedId == sharedId);
+        if (link is null) return NotFound();
+
+        var source = await db.Rankings.Include(r => r.Items).FirstOrDefaultAsync(r => r.Id == link.RankingId);
+        if (source is null) return NotFound();
+
+        var clone = new Ranking
+        {
+            OwnerId = ownerId,
+            Title = source.Title,
+            Description = source.Description,
+            IsPublic = false,
+            IsShared = false,
+            IsPinned = false,
+            CreatedDate = DateTime.UtcNow,
+            LastUpdated = DateTime.UtcNow,
+            Items = source.Items.Select(i => new RankItem
+            {
+                ItemId = Guid.NewGuid().ToString(),
+                Name = i.Name,
+                Description = i.Description,
+                Rank = i.Rank
+            }).OrderBy(i => i.Rank).ToList()
+        };
+
+        db.Rankings.Add(clone);
+        db.StatisticEvents.Add(new StatisticEvent
+        {
+            RankingId = source.Id,
+            UserId = ownerId,
+            Name = Statistics.CLONE.ToString(),
+            Value = 1
+        });
+
+        await db.SaveChangesAsync();
+        return Ok(new CreateRankingResponse { Id = clone.Id, Message = "Successfully cloned ranking" });
     }
 
     [HttpGet]

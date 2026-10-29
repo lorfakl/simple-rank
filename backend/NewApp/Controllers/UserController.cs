@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using simple_rank_backend.NewApp.Common;
 using simple_rank_backend.NewApp.Data;
 using simple_rank_backend.NewApp.DTOs;
 using simple_rank_backend.NewApp.Models;
@@ -19,7 +20,7 @@ public class UserController(AppDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> SetUserMetadata([FromBody] SetMetadataDTO rq)
     {
-        var callerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var callerId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(callerId) || callerId != rq.Id) return Forbid();
 
         var metadata = await db.UserMetadata.FirstOrDefaultAsync(m => m.UserId == rq.Id);

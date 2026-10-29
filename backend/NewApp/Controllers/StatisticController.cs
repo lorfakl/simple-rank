@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using simple_rank_backend.NewApp.Common;
 using simple_rank_backend.NewApp.Data;
 using simple_rank_backend.NewApp.DTOs;
 using simple_rank_backend.NewApp.Models;
@@ -45,11 +46,36 @@ public class StatisticController(AppDbContext db) : ControllerBase
         return Ok(new RankStatisticResponse { Statistics = await BuildStats(link.RankingId) });
     }
 
+    [HttpPost("{rankingId}")]
+    public async Task<IActionResult> RecordView([FromBody] ReactDto rq, string rankingId)
+    {
+        var callerId = User.GetUserId() ?? string.Empty;
+        var resolvedRankingId = rankingId;
+
+        if (rq.IsShared)
+        {
+            var link = await db.ShareableLinks.FirstOrDefaultAsync(s => s.SharedId == rankingId);
+            if (link is null) return NotFound();
+            resolvedRankingId = link.RankingId;
+        }
+
+        db.StatisticEvents.Add(new StatisticEvent
+        {
+            RankingId = resolvedRankingId,
+            UserId = callerId,
+            Name = Statistics.VIEW.ToString(),
+            Value = 1
+        });
+
+        await db.SaveChangesAsync();
+        return Ok(new ResponseBase { Message = "Successfully recorded view" });
+    }
+
     [Authorize]
     [HttpPost("{rankingId}")]
     public async Task<IActionResult> React([FromBody] ReactDto rq, string rankingId)
     {
-        var callerId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+        var callerId = User.GetUserId() ?? string.Empty;
         var callerIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
 
         var alreadyReacted = await db.ReactionHistories.AnyAsync(h => h.IpAddress == callerIp && (h.RankingId == rankingId || h.SharedId == rankingId));

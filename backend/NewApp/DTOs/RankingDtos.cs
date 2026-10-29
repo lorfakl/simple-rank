@@ -37,6 +37,14 @@ public class DeleteRankItemRequest
     public string RankItemId { get; set; } = string.Empty;
 }
 
+public class EditRankItemRequest
+{
+    public string RankingId { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public uint Rank { get; set; }
+}
+
 public class UpdateRankItemPlacementRequest
 {
     public string RankingId { get; set; } = string.Empty;

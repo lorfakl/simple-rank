@@ -54,5 +54,13 @@ export default defineConfig({
         drop_console: true // This will remove console logs in production build
       }
     },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setupTests.js',
+    env: {
+      NODE_ENV: 'development'
+    }
   }
 })

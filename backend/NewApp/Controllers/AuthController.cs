@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using simple_rank_backend.NewApp.Common;
 using simple_rank_backend.NewApp.Data;
 using simple_rank_backend.NewApp.DTOs;
 using simple_rank_backend.NewApp.Models;
@@ -56,7 +57,7 @@ public class AuthController(AppDbContext db, TokenService tokenService) : Contro
     [HttpGet]
     public async Task<IActionResult> Me()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
 
         var user = await db.Users.Include(u => u.Metadata).FirstOrDefaultAsync(u => u.Id == userId);

@@ -27,3 +27,6 @@ dist-ssr
 obj/
 bin/
 .vs/
+*.db-wal
+*.db-shm
+*.db-journal

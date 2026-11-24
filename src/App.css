@@ -189,15 +189,19 @@
     background-color: color-mix(in oklch, var(--color-primary) 10%, transparent);
   }
 
-  /* the one signature detail: subtle gradient on the landing hero only */
+  /* the one signature detail: full-bleed ambient wash behind the landing hero —
+     a single soft primary-tint radial on base-100, strongest at the top/center,
+     essentially gone by the bottom edge so footer copy stays on a light ground.
+     Applied to the landing page container so the hero card sits ON the tint
+     instead of being the only tinted element. signed-in pages stay clean. */
   .hero-glow {
-    background-image:
-      radial-gradient(
-        120% 90% at 50% -25%,
-        color-mix(in oklch, var(--color-primary) 18%, transparent) 0%,
-        transparent 60%
-      ),
-      linear-gradient(180deg, var(--color-base-100) 0%, var(--color-base-200) 100%);
+    background-color: var(--color-base-100);
+    background-image: radial-gradient(
+      140% 105% at 50% -8%,
+      color-mix(in oklch, var(--color-primary) 16%, transparent) 0%,
+      color-mix(in oklch, var(--color-primary) 7%, transparent) 42%,
+      transparent 72%
+    );
   }
 
   /* single subtle entrance treatment (landing hero only) */

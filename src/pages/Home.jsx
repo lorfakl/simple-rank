@@ -148,7 +148,8 @@ function Home(){
                 : 
                 <DragDropContext onDragEnd={(handleDragEnd)}>
                     <div className="my-12 flex flex-col gap-y-4">
-                        <div className="px-8 flex flex-col w-full h-full justify-center gap-4 lg:grid lg:grid-cols-4">
+                        {/* 1 col mobile, 2 cols md, 4 cols lg */}
+                        <div className="px-8 grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                             
                             <button className="tile-dashed group flex min-h-48 flex-col items-center justify-center gap-3 p-6" onClick={() => {navigate("/NewRank")}}>
                                 <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-content">

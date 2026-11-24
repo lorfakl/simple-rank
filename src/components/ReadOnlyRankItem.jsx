@@ -14,7 +14,7 @@ function ReadOnlyRankItem({id, index, data}){
             <div className="rank-chip mb-3 self-start text-base">rank: {data.rank}</div>
             <div className="card card-border rounded-box border-base-300 bg-base-200/60 w-full max-w-120 card-sm shadow-sm">
                 <div className="card-body">
-                    <h2 className="card-title font-display text-xl font-semibold tracking-tight">{data.title}</h2>
+                    <h2 className="card-title font-display text-xl font-semibold tracking-tight break-words">{data.title}</h2>
                     <p className="font-medium text-base-content/75 text-pretty text-left">{data.description}</p>
                 </div>
             </div>

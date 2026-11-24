@@ -115,8 +115,8 @@ function Rankings({id, title, data, description, rankItems, onPinned, onDelete})
     return(
         <>
             <div className={`card-tile ${data.isPinned ? "card-pinned" : ""} flex flex-col gap-3 rounded-box p-5 cursor-pointer lg:aspect-square`}>
-                <div className="font-display text-xl font-semibold tracking-tight" onClick={() => {navigateToRankingDetails()}}>{title}</div>
-                <p className="font-medium text-base-content/75" onClick={() => {navigateToRankingDetails()}}>{description}</p>
+                <div className="font-display text-xl font-semibold tracking-tight break-words" onClick={() => {navigateToRankingDetails()}}>{title}</div>
+                <p className="font-medium text-base-content/75 break-words" onClick={() => {navigateToRankingDetails()}}>{description}</p>
                 <div className="flex flex-row justify-between px-2 text-sm text-base-content/70" onClick={() => {navigateToRankingDetails()}}>
                     <div>rank items: {rankItems.length}</div>
                     <div>creator: {data.createdBy.displayName}</div>

@@ -114,20 +114,23 @@ function LandingPage(){
 
 return(
     <>
+        {/* full-bleed landing wash: tint spans edge to edge, top to bottom,
+            so the centered hero card rests on a tinted page backdrop */}
+        <div className="hero-glow w-full min-h-svh">
         <div className="w-full my-18">
         </div>
         <div className="w-full flex flex-col">
         </div>
 
-        {/* hero — the one signature gradient lives here only */}
-        <section className="hero-glow rise-in mx-auto mb-10 w-full max-w-3xl rounded-box border border-base-300 px-6 py-14 text-center shadow-soft sm:px-10">
+        {/* hero — the one signature gradient lives on the page, not the card */}
+        <section className="rise-in mx-auto mb-10 w-full max-w-3xl rounded-box border border-base-300 bg-base-100 px-6 py-14 text-center shadow-soft sm:px-10">
 
             {/* Logo/Brand */}
             <div className="flex justify-center items-center gap-3 mb-6">
                 <span className="flex items-center justify-center rounded-xl bg-primary p-3 shadow-soft">
                     <Medal className="w-8 h-8 text-primary-content" />
                 </span>
-                <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-base-content">
+                <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-base-content">
                     simple rank
                 </h1>
             </div>
@@ -159,9 +162,9 @@ return(
                 }
             </div>
 
-            {/* Social Proof */}
-            <div className="flex justify-center items-center gap-8 text-base-content/70">
-                <div className="text-center">
+            {/* Social Proof — stacks below sm so long stat labels wrap at 320px */}
+            <div className="flex flex-col justify-center items-center gap-4 sm:flex-row sm:gap-8 text-base-content/70">
+                <div className="text-center max-w-full">
                     <div className="font-display text-2xl font-semibold text-primary">
                         {totalRankings === -1 ?
                         <>
@@ -172,8 +175,8 @@ return(
                     </div>
                     <div className="text-base">rankings created</div>
                 </div>
-                <div className="w-px h-12 bg-base-300"></div>
-                <div className="text-center">
+                <div className="hidden w-px h-12 bg-base-300 sm:block"></div>
+                <div className="text-center max-w-full">
                     <div className="font-display text-2xl font-semibold text-primary">
                         {totalUsers === -1 ?
                         <>
@@ -189,6 +192,7 @@ return(
         </section>
         <div className="text-center text-sm font-semibold mt-4 underline">backend server hibernates to save money🤑, so if the stats don't load, please refresh.</div>
         <div className="text-center text-sm text-base-content/70">this whole project is available on <span><a className="text-primary underline underline-offset-4" href="https://github.com/lorfakl/simple-rank">github</a></span> there's no logging on this so feel free to report any issues</div>
+        </div>
     </>
     )
 }

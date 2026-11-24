@@ -40,7 +40,7 @@ export function EditRankDetailsModal({ dialogId, onClose, onSave, rankTitle, ran
 
   return (
     <dialog id={dialogId} className="modal">
-        <div className="modal-box modal-top md:modal-middle w-full flex flex-col gap-y-6 rounded-box border border-base-300 shadow-lift">
+        <div className="modal-box modal-top md:modal-middle w-[calc(100%-2rem)] max-w-[32rem] flex flex-col gap-y-6 rounded-box border border-base-300 shadow-lift">
             
             <h3 className="font-display font-semibold tracking-tight">update ranking details</h3>
 

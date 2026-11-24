@@ -189,7 +189,8 @@ function Navbar()
 
             </div>
             <div className="navbar-center mx-auto">
-                <a className="btn btn-ghost font-display text-xl tracking-tight text-primary hover:bg-base-200" onClick={() => {navigate("/")}}>simple rank</a>
+                {/* wordmark steps down below 640px so hamburger + wordmark + sign-in never collide at 320px */}
+                <a className="btn btn-ghost font-display text-base sm:text-xl tracking-tight text-primary hover:bg-base-200" onClick={() => {navigate("/")}}>simple rank</a>
             </div>
             <div className="navbar-end">
                 <div className="dropdown dropdown-end">
@@ -197,7 +198,7 @@ function Navbar()
                         isAuthenticated? 
                         <>
                             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar transition duration-150 hover:bg-base-200">
-                                <div className="w-16 rounded-full ring-1 ring-base-300">
+                                <div className="w-10 sm:w-16 rounded-full ring-1 ring-base-300">
                                 <img
                                     alt="user avatar"
                                     src={avatarUrl}/>

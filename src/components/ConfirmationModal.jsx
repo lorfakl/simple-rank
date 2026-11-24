@@ -33,7 +33,8 @@ function ConfirmationModel({dialogId, modalTitle, modalMessage, onConfirm, onRej
 
     return(<>
         <dialog id={`${dialogId}`} className="modal modal-bottom sm:modal-middle">
-            <div className="modal-box rounded-box border border-base-300 shadow-lift">
+            {/* explicit max-width + side margins so it never exceeds the viewport on phones */}
+            <div className="modal-box w-[calc(100%-2rem)] max-w-[32rem] rounded-box border border-base-300 shadow-lift">
                 <h3 className="font-display font-semibold tracking-tight">{modalTitle}</h3>
                 <p className="py-4 text-base-content/75">{modalMessage}</p>
                 <div className="flex flex-row">

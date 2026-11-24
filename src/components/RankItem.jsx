@@ -79,8 +79,8 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditab
                         :
                         <>
                             <div className="rounded-box p-1 text-wrap">
-                                <h2 className="text-left font-display text-lg font-semibold tracking-tight">{data.title}</h2>
-                                <p className="text-left font-medium text-base-content/75">{data.description}</p>
+                                <h2 className="text-left font-display text-lg font-semibold tracking-tight break-words">{data.title}</h2>
+                                <p className="text-left font-medium text-base-content/75 break-words">{data.description}</p>
                                 <div className="card-actions justify-between">
                                     <button className="btn btn-primary" onClick={() => {setEditMode(true)}}><SquarePen /></button>
                                     <button className="btn btn-error" onClick={() => {handleRemoveOnClick(id)}}><Trash2/></button>

@@ -79,8 +79,37 @@ app.UseCors("AllowFrontEnd");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Production SPA serving (single-project migration): static assets +
+// index.html fallback from wwwroot (vite build.outDir). Guarded on
+// wwwroot/index.html existing so a bare `dotnet run` without a frontend
+// build doesn't crash on a missing wwwroot directory.
+var wwwrootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+var hasFrontendBuild = File.Exists(Path.Combine(wwwrootPath, "index.html"));
+
+if (hasFrontendBuild)
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
+
+// Controllers register before the fallback. Unmatched /api/* requests get
+// 404 JSON: the literal "api" segment outranks the catch-all fallback route,
+// so client routes (/Home, /Login, /ranking/:id, ...) still serve index.html.
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
+RequestDelegate apiNotFoundHandler = async context =>
+{
+    context.Response.StatusCode = StatusCodes.Status404NotFound;
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync("{\"error\":\"Not Found\"}");
+};
+app.Map("/api/{**path}", apiNotFoundHandler);
+
+if (hasFrontendBuild)
+{
+    app.MapFallbackToFile("index.html");
+}
 
 app.Run();
 

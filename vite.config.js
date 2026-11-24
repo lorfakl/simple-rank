@@ -36,10 +36,10 @@ export default defineConfig({
   },
   server: {
     watch: {
-      // backend/ contains the SQLite dev DB (+ WAL/SHM) which changes on every
-      // query — watching it causes an infinite full-reload loop. The old
-      // 'simple-rank-backend' submodule path no longer exists.
-      ignored: ['**/backend/**', '**/simple-rank-backend/**', '**/node_modules/**', '**/dist/**']
+      // The SQLite dev DB (+ WAL/SHM) now lives at the repo root and changes
+      // on every query — watching it causes an infinite full-reload loop, so
+      // ignore the DB files themselves wherever they sit.
+      ignored: ['**/node_modules/**', '**/dist/**', '**/wwwroot/**', '**/*.db', '**/*.db-wal', '**/*.db-shm', '**/*.db-journal', '**/obj/**', '**/bin/**']
     },
     proxy: {
       '/api': {
@@ -51,6 +51,7 @@ export default defineConfig({
     open: true // This will automatically open the browser when you run npm run dev
   },
   build: {
+    outDir: 'wwwroot',
     minify: 'terser',
     terserOptions: {
       compress: {

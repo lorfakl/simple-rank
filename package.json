@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "server": "cd backend && ~/.dotnet/dotnet run",
+    "server": "~/.dotnet/dotnet run",
     "test:watch": "vitest"
   },
   "dependencies": {

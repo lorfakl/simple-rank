@@ -114,36 +114,36 @@ function Rankings({id, title, data, description, rankItems, onPinned, onDelete})
     
     return(
         <>
-            <div className="rounded-lg flex flex-col gap-4 hover:shadow-xl cursor-pointer bg-base-300 border-4  lg:aspect-square"> 
-                <div className="font-bold text-xl" onClick={() => {navigateToRankingDetails()}}>{title}</div>
-                <p className="font-semibold" onClick={() => {navigateToRankingDetails()}}>{description}</p>
-                <div className="flex flex-row justify-between px-2" onClick={() => {navigateToRankingDetails()}}>
+            <div className={`card-tile ${data.isPinned ? "card-pinned" : ""} flex flex-col gap-3 rounded-box p-5 cursor-pointer lg:aspect-square`}>
+                <div className="font-display text-xl font-semibold tracking-tight" onClick={() => {navigateToRankingDetails()}}>{title}</div>
+                <p className="font-medium text-base-content/75" onClick={() => {navigateToRankingDetails()}}>{description}</p>
+                <div className="flex flex-row justify-between px-2 text-sm text-base-content/70" onClick={() => {navigateToRankingDetails()}}>
                     <div>rank items: {rankItems.length}</div>
                     <div>creator: {data.createdBy.displayName}</div>
                 </div>
-                <div className="flex flex-row justify-between px-2" onClick={() => {navigateToRankingDetails()}}>
-                    <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                        <div className="w-16 rounded-full">
+                <div className="flex flex-row items-center justify-between px-2" onClick={() => {navigateToRankingDetails()}}>
+                    <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar p-0">
+                        <div className="w-12 rounded-full ring-1 ring-base-300">
                         <img
                             alt="ranking creator profile image"
                             src={data.createdBy.avatarUrl}/>
                         </div>
                     </div>
-                    <div className="justify-items-center">
-                        {data.isPublic ? <><Earth size={32} strokeWidth={1.75} /></>: <><Lock size={32} strokeWidth={1.75} /></> }
-                        <p className="pr-2">{data.isPublic ? "public": "private"}</p>
+                    <div className="flex flex-col items-center">
+                        {data.isPublic ? <><Earth size={24} strokeWidth={1.75} className="text-base-content/70" /></>: <><Lock size={24} strokeWidth={1.75} className="text-base-content/70" /></> }
+                        <p className="pr-2 text-sm text-base-content/70">{data.isPublic ? "public": "private"}</p>
                     </div>
                 </div>
-                <div className="self-start px-2" onClick={() => {navigateToRankingDetails()}}>last updated: {dateTimeHelper.convertStringToLocalTime(data.lastUpdated)}</div>
-                <div className="self-start px-2" onClick={() => {navigateToRankingDetails()}}>created: {dateTimeHelper.convertStringToLocalTime(data.createdDate)}</div>
-                <div className="flex flex-row justify-around">
-                    <div>
-                        <IconSwap onIcon={<Pin size={36} />} offIcon={<PinOff size={36} />} onSwapCallback={handlePinnedRanking} defaultOn={data.isPinned}/>
-                        {data.isPinned ? <p className="text-sm">click to unpin</p> : <p className="text-sm">click to pin</p>}
+                <div className="self-start px-2 text-sm text-base-content/60" onClick={() => {navigateToRankingDetails()}}>last updated: {dateTimeHelper.convertStringToLocalTime(data.lastUpdated)}</div>
+                <div className="self-start px-2 text-sm text-base-content/60" onClick={() => {navigateToRankingDetails()}}>created: {dateTimeHelper.convertStringToLocalTime(data.createdDate)}</div>
+                <div className="mt-auto flex flex-row items-center justify-around border-t border-base-200 pt-3">
+                    <div className="flex flex-col items-center">
+                        <IconSwap onIcon={<Pin size={28} className="text-accent" />} offIcon={<PinOff size={28} className="text-base-content/45" />} onSwapCallback={handlePinnedRanking} defaultOn={data.isPinned}/>
+                        {data.isPinned ? <p className="text-xs text-accent">click to unpin</p> : <p className="text-xs text-base-content/50">click to pin</p>}
                     </div>
 
-                    <div onClick={() => {onDelete(id, title)}} className="flex flex-col items-center">
-                        <Trash2 size={36} className="text-error"/>
+                    <div onClick={() => {onDelete(id, title)}} className="flex cursor-pointer flex-col items-center rounded-lg p-2 transition-colors duration-150 hover:bg-error/10">
+                        <Trash2 size={28} className="text-error"/>
                     </div>
                 </div>
             </div>

@@ -17,9 +17,11 @@ function Login({}){
     
     return(
         <>
-            <div className="my-12 flex flex-col gap-y-4">
-                <AuthenticationOptions isSignUp={false} />
-                <p>Don't have an account? <a href="/Signup">Sign Up</a></p>
+            <div className="mx-auto my-12 w-full max-w-md px-4">
+                <div className="rounded-box border border-base-300 bg-base-100 p-6 shadow-soft">
+                    <AuthenticationOptions isSignUp={false} />
+                    <p className="mt-4 text-center text-sm text-base-content/70">don't have an account? <a className="font-medium text-primary underline underline-offset-4 transition duration-150" href="/Signup">sign up</a></p>
+                </div>
             </div>
         </>
     )

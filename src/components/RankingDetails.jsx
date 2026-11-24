@@ -76,7 +76,7 @@ export function RankingDetails({createdBy, createdDate, lastupateDate, itemCount
                                 }
                             </div>
                             <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm" id="shareDropdown">
-                                <li onClick={()=>{onCreateShareableLink()}}><a>{isShared? "Copy Shareable Link" : "Create Shareable Link"}</a></li>
+                                <li onClick={()=>{onCreateShareableLink()}}><a className="transition duration-150">{isShared? "copy shareable link" : "create shareable link"}</a></li>
                             </ul>
                         </div>
                     </div>
@@ -85,7 +85,7 @@ export function RankingDetails({createdBy, createdDate, lastupateDate, itemCount
                 <>
                     <div className="flex flex-row" >
                         <button className={`btn btn-soft rounded-r-lg ${"btn-secondary"}` } onClick={onCopyShareableLink}>
-                            <p className="text-xl font-semibold">{"Shared"}</p>
+                            <p className="text-xl font-semibold">{"shared"}</p>
                             <Share />
                         </button>
                     </div>

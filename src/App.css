@@ -5,18 +5,29 @@
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: oklch(98% 0 0);
-  --color-base-200: oklch(96% 0.001 286.375);
-  --color-base-300: oklch(92% 0.004 286.32);
-  --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: oklch(38.85% 0.070 225.35);
-  --color-primary-content: oklch(98% 0.026 102.212);
-  --color-secondary: F0F8FF;
-  --color-secondary-content: oklch(100% 0 0);
-  --color-accent: oklch(44.01% 0.143 327.67);
-  --color-accent-content: oklch(96% 0.015 12.422);
-  --color-neutral: oklch(70.60% 0.011 247.99);
+
+  /* base — light with a faint cool cast */
+  --color-base-100: oklch(98% 0.004 250);
+  --color-base-200: oklch(95.5% 0.006 255);
+  --color-base-300: oklch(90.5% 0.01 258);
+  --color-base-content: oklch(26% 0.015 262);
+
+  /* primary — deep indigo/navy */
+  --color-primary: oklch(37% 0.085 265);
+  --color-primary-content: oklch(97% 0.012 250);
+
+  /* secondary — soft alice-blue tint (valid oklch; was invalid `F0F8FF`) */
+  --color-secondary: oklch(96% 0.014 235);
+  --color-secondary-content: oklch(32% 0.035 240);
+
+  /* accent — used sparingly: pins, focus rings, hover details */
+  --color-accent: oklch(72% 0.145 55);
+  --color-accent-content: oklch(27% 0.06 45);
+
+  --color-neutral: oklch(45% 0.02 262);
   --color-neutral-content: oklch(98% 0 0);
+
+  /* semantic — functional, kept as-is */
   --color-info: oklch(78% 0.154 211.53);
   --color-info-content: oklch(30% 0.056 229.695);
   --color-success: oklch(76% 0.177 163.223);
@@ -25,57 +36,183 @@
   --color-warning-content: oklch(28% 0.066 53.813);
   --color-error: oklch(70% 0.191 22.216);
   --color-error-content: oklch(25% 0.092 26.042);
-  --radius-selector: 0.25rem;
-  --radius-field: 2rem;
+
+  /* shape — one consistent radius rhythm */
+  --radius-selector: 0.5rem;
+  --radius-field: 0.75rem;
   --radius-box: 1rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
-  --border: 2px;
-  --depth: 1;
-  --noise: 1;
+
+  /* hairline borders; depth comes from .shadow-soft/.shadow-lift below */
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
 }
 
-#root {
-  max-width: 1920px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+@layer components {
+  /* display font for the wordmark + headings */
+  .font-display {
+    font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  /* soft low-opacity depth instead of heavy shadows */
+  .shadow-soft {
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 0.05),
+      0 8px 20px -12px rgb(15 23 42 / 0.16);
+  }
+  .shadow-lift {
+    box-shadow:
+      0 2px 4px rgb(15 23 42 / 0.06),
+      0 18px 34px -16px rgb(15 23 42 / 0.22);
+  }
+
+  /* one restrained 170ms transition recipe for interactive surfaces */
+  .surface {
+    transition:
+      transform 170ms ease-out,
+      box-shadow 170ms ease-out,
+      border-color 170ms ease-out,
+      background-color 170ms ease-out,
+      color 170ms ease-out;
+  }
+
+  /* buttons: subtle lift on hover */
+  .btn-lift {
+    transition:
+      transform 170ms ease-out,
+      box-shadow 170ms ease-out,
+      background-color 170ms ease-out,
+      border-color 170ms ease-out,
+      color 170ms ease-out;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .btn-lift:hover {
+      transform: translateY(-2px);
+    }
+  }
+  .btn-lift:hover {
+    box-shadow:
+      0 2px 4px rgb(15 23 42 / 0.08),
+      0 14px 26px -14px rgb(15 23 42 / 0.35);
+  }
+
+  /* ranking card on the home grid: 1px border + soft shadow + hover lift */
+  .card-tile {
+    background-color: var(--color-base-100);
+    border: 1px solid var(--color-base-300);
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 0.05),
+      0 8px 20px -12px rgb(15 23 42 / 0.16);
+    transition:
+      transform 170ms ease-out,
+      box-shadow 170ms ease-out,
+      border-color 170ms ease-out;
+  }
+  .card-tile:hover {
+    border-color: color-mix(in oklch, var(--color-primary) 32%, var(--color-base-300));
+    box-shadow:
+      0 2px 4px rgb(15 23 42 / 0.06),
+      0 18px 34px -16px rgb(15 23 42 / 0.2);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .card-tile:hover {
+      transform: translateY(-4px);
+    }
+  }
+  /* pinned state is visually distinct via the accent color */
+  .card-tile.card-pinned {
+    border-color: color-mix(in oklch, var(--color-accent) 70%, var(--color-base-300));
+  }
+  .card-tile.card-pinned:hover {
+    border-color: var(--color-accent);
+  }
+
+  /* intentional dashed "create a new ranking" tile */
+  .tile-dashed {
+    border: 1.5px dashed color-mix(in oklch, var(--color-base-content) 28%, transparent);
+    border-radius: var(--radius-box);
+    background-color: transparent;
+    color: var(--color-base-content);
+    transition:
+      border-color 170ms ease-out,
+      background-color 170ms ease-out,
+      color 170ms ease-out,
+      transform 170ms ease-out;
+  }
+  .tile-dashed:hover,
+  .tile-dashed:focus-visible {
+    border-color: var(--color-primary);
+    background-color: color-mix(in oklch, var(--color-primary) 7%, transparent);
+    color: var(--color-primary);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .tile-dashed:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  /* numbered position treatment for rank order */
+  .rank-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklch, var(--color-primary) 25%, transparent);
+    background-color: color-mix(in oklch, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
+    font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* navbar link states */
+  .nav-link {
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    font-weight: 500;
+    color: var(--color-base-content);
+    transition:
+      color 160ms ease-out,
+      background-color 160ms ease-out;
+  }
+  .nav-link:hover {
+    color: var(--color-primary);
+    background-color: var(--color-base-200);
+  }
+  .nav-link[aria-current="page"] {
+    color: var(--color-primary);
+    background-color: color-mix(in oklch, var(--color-primary) 10%, transparent);
+  }
+
+  /* the one signature detail: subtle gradient on the landing hero only */
+  .hero-glow {
+    background-image:
+      radial-gradient(
+        120% 90% at 50% -25%,
+        color-mix(in oklch, var(--color-primary) 18%, transparent) 0%,
+        transparent 60%
+      ),
+      linear-gradient(180deg, var(--color-base-100) 0%, var(--color-base-200) 100%);
+  }
+
+  /* single subtle entrance treatment (landing hero only) */
+  .rise-in {
+    animation: rise-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 }
 
-
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
+@keyframes rise-in {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

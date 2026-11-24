@@ -213,10 +213,10 @@ function SharedRank(){
 
                 <div className="flex flex-col gap-y-4 items-center">
                     
-                    <header className="font-semibold text-xl lg:text-xl self-center">
-                        <h1>{rankingInfo.title === ""? "Ranking Not Found" : rankingInfo.title}</h1>
-                        <h2 className='text-4xl'>{rankingInfo.description}</h2>
-                    </header>  
+                    <header className="text-center self-center">
+                        <h1 className="font-display font-semibold tracking-tight text-3xl lg:text-4xl">{rankingInfo.title === ""? "ranking not found" : rankingInfo.title}</h1>
+                        <h2 className='font-medium text-lg text-base-content/75 mt-1'>{rankingInfo.description}</h2>
+                    </header>
 
                     <RankingDetails createdBy={rankingInfo.createdBy} createdDate={rankingInfo.creationDate} lastupateDate={rankingInfo.lastUpdate} 
                         itemCount={rankItems.length} isPublic={rankingInfo.isPublic} isShared={rankingInfo.isShared} rankingId={id} 
@@ -229,7 +229,7 @@ function SharedRank(){
             {loading ? 
                 <>
                     <div>
-                        <h2 className="">Loading Rank Items</h2>
+                        <h2 className="">loading rank items</h2>
                         <span className="loading loading-spinner loading-xl"></span>
                     </div>
                 </>
@@ -240,7 +240,7 @@ function SharedRank(){
                             <Droppable droppableId='viewRanking'>
                                 {(provided) => (
                                     <div {...provided.droppableProps} 
-                                        className="w-full h-120 flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
+                                        className="w-full h-120 flex flex-col rounded-box border border-dashed border-base-300 bg-base-200/40 p-4 gap-y-4 overflow-y-auto lg:gap-x-4"
                                         ref={provided.innerRef}
                                     >
                                         {rankItems.map((item, index) => (

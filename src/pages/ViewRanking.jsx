@@ -499,13 +499,13 @@ function ViewRanking(){
                 
                 <div className="flex flex-col gap-y-4">
 
-                <div className="flex flex-col gap-y-5 items-center rounded-lg hover:cursor-pointer hover:outline-4 hover:outline-secondary hover:outline-offset-2" onClick={handleEditRankingDetails}>
-                    <header className="font-semibold text-3xl lg:text-5xl self-center">{rankingInfo.title}
+                <div className="flex flex-col gap-y-5 items-center rounded-box p-2 transition duration-150 hover:cursor-pointer hover:bg-base-200/50 hover:outline-2 hover:outline-accent hover:outline-offset-4" onClick={handleEditRankingDetails}>
+                    <header className="font-display font-semibold tracking-tight text-3xl lg:text-5xl self-center">{rankingInfo.title}
                         {updating ? <> <span className="inline-block"> <RefreshCw  size={30} className="animate-spin" /></span></> : null}
                     </header>  
 
                     <div className="flex flex-col gap-x-2 items-center">
-                        <div className=" font-semibold text-lg">{rankingInfo.description}</div>
+                        <div className="font-medium text-lg text-base-content/75">{rankingInfo.description}</div>
                     </div>
                 </div>
                     
@@ -526,18 +526,18 @@ function ViewRanking(){
             :
                 <>
                     <div className="flex flex-col gap-y-8 items-center w-full">
-                        <button className="outline-dashed" onClick={handleAddRankItemModal}>
-                            <div className="flex flex-row items-center">
-                                <Plus size={30}/>
-                                <p className="font-thin lg:text-2xl text-3xl">add rank item</p>
-                            </div>
+                        <button className="tile-dashed group flex items-center justify-center gap-3 px-8 py-5" onClick={handleAddRankItemModal}>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-content">
+                                <Plus size={24}/>
+                            </span>
+                            <p className="font-display text-2xl lg:text-2xl font-medium">add rank item</p>
                         </button>
                         
                         <DragDropContext onDragEnd={handleDragEnd}>
                             <Droppable droppableId='viewRanking'>
                                 {(provided) => (
                                     <div {...provided.droppableProps} 
-                                        className="h-120 w-full flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
+                                        className="h-120 w-full flex flex-col rounded-box border border-dashed border-base-300 bg-base-200/40 p-4 gap-y-4 overflow-y-auto lg:gap-x-4"
                                         ref={provided.innerRef}
                                     >
                                         {rankItems.map((item, index) => (
@@ -553,8 +553,8 @@ function ViewRanking(){
                     </div>
                 </>
             }
-            <ConfirmationModel dialogId={"changeVisibilityConfirmation"} modalTitle={`Make Ranking ${!rankingInfo.isPublic? "Public" : "Private"}`} modalMessage={`Are you sure you want to make this ranking ${!rankingInfo.isPublic? "Public" : "Private"}`} onConfirm={() => {saveVisibility(!rankingInfo.isPublic)}} onReject={() => {}}/>
-            <ConfirmationModel dialogId={"displayShareableId"} modalTitle={`Shareable Link Available`} modalMessage={`Copy this link to share this rank with others: ${shareableLink.current}`} onConfirm={() => {}} onReject={() => {}}/>
+            <ConfirmationModel dialogId={"changeVisibilityConfirmation"} modalTitle={`make ranking ${!rankingInfo.isPublic? "public" : "private"}`} modalMessage={`are you sure you want to make this ranking ${!rankingInfo.isPublic? "public" : "private"}`} onConfirm={() => {saveVisibility(!rankingInfo.isPublic)}} onReject={() => {}}/>
+            <ConfirmationModel dialogId={"displayShareableId"} modalTitle={`shareable link available`} modalMessage={`copy this link to share this rank with others: ${shareableLink.current}`} onConfirm={() => {}} onReject={() => {}}/>
             <AddRankItemModal  dialogId={"addRankModal"} onClose={()=>{console.log("Modal closed")}} onSave={addNewRankItem} totalRanks={itemCount} />
             <EditRankDetailsModal dialogId={"editRankDetailsModal"} rankTitle={rankingInfo.title} rankDescription={rankingInfo.description} onSave={handleBasicInfoSave} onClose={()=>{console.log("Edit Rank Details Modal closed")}} />
         </>

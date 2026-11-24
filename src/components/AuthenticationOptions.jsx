@@ -28,11 +28,11 @@ function AuthenticationOptions({isSignUp}){
 
     return(
         <>
-            <div className="flex justify-center items-center mb-8">
-                <div className="bg-gradient-to-r from-purple-400 to-blue-400 p-3 rounded-2xl mr-4">
-                    <Medal className="w-8 h-8 text-white" />
-                </div>
-                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <div className="flex justify-center items-center gap-3 mb-8">
+                <span className="flex items-center justify-center rounded-xl bg-primary p-3 shadow-soft">
+                    <Medal className="w-8 h-8 text-primary-content" />
+                </span>
+                <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-base-content">
                     simple rank
                 </h1>
             </div>
@@ -48,11 +48,11 @@ function AuthenticationOptions({isSignUp}){
             </div>
 
             <div className="text-center opacity-70 text-sm mb-4">
-                OAuth buttons are disabled in this local migration build.
+                oauth buttons are disabled in this local migration build.
             </div>
             <div className="flex gap-2 justify-center">
-                <button className="btn btn-soft" onClick={handleGoogleLogin}>Google (disabled)</button>
-                <button className="btn btn-soft" onClick={handleDiscordLogin}>Discord (disabled)</button>
+                <button className="btn btn-soft transition duration-150" onClick={handleGoogleLogin}>google (disabled)</button>
+                <button className="btn btn-soft transition duration-150" onClick={handleDiscordLogin}>discord (disabled)</button>
             </div>
         </>
     )

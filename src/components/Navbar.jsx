@@ -151,65 +151,65 @@ function Navbar()
     
     return(
     <>
-        <div className="navbar bg-base-100 fixed left-0 top-0 z-10 min-w-screen">
+        <div className="navbar bg-base-100/85 backdrop-blur-md border-b border-base-300 fixed left-0 top-0 z-30 w-full">
             <div className="navbar-start lg:hidden" >
                 <div className={`dropdown ${navbarStatus ? 'dropdown-open' : ''}`} ref={dropdownRef}>
                     <IconSwap onIcon={<X size={32} />} offIcon={<Menu size={32} />} onSwapCallback={toggleNavbar} defaultOn={navbarStatus} parentControlSwap={true}/>
     
-                    <ul className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow">
-                        { isAuthenticated ? 
+                    <ul className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-52 border border-base-300 p-2 shadow-soft">
+                        { isAuthenticated ?
                         <>
-                            <li ><a onClick={() => closeAndNavigate('/Home')}>my rankings</a></li>
-                            <li ><a onClick={() => closeAndNavigate('/NewRank')}>create new rank</a></li>
+                            <li ><a className="nav-link" onClick={() => closeAndNavigate('/Home')}>my rankings</a></li>
+                            <li ><a className="nav-link" onClick={() => closeAndNavigate('/NewRank')}>create new rank</a></li>
                             {/* <li><Link to="Explore">explore</Link></li>
                             <li><Link to="About">about</Link></li>*/}
                         </>
                         : 
                         <>
-                            <li><Link to="SignUp">sign in</Link></li>
+                            <li><Link className="nav-link" to="SignUp">sign in</Link></li>
                         </>
                         }
                     </ul>
                 </div>
             </div>
             {/*Large format navbar*/}
-            <div className="navbar-start hidden lg:flex flex-row gap-4">
-                { isAuthenticated ? 
+            <div className="navbar-start hidden lg:flex flex-row gap-2">
+                { isAuthenticated ?
                 <>
-                    <Link to="Home">my rankings</Link>
-                    <Link to="NewRank">create new rank</Link>
+                    <Link className="nav-link transition duration-150" to="Home">my rankings</Link>
+                    <Link className="nav-link transition duration-150" to="NewRank">create new rank</Link>
                     {/* <Link to="xplore">explore</Link>
                     <Link to="About">about</Link>*/}
                 </>
-                : 
+                :
                 <>
-                    <Link to="SignUp">sign in</Link>
+                    <Link className="nav-link transition duration-150" to="SignUp">sign in</Link>
                 </>
                 }
 
             </div>
             <div className="navbar-center mx-auto">
-                <a className="btn btn-ghost text-xl" onClick={() => {navigate("/")}}>simple rank</a>
+                <a className="btn btn-ghost font-display text-xl tracking-tight text-primary hover:bg-base-200" onClick={() => {navigate("/")}}>simple rank</a>
             </div>
             <div className="navbar-end">
                 <div className="dropdown dropdown-end">
                     {
                         isAuthenticated? 
                         <>
-                            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                                <div className="w-16 rounded-full">
+                            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar transition duration-150 hover:bg-base-200">
+                                <div className="w-16 rounded-full ring-1 ring-base-300">
                                 <img
-                                    alt="Tailwind CSS Navbar component"
+                                    alt="user avatar"
                                     src={avatarUrl}/>
                                 </div>
                             </div>
-                            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
+                            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 border border-base-300 p-2 shadow-soft">
                                 <li onClick={handleLogout}><Link to="Login">sign out</Link></li>
                             </ul>
                         </>
                         :
                         <>
-                            <button className="btn btn-active btn-primary" onClick={() => {navigate("/Login")}}>sign in</button>
+                            <button className="btn btn-primary btn-lift shadow-soft" onClick={() => {navigate("/Login")}}>sign in</button>
                         </>
                     }
                     

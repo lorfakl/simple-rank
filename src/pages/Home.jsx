@@ -137,12 +137,12 @@ function Home(){
     return(
         <>
             <div className="w-full my-18">
-                    <h1 className="">my rankings</h1>
+                    <h1 className="tracking-tight">my rankings</h1>
             </div>
             {
-                loading ? 
+                loading ?
                 <div className="flex justify-center">
-                    <p className="text-2xl font-semibold">Loading...</p>
+                    <p className="text-2xl font-semibold">loading...</p>
                     <span className="loading loading-spinner loading-xl"></span>
                 </div> 
                 : 
@@ -150,11 +150,11 @@ function Home(){
                     <div className="my-12 flex flex-col gap-y-4">
                         <div className="px-8 flex flex-col w-full h-full justify-center gap-4 lg:grid lg:grid-cols-4">
                             
-                            <button className="outline-dashed" onClick={() => {navigate("/NewRank")}}>
-                                <div className="flex flex-col items-center">
-                                    <Plus size={50}/>
-                                    <p className="font-thin lg:text-5xl text-3xl">create a new ranking</p>
-                                </div>
+                            <button className="tile-dashed group flex min-h-48 flex-col items-center justify-center gap-3 p-6" onClick={() => {navigate("/NewRank")}}>
+                                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-content">
+                                    <Plus size={28}/>
+                                </span>
+                                <p className="font-display text-2xl lg:text-3xl font-medium text-center">create a new ranking</p>
                             </button>
 
                             {
@@ -168,7 +168,7 @@ function Home(){
                     </div>
                 </DragDropContext>
             }
-            <ConfirmationModel dialogId={"deleteConfirmation"} modalTitle={"Are you sure?"} modalMessage={`Are you sure you want to delete ranking: ${rankingToDelete.current.title}`} 
+            <ConfirmationModel dialogId={"deleteConfirmation"} modalTitle={"are you sure?"} modalMessage={`are you sure you want to delete ranking: ${rankingToDelete.current.title}`}
             onConfirm={onConfirmDelete} onReject={onRejectDelete} autoClose={true}/>
         </>
     )

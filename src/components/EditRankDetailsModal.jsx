@@ -40,9 +40,9 @@ export function EditRankDetailsModal({ dialogId, onClose, onSave, rankTitle, ran
 
   return (
     <dialog id={dialogId} className="modal">
-        <div className="modal-box modal-top md:modal-middle w-full flex flex-col gap-y-6">
+        <div className="modal-box modal-top md:modal-middle w-full flex flex-col gap-y-6 rounded-box border border-base-300 shadow-lift">
             
-            <h3 className="font-bold text-lg">update ranking details</h3>
+            <h3 className="font-display font-semibold tracking-tight">update ranking details</h3>
 
             <div className="w-full">
               <LimitedTextInput inputLabel={"ranking title"} characterLimit={150} handleInputChange={setTitle} textSize={"text-xl"} showRequired={false} 
@@ -55,8 +55,8 @@ export function EditRankDetailsModal({ dialogId, onClose, onSave, rankTitle, ran
             </div>
 
             <div className="flex flex-row gap-x-6 justify-between">
-                <button className="btn btn-neutral" onClick={handleClose}>Close</button>
-                <button className="btn btn-primary" onClick={handleSave}>Save</button>
+                <button className="btn btn-ghost transition duration-150 hover:bg-base-200" onClick={handleClose}>close</button>
+                <button className="btn btn-primary btn-lift" onClick={handleSave}>save</button>
             </div>
 
         </div>

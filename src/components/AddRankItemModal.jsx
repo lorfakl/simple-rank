@@ -112,9 +112,9 @@ export function AddRankItemModal({ dialogId, onClose, onSave, totalRanks}) {
 
   return (
     <dialog id={dialogId} className="modal">
-        <div className="modal-box modal-top md:modal-middle w-full flex flex-col gap-y-6">
+        <div className="modal-box modal-top md:modal-middle w-full flex flex-col gap-y-6 rounded-box border border-base-300 shadow-lift">
             
-            <h3 className="font-bold text-lg">add new item</h3>
+            <h3 className="font-display font-semibold tracking-tight">add new item</h3>
 
             <div className="w-full">
               <LimitedTextInput inputLabel={"item title"} characterLimit={150} handleInputChange={setTitle} textSize={"text-xl"} showRequired={false} 
@@ -128,7 +128,7 @@ export function AddRankItemModal({ dialogId, onClose, onSave, totalRanks}) {
             
             <div className='font-semibold select-none'>enter item rank</div>
             <div className="flex flex-row justify-between place-items-start gap-x-4">
-              <CircleMinus className="w-10 h-10 cursor-pointer justify-self-start hover:textslate-400" onClick={() => {handRankChangeButtons(rank, false)}} />
+              <CircleMinus className="w-10 h-10 cursor-pointer justify-self-start text-base-content/60 transition-colors duration-150 hover:text-primary" onClick={() => {handRankChangeButtons(rank, false)}} />
 
                 <label className="floating-label text-xl ">
                   
@@ -137,13 +137,13 @@ export function AddRankItemModal({ dialogId, onClose, onSave, totalRanks}) {
                   <p className="validator-hint">{`must be between 1 ${totalRanks + 1}`}</p>
                 </label>
 
-              <CirclePlus className="w-10 h-10 cursor-pointer" onClick={() => {handRankChangeButtons(rank, true)}} />
+              <CirclePlus className="w-10 h-10 cursor-pointer text-base-content/60 transition-colors duration-150 hover:text-primary" onClick={() => {handRankChangeButtons(rank, true)}} />
             </div>
 
             <div className="flex flex-row gap-x-6 justify-end">
-                <button className="btn btn-neutral" onClick={handleClose}>Close</button>
-                <button className="btn btn-primary" onClick={handleSave}>Save</button>
-                <button className="btn btn-secondary" onClick={handleSaveAndClear}>Save and Clear</button>
+                <button className="btn btn-ghost transition duration-150 hover:bg-base-200" onClick={handleClose}>close</button>
+                <button className="btn btn-primary btn-lift" onClick={handleSave}>save</button>
+                <button className="btn btn-secondary transition duration-150 hover:brightness-95" onClick={handleSaveAndClear}>save and clear</button>
             </div>
 
         </div>

@@ -275,7 +275,7 @@ function CreateRank(){
     return(
         <>
             <div className="mt-18 mb-8">
-                <header className="font-semibold text-3xl lg:text-5xl">create new ranking</header>
+                <header className="font-display font-semibold tracking-tight text-3xl lg:text-5xl">create new ranking</header>
             </div>
             
             { loading? 
@@ -301,17 +301,17 @@ function CreateRank(){
                 <LimitedTextArea inputLabel={"ranking description"} characterLimit={255} placeholderText={"description"} handleInputChange={handleRankingDescription} 
                     initialValue={protoRanking.description} useFullWidth={false} />
 
-                <button className="outline-dashed" onClick={() => {handleAddRankItemModal(true)}}>
-                    <div className="flex flex-row items-center">
-                        <Plus size={30}/>
-                        <p className="font-thin lg:text-2xl text-3xl">add rank item</p>
-                    </div>
+                <button className="tile-dashed group flex items-center justify-center gap-3 px-8 py-5" onClick={() => {handleAddRankItemModal(true)}}>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-content">
+                        <Plus size={24}/>
+                    </span>
+                    <p className="font-display text-2xl lg:text-2xl font-medium">add rank item</p>
                 </button>
                 <DragDropContext onDragEnd={handleDragEnd}>
                     <Droppable droppableId='createRank'>
                         {(provided) => (
                             <div {...provided.droppableProps} 
-                                className="w-full h-120 flex flex-col border-solid rounded-xl gap-y-4 overflow-y-auto lg:gap-x-4" 
+                                className="w-full h-120 flex flex-col rounded-box border border-dashed border-base-300 bg-base-200/40 p-4 gap-y-4 overflow-y-auto lg:gap-x-4"
                                 ref={provided.innerRef}
                             >
                                 {protoRanks.map((item, index) => (
@@ -327,7 +327,7 @@ function CreateRank(){
                     </Droppable>
                 </DragDropContext>
                 </div>
-                <ConfirmationModel dialogId={"discardConfirmation"} modalTitle={"Discard Ranking?"} modalMessage={"Are you sure you want to discard this ranking?"} onConfirm={() => {navigate("/Home")}} onReject={() => {}}/>
+                <ConfirmationModel dialogId={"discardConfirmation"} modalTitle={"discard ranking?"} modalMessage={"are you sure you want to discard this ranking?"} onConfirm={() => {navigate("/Home")}} onReject={() => {}}/>
                 <AddRankItemModal  dialogId={"addRankModal"} onClose={()=>{console.log("Modal closed")}} onSave={addNewRankItem} totalRanks={itemCount} />
             </> 
             }

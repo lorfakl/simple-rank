@@ -34,22 +34,22 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditab
         <Draggable draggableId={id} index={index}>
             {(provided) => (
                 <div {...provided.draggableProps}
-                    ref={provided.innerRef} 
-                    className="flex flex-col w-full rounded-xl border-4 p-1 bg-base-300">
-                        <div className="flex flex-row  justify-between items-center" {...provided.dragHandleProps}>
-                            <div className="drag-handle" >
-                                <GripHorizontal className="w-10 h-10" color="grey" />
+                    ref={provided.innerRef}
+                    className="surface flex w-full flex-col rounded-box border border-base-300 bg-base-100 p-3 shadow-soft hover:bg-base-200/60">
+                        <div className="flex flex-row  justify-between items-center gap-2" {...provided.dragHandleProps}>
+                            <div className="drag-handle cursor-grab active:cursor-grabbing" >
+                                <GripHorizontal className="w-8 h-8 text-base-content/40" />
                             </div>
-                            <div className="text-3xl font-semibold">rank: {data.rank}</div>
-                            <div className="drag-handle"> 
-                                <GripHorizontal className="w-10 h-10"  color="grey" />
+                            <div className="rank-chip text-base">rank: {data.rank}</div>
+                            <div className="drag-handle cursor-grab active:cursor-grabbing">
+                                <GripHorizontal className="w-8 h-8 text-base-content/40" />
                             </div>
                         </div>
                     
                     
                     {editMode? 
                         <>                            
-                            <div className="card card-border bg-base-100 w-full card-sm shadow-sm">
+                            <div className="card card-border rounded-box border-base-300 bg-base-200/60 w-full card-sm shadow-sm">
                                 <div className="card-body">
                                     <div className="flex flex-col">
                                         
@@ -78,9 +78,9 @@ function RankItem({id, index, data, onDataChange, handleRemoveRankItem, isEditab
                         </> 
                         :
                         <>
-                            <div className="rounded-lg text-wrap">
-                                <h2 className="text-left font-bold text-xl">{data.title}</h2>
-                                <p className="text-left font-bold ">{data.description}</p>
+                            <div className="rounded-box p-1 text-wrap">
+                                <h2 className="text-left font-display text-lg font-semibold tracking-tight">{data.title}</h2>
+                                <p className="text-left font-medium text-base-content/75">{data.description}</p>
                                 <div className="card-actions justify-between">
                                     <button className="btn btn-primary" onClick={() => {setEditMode(true)}}><SquarePen /></button>
                                     <button className="btn btn-error" onClick={() => {handleRemoveOnClick(id)}}><Trash2/></button>

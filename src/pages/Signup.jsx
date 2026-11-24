@@ -18,12 +18,14 @@ function Signup({}){
     
     return(
         <>
-            <div className="my-12 flex flex-col gap-y-4 place-items-center">
-                <AuthenticationOptions isSignUp={true} />
-                {/*<p className="text-center w-1/2">
+            <div className="mx-auto my-12 w-full max-w-md px-4">
+                <div className="rounded-box border border-base-300 bg-base-100 p-6 shadow-soft">
+                    <AuthenticationOptions isSignUp={true} />
+                </div>
+            </div>
+            {/*<p className="text-center w-1/2">
                     By creating an account you agree to our <a href="https://linkToTermsofService.com">Terms of Service</a> and <a href="https://linkToTermsofService.com">Privacy Policy.</a> Already have an account? <a href="/Login">Login</a>
                 </p>*/}
-            </div>
         </>
     )
 }

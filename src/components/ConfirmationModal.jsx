@@ -33,15 +33,15 @@ function ConfirmationModel({dialogId, modalTitle, modalMessage, onConfirm, onRej
 
     return(<>
         <dialog id={`${dialogId}`} className="modal modal-bottom sm:modal-middle">
-            <div className="modal-box">
-                <h3 className="font-bold text-lg">{modalTitle}</h3>
-                <p className="py-4">{modalMessage}</p>
+            <div className="modal-box rounded-box border border-base-300 shadow-lift">
+                <h3 className="font-display font-semibold tracking-tight">{modalTitle}</h3>
+                <p className="py-4 text-base-content/75">{modalMessage}</p>
                 <div className="flex flex-row">
                 <div className="w-full">
                         <form method="dialog">
-                            <div className="flex flex-row justify-between w-full">
-                                <button className="btn" onClick={handleConfirmButtonClicked}>Yes</button>
-                                <button className="btn" onClick={handleRejectButtonClicked}>No</button>
+                            <div className="flex flex-row justify-between w-full gap-3">
+                                <button className="btn btn-primary btn-lift" onClick={handleConfirmButtonClicked}>yes</button>
+                                <button className="btn btn-ghost transition duration-150 hover:bg-base-200" onClick={handleRejectButtonClicked}>no</button>
                             </div>
                             {/* if there is a button in form, it will close the modal */}
                         </form>

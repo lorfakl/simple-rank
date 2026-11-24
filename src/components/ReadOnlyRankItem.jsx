@@ -10,12 +10,12 @@ function ReadOnlyRankItem({id, index, data}){
     }, [])
 
     return(
-        <div id={id} index={index} className="flex flex-col w-full h-fit rounded-xl border-4 p-4">
-            <div className="text-3xl font-semibold">rank: {data.rank}</div>
-            <div className="card card-border bg-base-100 w-120 card-sm shadow-sm">
+        <div id={id} index={index} className="surface flex w-full h-fit flex-col rounded-box border border-base-300 bg-base-100 p-4 shadow-soft hover:bg-base-200/60">
+            <div className="rank-chip mb-3 self-start text-base">rank: {data.rank}</div>
+            <div className="card card-border rounded-box border-base-300 bg-base-200/60 w-full max-w-120 card-sm shadow-sm">
                 <div className="card-body">
-                    <h2 className="card-title font-bold text-xl">{data.title}</h2>
-                    <p className="font-semibold text-lg text-pretty text-left">{data.description}</p>
+                    <h2 className="card-title font-display text-xl font-semibold tracking-tight">{data.title}</h2>
+                    <p className="font-medium text-base-content/75 text-pretty text-left">{data.description}</p>
                 </div>
             </div>
         </div>

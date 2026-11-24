@@ -36,7 +36,10 @@ export default defineConfig({
   },
   server: {
     watch: {
-      ignored: ['**/simple-rank-backend/**'] // Ignore changes in node_modules and dist directories
+      // backend/ contains the SQLite dev DB (+ WAL/SHM) which changes on every
+      // query — watching it causes an infinite full-reload loop. The old
+      // 'simple-rank-backend' submodule path no longer exists.
+      ignored: ['**/backend/**', '**/simple-rank-backend/**', '**/node_modules/**', '**/dist/**']
     },
     proxy: {
       '/api': {

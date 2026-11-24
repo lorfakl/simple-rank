@@ -99,7 +99,8 @@
       0 14px 26px -14px rgb(15 23 42 / 0.35);
   }
 
-  /* ranking card on the home grid: 1px border + soft shadow + hover lift */
+  /* ranking card on the home grid: 1px border + soft shadow + a stronger,
+     primary-leaning hover lift (transform only when motion is welcome) */
   .card-tile {
     background-color: var(--color-base-100);
     border: 1px solid var(--color-base-300);
@@ -109,32 +110,44 @@
     transition:
       transform 170ms ease-out,
       box-shadow 170ms ease-out,
-      border-color 170ms ease-out;
+      border-color 170ms ease-out,
+      background-color 170ms ease-out;
   }
   .card-tile:hover {
-    border-color: color-mix(in oklch, var(--color-primary) 32%, var(--color-base-300));
+    border-color: color-mix(in oklch, var(--color-primary) 45%, var(--color-base-300));
     box-shadow:
-      0 2px 4px rgb(15 23 42 / 0.06),
-      0 18px 34px -16px rgb(15 23 42 / 0.2);
+      0 2px 4px rgb(15 23 42 / 0.08),
+      0 22px 40px -16px rgb(15 23 42 / 0.28);
   }
   @media (prefers-reduced-motion: no-preference) {
     .card-tile:hover {
       transform: translateY(-4px);
     }
   }
-  /* pinned state is visually distinct via the accent color */
+  /* display-font title leans primary on hover — the card's main hover cue */
+  .card-heading {
+    transition: color 170ms ease-out;
+  }
+  .card-tile:hover .card-heading {
+    color: var(--color-primary);
+  }
+  /* pinned state: accent border plus the one allowed subtle per-card tint
+     (flat color-mix, never a gradient) */
   .card-tile.card-pinned {
+    background-color: color-mix(in oklch, var(--color-accent) 6%, var(--color-base-100));
     border-color: color-mix(in oklch, var(--color-accent) 70%, var(--color-base-300));
   }
   .card-tile.card-pinned:hover {
+    background-color: color-mix(in oklch, var(--color-accent) 9%, var(--color-base-100));
     border-color: var(--color-accent);
   }
 
-  /* intentional dashed "create a new ranking" tile */
+  /* intentional dashed "create a new ranking" tile: faint resting primary tint,
+     fills in on hover/focus-visible */
   .tile-dashed {
     border: 1.5px dashed color-mix(in oklch, var(--color-base-content) 28%, transparent);
     border-radius: var(--radius-box);
-    background-color: transparent;
+    background-color: color-mix(in oklch, var(--color-primary) 4%, transparent);
     color: var(--color-base-content);
     transition:
       border-color 170ms ease-out,
@@ -145,12 +158,34 @@
   .tile-dashed:hover,
   .tile-dashed:focus-visible {
     border-color: var(--color-primary);
-    background-color: color-mix(in oklch, var(--color-primary) 7%, transparent);
+    background-color: color-mix(in oklch, var(--color-primary) 9%, transparent);
     color: var(--color-primary);
   }
   @media (prefers-reduced-motion: no-preference) {
     .tile-dashed:hover {
       transform: translateY(-2px);
+    }
+  }
+
+  /* plus badge on the create tile: fills with primary, scales only when motion
+     is welcome */
+  .tile-badge {
+    background-color: color-mix(in oklch, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+    transition:
+      background-color 170ms ease-out,
+      color 170ms ease-out,
+      transform 170ms ease-out;
+  }
+  .tile-dashed:hover .tile-badge,
+  .tile-dashed:focus-visible .tile-badge {
+    background-color: var(--color-primary);
+    color: var(--color-primary-content);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .tile-dashed:hover .tile-badge,
+    .tile-dashed:focus-visible .tile-badge {
+      transform: scale(1.08);
     }
   }
 
@@ -168,6 +203,38 @@
     font-weight: 600;
     letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* top-3 name chips on home grid cards: neutral pill, position number in the
+     display font; the name truncates so chip rows never widen the card */
+  .top-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-base-300);
+    background-color: color-mix(in oklch, var(--color-base-200) 70%, transparent);
+    color: var(--color-base-content);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+  .top-chip-pos {
+    flex: none;
+    font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-primary);
+  }
+  .top-chip-name {
+    min-width: 0;
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* navbar link states */
@@ -193,7 +260,8 @@
      a single soft primary-tint radial on base-100, strongest at the top/center,
      essentially gone by the bottom edge so footer copy stays on a light ground.
      Applied to the landing page container so the hero card sits ON the tint
-     instead of being the only tinted element. signed-in pages stay clean. */
+     instead of being the only tinted element. landing only — Home gets its own,
+     gentler wash below. */
   .hero-glow {
     background-color: var(--color-base-100);
     background-image: radial-gradient(
@@ -201,6 +269,20 @@
       color-mix(in oklch, var(--color-primary) 16%, transparent) 0%,
       color-mix(in oklch, var(--color-primary) 7%, transparent) 42%,
       transparent 72%
+    );
+  }
+
+  /* the home grid's own full-bleed wash — same primary-tint family as .hero-glow
+     but softer and spread wider so cards rest on a tinted page instead of flat
+     base-100. one page-level wash, no new colors, no texture, no second gradient;
+     essentially gone by the lower page so card copy stays on a light ground. */
+  .home-wash {
+    background-color: var(--color-base-100);
+    background-image: radial-gradient(
+      155% 95% at 50% -14%,
+      color-mix(in oklch, var(--color-primary) 11%, transparent) 0%,
+      color-mix(in oklch, var(--color-primary) 4.5%, transparent) 40%,
+      transparent 70%
     );
   }
 

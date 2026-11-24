@@ -112,13 +112,31 @@ function Rankings({id, title, data, description, rankItems, onPinned, onDelete})
     }
 
     
+    // presentation-only: top 3 items by rank for the card's name chips
+    const topItems = (Array.isArray(rankItems) ? [...rankItems] : [])
+        .filter(item => String(item?.name ?? item?.Name ?? item?.title ?? "").trim() !== "")
+        .sort((a, b) => Number(a?.rank ?? a?.Rank ?? 0) - Number(b?.rank ?? b?.Rank ?? 0))
+        .slice(0, 3)
+        .map((item, chipIndex) => ({
+            label: String(item?.name ?? item?.Name ?? item?.title ?? "").trim(),
+            position: item?.rank ?? item?.Rank ?? chipIndex + 1
+        }))
+
     return(
         <>
-            <div className={`card-tile ${data.isPinned ? "card-pinned" : ""} flex flex-col gap-3 rounded-box p-5 cursor-pointer lg:aspect-square`}>
-                <div className="font-display text-xl font-semibold tracking-tight break-words" onClick={() => {navigateToRankingDetails()}}>{title}</div>
+            <div className={`card-tile ${data.isPinned ? "card-pinned" : ""} flex flex-col gap-3 rounded-box p-5 cursor-pointer`}>
+                <div className="card-heading font-display text-xl font-semibold tracking-tight break-words" onClick={() => {navigateToRankingDetails()}}>{title}</div>
+                <div className="flex min-w-0 flex-wrap items-center gap-2 px-2" onClick={() => {navigateToRankingDetails()}}>
+                    <span className="rank-chip text-xs">rank items: {rankItems.length}</span>
+                    {topItems.map((item, chipIndex) => (
+                        <span key={chipIndex} className="top-chip" title={item.label}>
+                            <span className="top-chip-pos">{item.position}</span>
+                            <span className="top-chip-name">{item.label}</span>
+                        </span>
+                    ))}
+                </div>
                 <p className="font-medium text-base-content/75 break-words" onClick={() => {navigateToRankingDetails()}}>{description}</p>
-                <div className="flex flex-row justify-between px-2 text-sm text-base-content/70" onClick={() => {navigateToRankingDetails()}}>
-                    <div>rank items: {rankItems.length}</div>
+                <div className="px-2 text-sm text-base-content/70" onClick={() => {navigateToRankingDetails()}}>
                     <div>creator: {data.createdBy.displayName}</div>
                 </div>
                 <div className="flex flex-row items-center justify-between px-2" onClick={() => {navigateToRankingDetails()}}>

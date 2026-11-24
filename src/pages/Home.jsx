@@ -136,39 +136,43 @@ function Home(){
     
     return(
         <>
-            <div className="w-full my-18">
-                    <h1 className="tracking-tight">my rankings</h1>
-            </div>
-            {
-                loading ?
-                <div className="flex justify-center">
-                    <p className="text-2xl font-semibold">loading...</p>
-                    <span className="loading loading-spinner loading-xl"></span>
-                </div> 
-                : 
-                <DragDropContext onDragEnd={(handleDragEnd)}>
-                    <div className="my-12 flex flex-col gap-y-4">
-                        {/* 1 col mobile, 2 cols md, 4 cols lg */}
-                        <div className="px-8 grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            
-                            <button className="tile-dashed group flex min-h-48 flex-col items-center justify-center gap-3 p-6" onClick={() => {navigate("/NewRank")}}>
-                                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-content">
-                                    <Plus size={28}/>
-                                </span>
-                                <p className="font-display text-2xl lg:text-3xl font-medium text-center">create a new ranking</p>
-                            </button>
-
-                            {
-                                currentRankings.map((item, index)=>{
-                                return(<Rankings key={index} id={item.id} data={item} title={item.title} 
-                                    description={item.description} rankItems={item.items} onPinned={onRankingPinned} onDelete={onRankingDelete}/>)
-                            })}
-
-                            
-                        </div>
+            {/* one page-level wash for the signed-in grid: full-bleed, restrained,
+                cards sit on the tint instead of flat base-100 */}
+            <div className="home-wash w-full min-h-svh">
+                <div className="w-full my-18">
+                        <h1 className="tracking-tight">my rankings</h1>
+                </div>
+                {
+                    loading ?
+                    <div className="flex justify-center">
+                        <p className="text-2xl font-semibold">loading...</p>
+                        <span className="loading loading-spinner loading-xl"></span>
                     </div>
-                </DragDropContext>
-            }
+                    :
+                    <DragDropContext onDragEnd={(handleDragEnd)}>
+                        <div className="my-12 flex flex-col gap-y-4">
+                            {/* 1 col mobile, 2 cols md, 4 cols lg */}
+                            <div className="px-8 grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+
+                                <button className="tile-dashed flex min-h-48 flex-col items-center justify-center gap-3 p-6" onClick={() => {navigate("/NewRank")}}>
+                                    <span className="tile-badge flex h-14 w-14 items-center justify-center rounded-full">
+                                        <Plus size={28}/>
+                                    </span>
+                                    <p className="font-display text-2xl lg:text-3xl font-medium text-center">create a new ranking</p>
+                                </button>
+
+                                {
+                                    currentRankings.map((item, index)=>{
+                                    return(<Rankings key={index} id={item.id} data={item} title={item.title}
+                                        description={item.description} rankItems={item.items} onPinned={onRankingPinned} onDelete={onRankingDelete}/>)
+                                })}
+
+
+                            </div>
+                        </div>
+                    </DragDropContext>
+                }
+            </div>
             <ConfirmationModel dialogId={"deleteConfirmation"} modalTitle={"are you sure?"} modalMessage={`are you sure you want to delete ranking: ${rankingToDelete.current.title}`}
             onConfirm={onConfirmDelete} onReject={onRejectDelete} autoClose={true}/>
         </>

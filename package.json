@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "server": "~/.dotnet/dotnet run",
     "test:watch": "vitest"
   },
@@ -46,6 +47,7 @@
     "globals": "^15.15.0",
     "jsdom": "^30.1.3",
     "terser": "^5.42.0",
+    "typescript": "^5.9.3",
     "vite": "^6.2.0",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^5.0.5"

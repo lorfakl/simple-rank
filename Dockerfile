@@ -1,42 +1,65 @@
-# Use the official .NET 8.0 SDK image for building
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# simple-rank — ONE image, ONE service (slice C).
+# Stage 1: build the SPA (Vite strict TS) -> wwwroot/
+# Stage 2: build + publish the ASP.NET Core app, bundling wwwroot
+# Stage 3: minimal aspnet runtime on 8080
+# NOTE: .dockerignore excludes .env*, *.db*, wwwroot, node_modules, bin/obj —
+# the image builds its own frontend and ships WITHOUT data or secrets.
+
+FROM node:20-alpine AS build-client
 WORKDIR /app
 
-# Copy csproj and restore dependencies
-COPY *.csproj ./
-RUN dotnet restore
+# Layer-cached dependency install
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy everything else and build
+# Frontend sources (index.html at root, src/, public/, vite config + tsconfig)
+COPY index.html vite.config.ts tsconfig.json ./
+COPY src ./src
+COPY public ./public
+
+# VITE_API_BASE_URL is BUILD-time only and must stay empty for same-origin
+# serving (.env* files are dockerignored, so no absolute URL can be baked in).
+ARG VITE_API_BASE_URL=
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+RUN npm run build
+
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-server
+WORKDIR /src
+
+# global.json pins the SDK line (8.0.0, rollForward latestFeature)
+COPY global.json ./
+
+# Project files first -> layer-cached dotnet restore
+COPY simple-rank-backend.csproj simpleRank.sln ./
+RUN dotnet restore simple-rank-backend.csproj
+
+# All C# sources + config
 COPY . ./
-RUN dotnet publish -c Release -o out
 
-# Use the official .NET 8.0 runtime image for running
+# Put the freshly built SPA in place BEFORE publish so the Web SDK publishes
+# wwwroot/ into the output (re-copied below as a guarantee anyway).
+COPY --from=build-client /app/wwwroot ./wwwroot
+
+RUN dotnet publish simple-rank-backend.csproj -c Release -o /app/publish
+
+# Guarantee: the publish output always contains wwwroot/index.html
+COPY --from=build-client /app/wwwroot /app/publish/wwwroot
+
+
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# Install curl for container health checks
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+COPY --from=build-server /app/publish .
 
-# Create logs directory with proper permissions
-RUN mkdir -p /app/logs && chmod 755 /app/logs
-
-# Copy the published app from build stage
-COPY --from=build /app/out .
-
-# Create a non-root user for security
-RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
-USER appuser
-
-# Expose port 8080 (default for ASP.NET Core in containers)
-EXPOSE 8080
-
-# Set environment variables for ASP.NET Core
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
+EXPOSE 8080
 
-# Health check endpoint (optional - adjust path as needed)
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+# Non-root (aspnet images ship the built-in `app` user). Ownership is fixed
+# first: with DatabaseProvider=Sqlite and no volume mounted, the app creates
+# its (empty) SQLite file in /app at startup.
+RUN chown -R app:app /app
+USER app
 
-# Set the entry point
 ENTRYPOINT ["dotnet", "simple-rank-backend.dll"]

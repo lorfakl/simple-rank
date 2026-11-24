@@ -1,0 +1,49 @@
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+**/node_modules
+dist
+**/dist
+
+# .NET build output
+bin
+obj
+**/bin
+**/obj
+
+# Frontend build output — the image builds its own wwwroot
+wwwroot
+**/wwwroot
+
+# DATA: the dev SQLite DB (real user data) and its sidecars must NEVER
+# enter the image
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/*.db-journal
+
+# Logs
+logs
+**/logs
+*.log
+**/*.log
+
+# Secrets / env files (VITE_API_BASE_URL is build-time only and must stay empty)
+.env*
+**/.env*
+
+# Editor + misc
+.vscode
+.idea
+*.user
+
+# Legacy export dir (lives outside the repo anyway, listed for completeness)
+SimpleRankExports

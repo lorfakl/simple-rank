@@ -91,7 +91,10 @@ function RankItem({ id, index, data, onDataChange, handleRemoveRankItem, isEdita
           {...provided.draggableProps}
           ref={provided.innerRef}
           className="surface flex w-full flex-col rounded-box border border-base-300 bg-base-100 p-3 shadow-soft hover:bg-base-200/60"
-          style={itemStyle}
+          // must merge: dnd delivers its drag positioning (position: fixed +
+          // transform) through draggableProps.style, so our own style prop has
+          // to spread on top of it instead of replacing it.
+          style={{ ...provided.draggableProps.style, ...itemStyle }}
         >
           <div className="flex flex-row  justify-between items-center gap-2" {...provided.dragHandleProps}>
             <div className="drag-handle cursor-grab active:cursor-grabbing">

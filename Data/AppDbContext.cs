@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ShareableLink> ShareableLinks => Set<ShareableLink>();
     public DbSet<StatisticEvent> StatisticEvents => Set<StatisticEvent>();
     public DbSet<ReactionHistory> ReactionHistories => Set<ReactionHistory>();
+    public DbSet<RankingEditHistory> RankingEditHistories => Set<RankingEditHistory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +49,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne(s => s.Ranking)
             .WithOne(r => r.ShareableLink)
             .HasForeignKey<ShareableLink>(s => s.RankingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RankingEditHistory>()
+            .HasKey(h => h.Id);
+        modelBuilder.Entity<RankingEditHistory>()
+            .HasIndex(h => new { h.RankingId, h.CreatedAt });
+        modelBuilder.Entity<RankingEditHistory>()
+            .HasOne(h => h.Ranking)
+            .WithMany(r => r.EditHistory)
+            .HasForeignKey(h => h.RankingId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

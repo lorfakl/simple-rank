@@ -6,6 +6,7 @@ using simple_rank_backend.Data;
 using simple_rank_backend.DTOs;
 using simple_rank_backend.Models;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace simple_rank_backend.Controllers;
 
@@ -43,6 +44,7 @@ public class RankController(AppDbContext db) : ControllerBase
         };
 
         db.Rankings.Add(ranking);
+        RecordRankingEdit(ranking, ownerId, "create", "Created ranking");
         await db.SaveChangesAsync();
 
         return Ok(new CreateRankingResponse { Id = ranking.Id, Message = "Successfully created ranking" });
@@ -69,6 +71,7 @@ public class RankController(AppDbContext db) : ControllerBase
 
         db.RankItems.Add(item);
         ranking.LastUpdated = DateTime.UtcNow;
+        RecordRankingEdit(ranking, ownerId, "add-item", $"Added item '{item.Name}'");
         await db.SaveChangesAsync();
 
         return Ok(new ResponseBase { Message = "Create rank item success" });
@@ -153,6 +156,13 @@ public class RankController(AppDbContext db) : ControllerBase
         var ranking = await db.Rankings.Include(r => r.Items).FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
         if (ranking is null) return NotFound();
 
+        var summaryParts = new List<string>();
+
+        if (!string.Equals(ranking.Title, rq.Title, StringComparison.Ordinal))
+        {
+            summaryParts.Add($"Renamed ranking to '{rq.Title}'");
+        }
+
         ranking.Title = rq.Title;
         ranking.Description = rq.Description;
         ranking.IsPublic = rq.IsPublic;
@@ -163,10 +173,22 @@ public class RankController(AppDbContext db) : ControllerBase
             var incomingById = rq.Items.ToDictionary(i => i.Id, i => i);
             var existingIds = ranking.Items.Select(i => i.ItemId).ToHashSet();
 
+            var removed = ranking.Items.Where(i => !incomingById.ContainsKey(i.ItemId)).ToList();
+            if (removed.Count > 0)
+            {
+                db.RankItems.RemoveRange(removed);
+                summaryParts.Add($"Removed {removed.Count} item(s)");
+            }
+
             foreach (var existing in ranking.Items)
             {
                 if (incomingById.TryGetValue(existing.ItemId, out var incoming))
                 {
+                    if (existing.Rank != incoming.Rank)
+                    {
+                        summaryParts.Add("Reordered items");
+                    }
+
                     existing.Name = incoming.Name;
                     existing.Description = incoming.Description;
                     existing.Rank = incoming.Rank;
@@ -180,10 +202,17 @@ public class RankController(AppDbContext db) : ControllerBase
                 Name = i.Name,
                 Description = i.Description,
                 Rank = i.Rank
-            });
+            }).ToList();
 
-            db.RankItems.AddRange(toAdd);
+            if (toAdd.Count > 0)
+            {
+                db.RankItems.AddRange(toAdd);
+                summaryParts.Add($"Added {toAdd.Count} item(s)");
+            }
         }
+
+        var summary = summaryParts.Count == 0 ? "Edited ranking" : string.Join("; ", summaryParts.Distinct());
+        RecordRankingEdit(ranking, ownerId, "edit", summary);
 
         await db.SaveChangesAsync();
         return Ok(new ResponseBase { Message = "successfully updated rank items" });
@@ -208,8 +237,108 @@ public class RankController(AppDbContext db) : ControllerBase
         }
 
         ranking.LastUpdated = DateTime.UtcNow;
+        RecordRankingEdit(ranking, ownerId, "reorder", "Updated item order");
         await db.SaveChangesAsync();
         return Ok(new ResponseBase { Message = "successfully updated rank item placements" });
+    }
+
+    [Authorize]
+    [HttpGet("{rankingId}")]
+    public async Task<IActionResult> GetRankingEditHistory(string rankingId)
+    {
+        var ownerId = User.GetUserId();
+        if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
+
+        var ranking = await db.Rankings.FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
+        if (ranking is null) return NotFound();
+
+        var items = await db.RankingEditHistories
+            .Where(h => h.RankingId == rankingId && h.OwnerId == ownerId)
+            .OrderByDescending(h => h.CreatedAt)
+            .Select(h => new RankingEditHistoryItemResponse
+            {
+                Id = h.Id,
+                RankingId = h.RankingId,
+                ActionType = h.ActionType,
+                Summary = h.Summary,
+                CreatedAt = h.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(new RankingEditHistoryResponse { Items = items });
+    }
+
+    [Authorize]
+    [HttpPost("{rankingId}/{historyId}")]
+    public async Task<IActionResult> RestoreRankingFromHistory(string rankingId, string historyId)
+    {
+        var ownerId = User.GetUserId();
+        if (string.IsNullOrWhiteSpace(ownerId)) return Unauthorized();
+
+        var ranking = await db.Rankings.Include(r => r.Items).FirstOrDefaultAsync(r => r.Id == rankingId && r.OwnerId == ownerId);
+        if (ranking is null) return NotFound();
+
+        var history = await db.RankingEditHistories.FirstOrDefaultAsync(h => h.Id == historyId && h.RankingId == rankingId && h.OwnerId == ownerId);
+        if (history is null) return NotFound();
+
+        RankingSnapshot? snapshot;
+        try
+        {
+            snapshot = JsonSerializer.Deserialize<RankingSnapshot>(history.SnapshotJson);
+        }
+        catch (JsonException)
+        {
+            return BadRequest(new ResponseBase { Message = "invalid snapshot payload" });
+        }
+
+        if (snapshot is null)
+        {
+            return BadRequest(new ResponseBase { Message = "invalid snapshot payload" });
+        }
+
+        ranking.Title = snapshot.Title;
+        ranking.Description = snapshot.Description;
+        ranking.IsPublic = snapshot.IsPublic;
+        ranking.LastUpdated = DateTime.UtcNow;
+
+        var snapshotItems = snapshot.Items ?? [];
+        var snapshotById = snapshotItems.ToDictionary(i => i.ItemId, i => i);
+
+        var toRemove = ranking.Items.Where(i => !snapshotById.ContainsKey(i.ItemId)).ToList();
+        if (toRemove.Count > 0)
+        {
+            db.RankItems.RemoveRange(toRemove);
+        }
+
+        foreach (var existing in ranking.Items)
+        {
+            if (snapshotById.TryGetValue(existing.ItemId, out var incoming))
+            {
+                existing.Name = incoming.Name;
+                existing.Description = incoming.Description;
+                existing.Rank = incoming.Rank;
+            }
+        }
+
+        var existingIds = ranking.Items.Select(i => i.ItemId).ToHashSet();
+        var toAdd = snapshotItems.Where(i => !existingIds.Contains(i.ItemId)).Select(i => new RankItem
+        {
+            ItemId = i.ItemId,
+            RankingId = ranking.Id,
+            Name = i.Name,
+            Description = i.Description,
+            Rank = i.Rank
+        }).ToList();
+
+        if (toAdd.Count > 0)
+        {
+            db.RankItems.AddRange(toAdd);
+        }
+
+        RecordRankingEdit(ranking, ownerId, "restore", $"Restored from history entry {historyId}");
+        await db.SaveChangesAsync();
+
+        return Ok(new ResponseBase { Message = "successfully restored ranking snapshot" });
     }
 
     [Authorize]
@@ -260,6 +389,7 @@ public class RankController(AppDbContext db) : ControllerBase
 
         db.RankItems.Remove(item);
         ranking.LastUpdated = DateTime.UtcNow;
+        RecordRankingEdit(ranking, ownerId, "remove-item", $"Removed item '{item.Name}'");
         await db.SaveChangesAsync();
         return Ok(new ResponseBase { Message = "removed rank item" });
     }
@@ -282,6 +412,7 @@ public class RankController(AppDbContext db) : ControllerBase
         item.Description = rq.Description;
         item.Rank = rq.Rank;
         item.Ranking.LastUpdated = DateTime.UtcNow;
+        RecordRankingEdit(item.Ranking, ownerId, "edit-item", $"Edited item '{rq.Name}'");
 
         await db.SaveChangesAsync();
         return Ok(new ResponseBase { Message = "updated rank item" });
@@ -339,6 +470,51 @@ public class RankController(AppDbContext db) : ControllerBase
         var ownerIds = rankings.Select(r => r.OwnerId).Distinct().ToList();
         var metas = await db.UserMetadata.Where(m => ownerIds.Contains(m.UserId)).ToDictionaryAsync(m => m.UserId, m => m);
         return Ok(rankings.Select(r => MapRanking(r, metas.TryGetValue(r.OwnerId, out var m) ? m : null)));
+    }
+
+    private void RecordRankingEdit(Ranking ranking, string ownerId, string actionType, string summary)
+    {
+        var snapshot = new RankingSnapshot
+        {
+            Title = ranking.Title,
+            Description = ranking.Description,
+            IsPublic = ranking.IsPublic,
+            Items = ranking.Items
+                .OrderBy(i => i.Rank)
+                .Select(i => new RankingSnapshotItem
+                {
+                    ItemId = i.ItemId,
+                    Name = i.Name,
+                    Description = i.Description,
+                    Rank = i.Rank
+                }).ToList()
+        };
+
+        db.RankingEditHistories.Add(new RankingEditHistory
+        {
+            RankingId = ranking.Id,
+            OwnerId = ownerId,
+            ActionType = actionType,
+            Summary = summary,
+            SnapshotJson = JsonSerializer.Serialize(snapshot),
+            CreatedAt = DateTime.UtcNow
+        });
+    }
+
+    private sealed class RankingSnapshot
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public bool IsPublic { get; set; }
+        public List<RankingSnapshotItem> Items { get; set; } = [];
+    }
+
+    private sealed class RankingSnapshotItem
+    {
+        public string ItemId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public uint Rank { get; set; }
     }
 
     private static RankingResponse MapRanking(Ranking ranking, UserMetadata? meta)

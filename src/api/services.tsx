@@ -146,6 +146,18 @@ export interface RankingResponse {
   createdBy: CreatedByDto;
 }
 
+export interface RankingEditHistoryItemResponse {
+  id: string;
+  rankingId: string;
+  actionType: string;
+  summary: string;
+  createdAt: string;
+}
+
+export interface RankingEditHistoryResponse {
+  items: RankingEditHistoryItemResponse[];
+}
+
 export interface CreateRankingResponse {
   id: string;
   message: string;
@@ -223,6 +235,8 @@ export const rankingService = {
   getShareableLink: (rankingId: string | undefined): Promise<ApiResponse<ShareableLinkResponse>> => apiClient.post(`/api/Rank/GetShareableLink/${rankingId}`),
   getRankingMetadata: (rankingId: string): Promise<ApiResponse<unknown>> => apiClient.get(`/api/Rank/GetRankingMetadata/${rankingId}`),
   setRankingPin: (request: PinRankingRequest): Promise<ApiResponse<ResponseBase>> => apiClient.post(`/api/Rank/PinRanking/${request.rankingId}`, request),
+  getRankingEditHistory: (rankingId: string): Promise<ApiResponse<RankingEditHistoryResponse>> => apiClient.get(`/api/Rank/GetRankingEditHistory/${rankingId}`),
+  restoreRankingFromHistory: (rankingId: string, historyId: string): Promise<ApiResponse<ResponseBase>> => apiClient.post(`/api/Rank/RestoreRankingFromHistory/${rankingId}/${historyId}`),
 };
 
 export const rankItemService = {

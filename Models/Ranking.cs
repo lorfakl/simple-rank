@@ -15,5 +15,6 @@ public class Ranking
 
     public AppUser? Owner { get; set; }
     public List<RankItem> Items { get; set; } = [];
+    public List<RankingEditHistory> EditHistory { get; set; } = [];
     public ShareableLink? ShareableLink { get; set; }
 }

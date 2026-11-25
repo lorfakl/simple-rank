@@ -21,48 +21,55 @@ Simple Rank is a standalone web application that allows users to create custom r
 ### Frontend
 - **React** - Component-based UI library
 - **Vite** - Fast build tool and development server
-- **JavaScript** - No TypeScript, keeping it simple
+- **TypeScript** - Typed frontend code
 - **Tailwind CSS** - Responsive styling with clean aesthetics
 
 ### Backend
 - **C# / .NET** - Robust server-side API
-- **PostgreSQL** - Reliable data persistence
+- **EF Core** - SQLite for local development and PostgreSQL for production
+- **Clerk** - Authentication and session management
 - **RESTful API** - Clean communication between frontend and backend
 
 ## Architecture
 
-Simple Rank follows a modern, decoupled architecture:
-
-- **Frontend**: Completely standalone React application that communicates with the backend via HTTP API calls
-- **Backend**: Independent C# server providing RESTful endpoints for ranking data
-- **Database**: PostgreSQL database for reliable data storage and retrieval
+The ASP.NET Core application serves the API and the built React app from one
+process. During development, Vite runs separately and proxies `/api` requests
+to the backend. The previous Supabase-based backend is retained in `legacy/`
+for reference and is not compiled.
 
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
+- Node.js 20.19+ or 22.12+, npm, and the .NET 8 SDK
 
 ### Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/simple-rank.git
-cd simple-rank
-```
-
-2. Install dependencies:
+1. Install dependencies from the repository root:
 ```bash
 npm install
 ```
 
-3. Start the development server:
+2. Configure Clerk as described in `docs/clerkMigration.md`, including the
+	publishable key, API public key, issuer, authorized origins, and session claims.
+
+3. Start the backend and Vite development server:
 ```bash
 npm run dev
 ```
 
-4. Open your browser to `http://localhost:5173`
+4. Open `http://localhost:5173`. The API listens at `http://localhost:5033`.
+	The npm server script expects the SDK at `~/.dotnet/dotnet`.
+
+Local development defaults to SQLite (`simpleRank.dev.db`). To use a separate
+local PostgreSQL database, set `DatabaseProvider=Postgres` and
+`ConnectionStrings__DefaultConnection` to an Npgsql connection string before
+starting the app. See `docs/deployNote.md` for deployment settings. Do not
+point local development at production data.
+
+The app currently uses EF Core `EnsureCreated()` on startup; it does not apply
+schema migrations. Plan migrations and backups before changing a production
+database schema.
 
 ### Available Scripts
 
@@ -70,6 +77,12 @@ npm run dev
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 - `npm run lint` - Run ESLint
+- `npm test` - Run frontend tests
+- `npm run typecheck` - Check frontend types
+- `~/.dotnet/dotnet test SimpleRank.Tests/SimpleRank.Tests.csproj` - Run backend tests
+
+For a single-process local build, run `npm run build` followed by
+`~/.dotnet/dotnet run`. The backend serves the generated `wwwroot/` files.
 
 ## Usage
 
@@ -85,18 +98,16 @@ src/
 ├── components/         # Reusable React components
 ├── pages/              # Main application pages
 ├── contexts/           # Custom React Contexts
-├── services/           # API communication layer
-└── App.jsx             # Main application component
+├── api/                # API communication layer
+└── App.tsx             # Main application component
 ```
 
 ## API Integration
 
 The frontend communicates with the C# backend through RESTful API endpoints:
 
-- `GET /api/rankings` - Retrieve rankings
-- `POST /api/rankings` - Create new ranking  
-- `GET /api/rankings/{id}` - Get specific ranking
-- `PUT /api/rankings/{id}` - Update ranking
+The route contract is defined in `src/api/services.tsx` and implemented by the
+controllers in `Controllers/`. Swagger is available at `/swagger` in development.
 
 ## License
 

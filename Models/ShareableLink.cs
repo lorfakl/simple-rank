@@ -1,4 +1,4 @@
-namespace simple_rank_backend.NewApp.Models;
+namespace simple_rank_backend.Models;
 
 public class ShareableLink
 {

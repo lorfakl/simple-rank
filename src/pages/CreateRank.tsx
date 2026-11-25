@@ -6,7 +6,6 @@ import ConfirmationModel from '../components/ConfirmationModal';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { useState, useEffect, useRef } from "react"
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
-import { useSupabase } from '../contexts/SupabaseContext';
 import { useUser } from '../contexts/UserContext';
 import { rankingService } from '../api/services';
 import { AddRankItemModal } from '../components/AddRankItemModal';
@@ -36,7 +35,6 @@ function CreateRank(){
     const previousItemCount = useRef(0)
     
     const navigate = useNavigate()
-    const supabase = useSupabase()
     const { user } = useUser()
 
     useEffect(() => {
@@ -64,7 +62,6 @@ function CreateRank(){
         console.log("Current protoranking: ", protoRanking)
     }, [protoRanking])
 
-    //*Supabase Operations*//
     async function SaveRank()
     {
         setLoading(true)

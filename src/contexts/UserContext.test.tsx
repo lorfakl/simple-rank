@@ -1,103 +1,77 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { UserProvider, useUser } from './UserContext';
-import { authService } from '../api/services';
-// pulls in the jest-dom matcher augmentations for vitest's Assertion
-// (type-only: erased at runtime; setupTests.js still registers them)
 import type {} from '@testing-library/jest-dom/vitest';
 
-vi.mock('../api/services', () => ({
-  authService: {
-    me: vi.fn(() => Promise.resolve({ data: {} })),
-    signIn: vi.fn(),
-    signUp: vi.fn(),
-    signOut: vi.fn(() => Promise.resolve({ data: {} })),
-    setMetadata: vi.fn(() => Promise.resolve({ data: {} }))
-  }
+const mocks = vi.hoisted(() => ({
+  getToken: vi.fn(),
+  signOut: vi.fn(),
+  sync: vi.fn(),
+  setTokenProvider: vi.fn(),
+  auth: { isLoaded: true, isSignedIn: true }
 }));
 
-vi.mock('./NotificationContext', () => ({
-  useNotifications: () => ({
-    showNotification: vi.fn(),
-    hideNotifications: vi.fn()
-  })
+vi.mock('@clerk/react', () => ({
+  useAuth: () => ({ ...mocks.auth, getToken: mocks.getToken }),
+  useClerk: () => ({ signOut: mocks.signOut })
 }));
+vi.mock('../api/services', () => ({ authService: { sync: mocks.sync } }));
+vi.mock('../api/client', () => ({ setTokenProvider: mocks.setTokenProvider }));
 
 function Probe() {
-  const { user, session, isAuthenticated, signInWithEmail } = useUser();
-
-  return React.createElement(
-    'div',
-    null,
-    React.createElement('div', { 'data-testid': 'auth-state' }, isAuthenticated ? 'yes' : 'no'),
-    React.createElement('div', { 'data-testid': 'email' }, user?.email || ''),
-    React.createElement('div', { 'data-testid': 'token' }, session?.access_token || ''),
-    React.createElement(
-      'button',
-      {
-        type: 'button',
-        onClick: () => signInWithEmail('login@example.com', 'Password123!')
-      },
-      'signin'
-    )
+  const { user, session, isAuthenticated, signOut } = useUser();
+  return (
+    <div>
+      <div data-testid="auth-state">{isAuthenticated ? 'yes' : 'no'}</div>
+      <div data-testid="user-id">{user.id || ''}</div>
+      <div data-testid="token">{session?.access_token || ''}</div>
+      <button onClick={() => void signOut()}>sign out</button>
+    </div>
   );
 }
 
-describe('UserContext smoke', () => {
+describe('Clerk user session', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    mocks.auth.isLoaded = true;
+    mocks.auth.isSignedIn = true;
+    mocks.getToken.mockResolvedValue('clerk-token');
+    mocks.signOut.mockResolvedValue(undefined);
+    mocks.sync.mockResolvedValue({ data: { user: {
+      id: 'existing-id', email: 'user@example.com',
+      user_metadata: { full_name: 'User', avatar_url: '' }
+    } } });
   });
 
-  it('hydrates auth state from localStorage and validates via me()', async () => {
-    localStorage.setItem('auth_token', 'stored-token');
-    localStorage.setItem(
-      'user',
-      JSON.stringify({
-        id: 'user-1',
-        email: 'stored@example.com',
-        user_metadata: { full_name: 'Stored User', avatar_url: '' }
-      })
-    );
-
-    render(React.createElement(UserProvider, null, React.createElement(Probe)));
-
-    await waitFor(() => {
-      expect(screen.getByTestId('auth-state')).toHaveTextContent('yes');
-      expect(screen.getByTestId('email')).toHaveTextContent('stored@example.com');
-      expect(screen.getByTestId('token')).toHaveTextContent('stored-token');
-    });
-
-    expect(authService.me).toHaveBeenCalledTimes(1);
+  it('syncs the mapped user and removes the old stored token', async () => {
+    localStorage.setItem('auth_token', 'old-token');
+    render(<UserProvider><Probe /></UserProvider>);
+    await waitFor(() => expect(screen.getByTestId('auth-state')).toHaveTextContent('yes'));
+    expect(screen.getByTestId('user-id')).toHaveTextContent('existing-id');
+    expect(screen.getByTestId('token')).toHaveTextContent('clerk-token');
+    expect(localStorage.getItem('auth_token')).toBeNull();
+    expect(mocks.sync).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'sign out' }));
+    expect(mocks.signOut).toHaveBeenCalledOnce();
   });
 
-  it('signInWithEmail sets session shape with access_token and user fields', async () => {
-    vi.mocked(authService.signIn).mockResolvedValue({
-      data: {
-        session: {
-          access_token: 'new-token',
-          user: {
-            id: 'user-2',
-            email: 'login@example.com',
-            user_metadata: { full_name: 'Login User', avatar_url: 'https://avatar' }
-          }
-        }
-      }
-      } as Awaited<ReturnType<typeof authService.signIn>>);
+  it('does not trust an old local session when signed out of Clerk', () => {
+    mocks.auth.isSignedIn = false;
+    localStorage.setItem('auth_token', 'old-token');
+    localStorage.setItem('user', '{"id":"old"}');
+    render(<UserProvider><Probe /></UserProvider>);
+    expect(screen.getByTestId('auth-state')).toHaveTextContent('no');
+    expect(localStorage.getItem('auth_token')).toBeNull();
+    expect(localStorage.getItem('user')).toBeNull();
+    expect(mocks.sync).not.toHaveBeenCalled();
+  });
 
-      render(React.createElement(UserProvider, null, React.createElement(Probe)));
-
-      fireEvent.click(screen.getByRole('button', { name: 'signin' }));
-
-    await waitFor(() => {
-      expect(screen.getByTestId('auth-state')).toHaveTextContent('yes');
-      expect(screen.getByTestId('email')).toHaveTextContent('login@example.com');
-      expect(screen.getByTestId('token')).toHaveTextContent('new-token');
-    });
-
-    expect(localStorage.getItem('auth_token')).toBe('new-token');
-    const storedUser = JSON.parse(localStorage.getItem('user')!);
-    expect(storedUser.id).toBe('user-2');
-    expect(storedUser.email).toBe('login@example.com');
+  it('lets a signed-in user retry when account synchronization fails', async () => {
+    mocks.sync.mockRejectedValueOnce(new Error('sync failed'));
+    render(<UserProvider><Probe /></UserProvider>);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to connect your account');
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() => expect(screen.getByTestId('auth-state')).toHaveTextContent('yes'));
   });
 });

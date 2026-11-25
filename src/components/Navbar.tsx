@@ -26,10 +26,8 @@ function Navbar()
             }
         }
 
-        console.log(session)
         if(session)
         {
-            console.log("User is authenticated:", session);
             loadAvatarUrl()
             loadFullName()
             
@@ -45,7 +43,6 @@ function Navbar()
         if(session === null || session === undefined || Object.keys(session).length === 0)
         {
             console.log("User is not authenticated")
-            console.log(session)
             setIsAuthenticated(false)
             localStorage.removeItem('avatarUrl')
             localStorage.removeItem('fullName')

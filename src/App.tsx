@@ -7,7 +7,6 @@ import Navbar from './components/Navbar'
 import CreateRank from './pages/CreateRank'
 import ViewRanking from './pages/ViewRanking'
 import SharedRank from './pages/SharedRank'
-import { SupabaseProvider } from './contexts/SupabaseContext'
 import { UserProvider } from './contexts/UserContext'
 import Login from './pages/Login'
 import { NotificationProvider } from './contexts/NotificationContext'
@@ -19,7 +18,6 @@ function App() {
   return (
     <>
       <NotificationProvider>
-        <SupabaseProvider>
           <UserProvider>
             <BrowserRouter>
               <Navbar/>
@@ -35,7 +33,6 @@ function App() {
               </Routes>
             </BrowserRouter>
           </UserProvider>
-        </SupabaseProvider>
       </NotificationProvider>
     </>
   )

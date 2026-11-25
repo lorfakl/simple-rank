@@ -21,6 +21,8 @@ COPY public ./public
 # serving (.env* files are dockerignored, so no absolute URL can be baked in).
 ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ARG VITE_CLERK_PUBLISHABLE_KEY
+ENV VITE_CLERK_PUBLISHABLE_KEY=${VITE_CLERK_PUBLISHABLE_KEY}
 RUN npm run build
 
 
@@ -31,7 +33,7 @@ WORKDIR /src
 COPY global.json ./
 
 # Project files first -> layer-cached dotnet restore
-COPY simple-rank-backend.csproj simpleRank.sln ./
+COPY simple-rank-backend.csproj ./
 RUN dotnet restore simple-rank-backend.csproj
 
 # All C# sources + config

@@ -1,5 +1,11 @@
 import axios from 'axios';
 
+let tokenProvider: (() => Promise<string | null>) | null = null;
+
+export function setTokenProvider(provider: (() => Promise<string | null>) | null) {
+    tokenProvider = provider;
+}
+
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     timeout: 10000,
@@ -11,8 +17,8 @@ const client = axios.create({
 });
 
 client.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('auth_token');
+    async (config) => {
+        const token = await tokenProvider?.();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

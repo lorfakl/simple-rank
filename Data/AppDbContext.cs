@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using simple_rank_backend.NewApp.Models;
+using simple_rank_backend.Models;
 
-namespace simple_rank_backend.NewApp.Data;
+namespace simple_rank_backend.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

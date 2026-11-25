@@ -10,7 +10,7 @@
 ## What gets deployed
 
 - **One Dokploy service**, built from the **repo-root `Dockerfile`** (build
-  context = repo root, no build arguments required). No second static host, no
+  context = repo root, with the Clerk publishable key as a build argument). No second static host, no
   Cloudflare Pages, no separate API deployment.
 - Multi-stage build: `node:20-alpine` (`npm ci` + `npm run build` →
   `wwwroot/`) → `mcr.microsoft.com/dotnet/sdk:8.0` (`dotnet publish -c
@@ -28,9 +28,13 @@
 |------|---------|-------|
 | `DatabaseProvider` | `Sqlite` (default) or `Postgres` | Production → `Postgres` |
 | `ConnectionStrings__DefaultConnection` | DB connection | Postgres example: `Host=...;Port=5432;Database=...;Username=...;Password=...;SSL Mode=Require;Trust Server Certificate=true` |
-| `Jwt__Issuer` | JWT issuer | Required in production |
-| `Jwt__Audience` | JWT audience | Required in production |
-| `Jwt__Key` | JWT signing key | Must be strong and private (≥ 32 chars) |
+| `Clerk__Issuer` | Clerk instance issuer | Required |
+| `Clerk__JwtPublicKey` | Clerk instance JWT verification key | Required; PEM public key |
+| `Clerk__AuthorizedParties__0`, etc. | Allowed browser origins | Required for tokens carrying `azp` |
+
+Pass `VITE_CLERK_PUBLISHABLE_KEY` as a Docker **build argument**, not only a
+runtime variable. Configure session claims and import existing accounts as
+described in `clerkMigration.md` before cutover.
 
 ### `VITE_API_BASE_URL` — build-time only, must stay EMPTY
 
@@ -67,7 +71,7 @@
 
 1. Create one Dokploy service from the repo root Dockerfile.
 2. Set the env vars above (`DatabaseProvider=Postgres`, Postgres connection
-   string, the three `Jwt__*` values). Leave `VITE_API_BASE_URL` unset/empty.
+  string, and Clerk settings). Leave `VITE_API_BASE_URL` unset/empty.
 3. Health-check path `/health`, container port 8080.
 4. After deploy: `GET /health` → `{"status":"healthy"}`, then smoke-test
    login/signup and ranking CRUD on the single host.

@@ -52,12 +52,6 @@ function LandingPage(){
             setTotalUsers(totalUsersCount);
         }
         
-        if(localStorage.getItem("auth_token") != null || localStorage.getItem("auth_token") != undefined || localStorage.getItem("auth_token") != "")
-        {
-            console.log(localStorage.getItem("auth_token"))
-            //navigate("/Home")
-        }
-
         getStartingStats();
     },
     [])

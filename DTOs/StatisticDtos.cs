@@ -1,4 +1,4 @@
-namespace simple_rank_backend.NewApp.DTOs;
+namespace simple_rank_backend.DTOs;
 
 public enum Statistics
 {

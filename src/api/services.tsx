@@ -18,16 +18,6 @@ export interface ApiResponse<T> extends AxiosResponse<T> {
 
 // ---- NewApp/DTOs/AuthDtos.cs --------------------------------------------
 
-export interface SignUpRequest {
-  email: string;
-  password: string;
-}
-
-export interface SignInRequest {
-  email: string;
-  password: string;
-}
-
 export interface AuthUserMetadata {
   full_name: string;
   avatar_url: string;
@@ -42,10 +32,6 @@ export interface AuthUser {
 export interface AuthSession {
   access_token: string;
   user: AuthUser;
-}
-
-export interface AuthResponse {
-  session: AuthSession;
 }
 
 /** GET /api/Auth/Me → { user: AuthUser } */
@@ -218,10 +204,8 @@ export const userService = {
 };
 
 export const authService = {
-  signUp: (request: SignUpRequest): Promise<ApiResponse<AuthResponse>> => apiClient.post("/api/Auth/SignUp", request),
-  signIn: (request: SignInRequest): Promise<ApiResponse<AuthResponse>> => apiClient.post("/api/Auth/SignIn", request),
+  sync: (): Promise<ApiResponse<MeResponse>> => apiClient.post("/api/Auth/Sync"),
   me: (): Promise<ApiResponse<MeResponse>> => apiClient.get("/api/Auth/Me"),
-  signOut: (): Promise<ApiResponse<{ message: string }>> => apiClient.post("/api/Auth/SignOut"),
   setMetadata: (request: SetMetadataRequest): Promise<ApiResponse<ResponseBase>> => apiClient.post("/api/User/SetUserMetadata", request)
 };
 

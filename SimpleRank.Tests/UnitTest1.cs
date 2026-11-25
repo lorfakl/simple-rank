@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -9,53 +11,101 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using simple_rank_backend.NewApp.Data;
+using Microsoft.IdentityModel.Tokens;
+using simple_rank_backend.Common;
+using simple_rank_backend.Data;
+using simple_rank_backend.Models;
 
 namespace SimpleRank.Tests;
 
 public class UnitTest1
 {
     [Fact]
-    public async Task AuthFlow_SignUpSignInMeSignOut_AndJwtClaims()
+    public void GetUserId_PrefersImportedExternalId()
+    {
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "user_clerk"),
+            new Claim("userId", "existing-user-id")
+        }));
+
+        Assert.Equal("existing-user-id", principal.GetUserId());
+    }
+
+    [Fact]
+    public async Task AuthFlow_ClerkSessionSyncAndMe()
     {
         await using var app = new SimpleRankWebApplicationFactory();
         using var client = app.CreateClient();
-
         var email = UniqueEmail();
-        const string password = "Password123!";
-
-        var signUpResponse = await client.PostAsJsonAsync("/api/Auth/SignUp", new { email, password });
-        Assert.Equal(HttpStatusCode.OK, signUpResponse.StatusCode);
-
-        using var signUpJson = await JsonDocument.ParseAsync(await signUpResponse.Content.ReadAsStreamAsync());
-        var signUpToken = signUpJson.RootElement.GetProperty("session").GetProperty("access_token").GetString();
-        Assert.False(string.IsNullOrWhiteSpace(signUpToken));
-
-        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(signUpToken);
-        Assert.Contains(jwt.Claims, c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" && !string.IsNullOrWhiteSpace(c.Value));
-        Assert.Contains(jwt.Claims, c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" && c.Value == email);
-
-        var signInResponse = await client.PostAsJsonAsync("/api/Auth/SignIn", new { email, password });
-        Assert.Equal(HttpStatusCode.OK, signInResponse.StatusCode);
-
-        using var signInJson = await JsonDocument.ParseAsync(await signInResponse.Content.ReadAsStreamAsync());
-        var signInToken = signInJson.RootElement.GetProperty("session").GetProperty("access_token").GetString();
-        Assert.False(string.IsNullOrWhiteSpace(signInToken));
+        var userId = $"user_{Guid.NewGuid():N}";
 
         var meWithoutToken = await client.GetAsync("/api/Auth/Me");
         Assert.Equal(HttpStatusCode.Unauthorized, meWithoutToken.StatusCode);
 
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", signInToken);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", SimpleRankWebApplicationFactory.CreateToken(userId, email));
+        var sync = await client.PostAsync("/api/Auth/Sync", null);
+        Assert.True(sync.IsSuccessStatusCode, $"{sync.StatusCode}: {string.Join(", ", sync.Headers.WwwAuthenticate)}");
 
         var meResponse = await client.GetAsync("/api/Auth/Me");
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
 
         using var meJson = await JsonDocument.ParseAsync(await meResponse.Content.ReadAsStreamAsync());
-        var meUserId = meJson.RootElement.GetProperty("user").GetProperty("id").GetString();
-        Assert.False(string.IsNullOrWhiteSpace(meUserId));
+        Assert.Equal(userId, meJson.RootElement.GetProperty("user").GetProperty("id").GetString());
+        Assert.Equal(email, meJson.RootElement.GetProperty("user").GetProperty("email").GetString());
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsJsonAsync("/api/Auth/SignIn", new { email, password = "x" })).StatusCode);
+    }
 
-        var signOutResponse = await client.PostAsync("/api/Auth/SignOut", null);
-        Assert.Equal(HttpStatusCode.OK, signOutResponse.StatusCode);
+    [Fact]
+    public async Task ClerkSession_RejectsInvalidClaimsAndIssuer()
+    {
+        await using var app = new SimpleRankWebApplicationFactory();
+        using var client = app.CreateClient();
+        var userId = $"user_{Guid.NewGuid():N}";
+        var email = UniqueEmail();
+        using var untrustedKey = RSA.Create(2048);
+        foreach (var token in new[]
+        {
+            SimpleRankWebApplicationFactory.CreateToken(userId, email, signingKey: untrustedKey),
+            SimpleRankWebApplicationFactory.CreateToken(userId, email, issuer: "https://wrong.example"),
+            SimpleRankWebApplicationFactory.CreateToken(userId, email, expires: DateTime.UtcNow.AddMinutes(-10)),
+            SimpleRankWebApplicationFactory.CreateToken(userId, email, party: "https://wrong.example"),
+            SimpleRankWebApplicationFactory.CreateToken(userId, email, mappedId: ""),
+            SimpleRankWebApplicationFactory.CreateToken(userId, email, status: "pending")
+        })
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsync("/api/Auth/Sync", null)).StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task ClerkSession_ImportedIdPreservesOwnershipAndRejectsMissingMapping()
+    {
+        await using var app = new SimpleRankWebApplicationFactory();
+        using var client = app.CreateClient();
+        var oldId = Guid.NewGuid().ToString();
+        var email = UniqueEmail();
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Users.Add(new AppUser { Id = oldId, Email = email });
+            db.Rankings.Add(new Ranking { OwnerId = oldId, Title = "Imported", Description = "" });
+            await db.SaveChangesAsync();
+        }
+
+        var clerkId = $"user_{Guid.NewGuid():N}";
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", SimpleRankWebApplicationFactory.CreateToken(clerkId, email, mappedId: oldId));
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsync("/api/Auth/Sync", null)).StatusCode);
+        var rankings = await client.GetAsync($"/api/Rank/GetUserRankings/{oldId}");
+        Assert.Equal(HttpStatusCode.OK, rankings.StatusCode);
+        Assert.Contains("Imported", await rankings.Content.ReadAsStringAsync());
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", SimpleRankWebApplicationFactory.CreateToken(clerkId, email, mappedId: Guid.NewGuid().ToString()));
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsync("/api/Auth/Sync", null)).StatusCode);
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", SimpleRankWebApplicationFactory.CreateToken(clerkId, email));
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsync("/api/Auth/Sync", null)).StatusCode);
     }
 
     [Fact]
@@ -296,18 +346,11 @@ public class UnitTest1
     private static async Task<AuthContext> SignUpAndAuthenticate(HttpClient client)
     {
         var email = UniqueEmail();
-        const string password = "Password123!";
-
-        var signUpResponse = await client.PostAsJsonAsync("/api/Auth/SignUp", new { email, password });
-        signUpResponse.EnsureSuccessStatusCode();
-
-        using var signUpJson = await JsonDocument.ParseAsync(await signUpResponse.Content.ReadAsStreamAsync());
-        var token = signUpJson.RootElement.GetProperty("session").GetProperty("access_token").GetString();
-        var userId = signUpJson.RootElement.GetProperty("session").GetProperty("user").GetProperty("id").GetString();
-
+        var userId = $"user_{Guid.NewGuid():N}";
+        var token = SimpleRankWebApplicationFactory.CreateToken(userId, email);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        return new AuthContext(token!, userId!, email);
+        (await client.PostAsync("/api/Auth/Sync", null)).EnsureSuccessStatusCode();
+        return new AuthContext(token, userId, email);
     }
 
     private static string UniqueEmail() => $"tester-{Guid.NewGuid():N}@example.com";
@@ -338,7 +381,21 @@ public class UnitTest1
 
 public sealed class SimpleRankWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private static readonly RSA SigningKey = RSA.Create(2048);
     private readonly string _dbPath;
+
+    public static string CreateToken(string clerkId, string email, string? mappedId = null, string issuer = "https://clerk.example.test", DateTime? expires = null, string party = "http://localhost:5173", string? status = null, RSA? signingKey = null)
+    {
+        var claims = new List<Claim>
+        {
+            new("sub", clerkId), new("sid", "sess_test"), new("userId", mappedId ?? clerkId),
+            new("primaryEmail", email), new("azp", party)
+        };
+        if (status is not null) claims.Add(new Claim("sts", status));
+        var token = new JwtSecurityToken(issuer, claims: claims, expires: expires ?? DateTime.UtcNow.AddMinutes(5),
+            signingCredentials: new SigningCredentials(new RsaSecurityKey(signingKey ?? SigningKey), SecurityAlgorithms.RsaSha256));
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 
     public SimpleRankWebApplicationFactory()
     {
@@ -357,9 +414,9 @@ public sealed class SimpleRankWebApplicationFactory : WebApplicationFactory<Prog
             {
                 ["DatabaseProvider"] = "Sqlite",
                 ["ConnectionStrings:DefaultConnection"] = $"Data Source={_dbPath}",
-                ["Jwt:Issuer"] = "simple-rank-api",
-                ["Jwt:Audience"] = "simple-rank-client",
-                ["Jwt:Key"] = "change-this-dev-key-before-production-use"
+                ["Clerk:Issuer"] = "https://clerk.example.test",
+                ["Clerk:JwtPublicKey"] = SigningKey.ExportSubjectPublicKeyInfoPem(),
+                ["Clerk:AuthorizedParties:0"] = "http://localhost:5173"
             });
         });
 

@@ -1,9 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace simple_rank_backend.NewApp.DTOs;
-
-public record SignUpRequest(string Email, string Password);
-public record SignInRequest(string Email, string Password);
+namespace simple_rank_backend.DTOs;
 
 public class AuthUserMetadata
 {
@@ -23,15 +20,3 @@ public class AuthUser
     public AuthUserMetadata UserMetadata { get; set; } = new();
 }
 
-public class AuthSession
-{
-    [JsonPropertyName("access_token")]
-    public string AccessToken { get; set; } = string.Empty;
-
-    public AuthUser User { get; set; } = new();
-}
-
-public class AuthResponse
-{
-    public AuthSession Session { get; set; } = new();
-}

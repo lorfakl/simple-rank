@@ -1,9 +1,8 @@
-using System.Text;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using simple_rank_backend.NewApp.Data;
-using simple_rank_backend.NewApp.Services;
+using simple_rank_backend.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,27 +23,52 @@ else
     builder.Services.AddDbContext<AppDbContext>(o => o.UseSqlite(connectionString));
 }
 
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "simple-rank-api";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "simple-rank-client";
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "dev-only-change-this-key-to-32-plus-chars";
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        var clerkIssuer = builder.Configuration["Clerk:Issuer"]?.TrimEnd('/');
+        var clerkPublicKey = builder.Configuration["Clerk:JwtPublicKey"];
+        var authorizedParties = builder.Configuration.GetSection("Clerk:AuthorizedParties").Get<string[]>() ?? [];
+        RsaSecurityKey? signingKey = null;
+        if (!string.IsNullOrWhiteSpace(clerkPublicKey))
+        {
+            var rsa = RSA.Create();
+            rsa.ImportFromPem(clerkPublicKey.Replace("\\n", "\n"));
+            signingKey = new RsaSecurityKey(rsa);
+        }
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            IssuerSigningKey = signingKey,
+            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
             ValidateIssuer = true,
-            ValidIssuer = jwtIssuer,
-            ValidateAudience = true,
-            ValidAudience = jwtAudience,
-            ValidateLifetime = true
+            ValidIssuer = clerkIssuer,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            RequireExpirationTime = true
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                var principal = context.Principal;
+                var party = principal?.FindFirst("azp")?.Value;
+                if (string.IsNullOrWhiteSpace(clerkIssuer) || signingKey is null ||
+                    string.IsNullOrWhiteSpace(principal?.FindFirst("sub")?.Value) ||
+                    string.IsNullOrWhiteSpace(principal?.FindFirst("sid")?.Value) ||
+                    string.IsNullOrWhiteSpace(principal?.FindFirst("userId")?.Value) ||
+                    principal?.FindFirst("sts")?.Value == "pending" ||
+                    (!string.IsNullOrEmpty(party) && !authorizedParties.Contains(party, StringComparer.Ordinal)))
+                {
+                    context.Fail("Invalid Clerk session");
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
 builder.Services.AddAuthorization();
-builder.Services.AddScoped<TokenService>();
 
 builder.Services.AddCors(options =>
 {

@@ -8,7 +8,6 @@ import ToggleTextInput from '../components/ToggleTextInput';
 import { ChevronDown, Share, RefreshCw , Earth, Lock } from 'lucide-react';
 import { useState, useEffect, useRef, use } from "react"
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
-import { useSupabase } from '../contexts/SupabaseContext';
 import { rankingService, rankItemService, shareRankService } from '../api/services';
 import { useUser } from '../contexts/UserContext';
 import { useNotifications } from '../contexts/NotificationContext';
@@ -64,7 +63,6 @@ function SharedRank(){
         }
     }, [copyState])
 
-    //*Supabase Operations*//
     async function GetSharedRank(sharedId: string)
     {
         setLoading(true)

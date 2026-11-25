@@ -8,7 +8,6 @@ import { AddRankItemModal } from '../components/AddRankItemModal';
 import { ChevronDown, Plus, RefreshCw , Earth, Lock } from 'lucide-react';
 import { useState, useEffect, useRef, use } from "react"
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
-import { useSupabase } from '../contexts/SupabaseContext';
 import { rankingService, rankItemService } from '../api/services';
 import { useUser } from '../contexts/UserContext';
 import { useNotifications } from '../contexts/NotificationContext';
@@ -53,7 +52,6 @@ function ViewRanking(){
     const previousItemCount = useRef(0)
 
     const navigate = useNavigate()
-    const supabase = useSupabase()
     const { session } = useUser()
     const { showNotification } = useNotifications()
     const { id } = useParams()
@@ -92,7 +90,6 @@ function ViewRanking(){
         setRankingInfo(prev => ({...prev, lastUpdate: dateString}));
     },[rankItems])
 
-    //*Supabase Operations*//
     async function GetRank(rankingId: string)
     {
         setLoading(true)

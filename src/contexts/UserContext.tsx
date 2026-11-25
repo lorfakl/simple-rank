@@ -19,25 +19,28 @@ export interface UserContextValue {
 const UserContext = createContext<UserContextValue | undefined>(undefined);
 
 export function UserProvider({ children }: { children?: React.ReactNode }) {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { isLoaded, isSignedIn, sessionId, getToken } = useAuth();
   const { signOut: clerkSignOut } = useClerk();
   const [session, setSession] = useState<Session | null>(null);
+  const [syncedSessionId, setSyncedSessionId] = useState<string | null>(null);
   const [syncError, setSyncError] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('fullName');
+    localStorage.removeItem('avatarUrl');
     setSession(null);
+    setSyncedSessionId(null);
     setSyncError(false);
-    if (!isLoaded || !isSignedIn) {
+    if (!isLoaded || !isSignedIn || !sessionId) {
       setTokenProvider(null);
-      localStorage.removeItem('user');
-      localStorage.removeItem('fullName');
-      localStorage.removeItem('avatarUrl');
       return;
     }
 
+    const currentSessionId = sessionId;
     setTokenProvider(() => getToken());
     async function syncUser() {
       try {
@@ -50,6 +53,7 @@ export function UserProvider({ children }: { children?: React.ReactNode }) {
         localStorage.setItem('fullName', data.user.user_metadata.full_name);
         localStorage.setItem('avatarUrl', data.user.user_metadata.avatar_url);
         setSession({ access_token: token, user: data.user });
+        setSyncedSessionId(currentSessionId);
       } catch {
         if (!cancelled) setSyncError(true);
       }
@@ -59,13 +63,14 @@ export function UserProvider({ children }: { children?: React.ReactNode }) {
       cancelled = true;
       setTokenProvider(null);
     };
-  }, [attempt, getToken, isLoaded, isSignedIn]);
+  }, [attempt, getToken, isLoaded, isSignedIn, sessionId]);
 
-  const user = session?.user ?? {};
+  const activeSession = isLoaded && isSignedIn && sessionId === syncedSessionId ? session : null;
+  const user = activeSession?.user ?? {};
   const value: UserContextValue = {
     user,
-    session,
-    isAuthenticated: session !== null,
+    session: activeSession,
+    isAuthenticated: activeSession !== null,
     signOut: () => clerkSignOut(),
     getCurrentUser: () => user
   };

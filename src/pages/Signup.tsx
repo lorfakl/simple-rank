@@ -1,9 +1,9 @@
-import { SignUp } from '@clerk/react'
+import AuthenticationOptions from '../components/AuthenticationOptions'
 
 export default function Signup() {
     return (
-        <div className="mx-auto my-12 flex w-full max-w-md justify-center px-4">
-            <SignUp routing="hash" signInUrl="/Login" forceRedirectUrl="/Home" />
+        <div className="mx-auto my-12 w-full max-w-md px-4">
+            <AuthenticationOptions isSignUp={true} />
         </div>
     )
 }

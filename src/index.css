@@ -103,3 +103,68 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ------------------------------------------------------------------
+   light <-> dark theme cross-fade (route 1: View Transitions).
+   ThemeContext wraps the data-theme flip in document.startViewTransition()
+   where it's supported, which snapshots the page before and after and
+   dissolves between them. The UA default crossfades with plus-lighter
+   blending, which blows out light themes, so opt for a plain dissolve and
+   keep the timing in step with the 250ms fallback below.
+------------------------------------------------------------------ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 250ms;
+  animation-timing-function: ease;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  animation-name: theme-fade-out;
+}
+::view-transition-new(root) {
+  animation-name: theme-fade-in;
+}
+@keyframes theme-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes theme-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------------
+   light <-> dark theme cross-fade (route 2: fallback where View
+   Transitions are unsupported).
+   ThemeProvider puts `theme-switching` on <html> right before it writes
+   data-theme and removes it ~320ms later, so a toggle fades every color
+   instead of cutting straight from light to dark in one frame.
+   Armed only for those ~320ms: normal interaction keeps the per-component
+   170ms hover recipes (a permanent `*` transition would fight them).
+   `background-image` is in the list so the landing/home radial washes
+   fade with everything else where the browser interpolates gradients;
+   where it doesn't they simply cut over, same as before.
+------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-switching,
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition-property:
+      background-color,
+      background-image,
+      border-color,
+      outline-color,
+      color,
+      fill,
+      stroke,
+      box-shadow,
+      text-decoration-color,
+      caret-color !important;
+    transition-duration: 250ms !important;
+    transition-timing-function: ease !important;
+    transition-delay: 0ms !important;
+  }
+}

@@ -12,6 +12,7 @@ afterEach(() => {
   cleanup();
   localStorage.clear();
   document.documentElement.setAttribute('data-theme', 'mytheme');
+  document.documentElement.classList.remove('theme-switching');
 });
 
 it('renders a theme toggle that flips data-theme and swaps the brand logo', () => {

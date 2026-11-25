@@ -1,12 +1,14 @@
 import { useRef, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useUser } from '../contexts/UserContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { IconSwap } from './IconSwap';
-import { Menu, X } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
 import type { AuthUser } from '../api/services';
 function Navbar()
 {
     const { session, signOut } = useUser()
+    const { isDark, toggleTheme } = useTheme()
     const  navigate  = useNavigate()
 
     const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -187,10 +189,25 @@ function Navbar()
 
             </div>
             <div className="navbar-center mx-auto">
-                {/* wordmark steps down below 640px so hamburger + wordmark + sign-in never collide at 320px */}
-                <a className="btn btn-ghost font-display text-base sm:text-xl tracking-tight text-primary hover:bg-base-200" onClick={() => {navigate("/")}}>simple rank</a>
+                {/* wordmark steps down below 640px so hamburger + wordmark + sign-in never collide at 320px;
+                    the logo mark joins at >=640px only, so the 320px row budget is unchanged */}
+                <a className="btn btn-ghost font-display text-base sm:text-xl tracking-tight text-primary hover:bg-base-200" onClick={() => {navigate("/")}}>
+                    <img
+                        src={isDark ? '/logo/logoDarkMark.png' : '/logo/logoLightMark.png'}
+                        alt="simple rank"
+                        className="hidden sm:block h-9 w-auto" />
+                    <span>simple rank</span>
+                </a>
             </div>
-            <div className="navbar-end">
+            <div className="navbar-end gap-1">
+                <button
+                    type="button"
+                    onClick={toggleTheme}
+                    aria-label={isDark ? 'switch to light theme' : 'switch to dark theme'}
+                    title={isDark ? 'switch to light theme' : 'switch to dark theme'}
+                    className="btn btn-ghost btn-circle btn-sm">
+                    {isDark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+                </button>
                 <div className="dropdown dropdown-end">
                     {
                         isAuthenticated? 

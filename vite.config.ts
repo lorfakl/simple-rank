@@ -10,12 +10,17 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      // only files that actually exist under public/ (and therefore in wwwroot/);
+      // the old entries 'mask-icon.svg' and root 'apple-touch-icon.png' never existed
+      includeAssets: ['favicon.ico', 'favicon/apple-touch-icon.png', 'favicon/android-chrome-192x192.png', 'favicon/android-chrome-512x512.png'],
       manifest: {
         name: 'Simple Rank',
         short_name: 'Simple Rank',
         description: 'A simple ranking app',
-        theme_color: '#ffffff',
+        // mytheme base-100 (#f6f9fb): OS chrome matches the light default.
+        // The runtime <meta name="theme-color"> is rewritten per theme by the
+        // pre-paint script in index.html, so the active theme still wins.
+        theme_color: '#f6f9fb',
         icons: [
           {
             src: 'favicon/favicon-192x192.png',
@@ -24,6 +29,16 @@ export default defineConfig({
           },
           {
             src: 'favicon/favicon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'favicon/android-chrome-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'favicon/android-chrome-512x512.png',
             sizes: '512x512',
             type: 'image/png'
           }

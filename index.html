@@ -2,16 +2,44 @@
 <html lang="en" data-theme="mytheme">
   <head>
     <meta charset="UTF-8" />
+    <!-- no-JS fallback: matches the static data-theme="mytheme"; the pre-paint
+         script below overwrites this (and an inline color-scheme on <html>)
+         with the resolved theme so scrollbars/form controls follow the theme -->
     <meta name="color-scheme" content="light" />
+    <script>
+      // Resolve the theme before first paint so there is no light->dark flash:
+      // localStorage -> OS preference -> mytheme, then mirror it onto
+      // data-theme, color-scheme and theme-color.
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t !== 'mytheme' && t !== 'mytheme-dark') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'mytheme-dark' : 'mytheme';
+          }
+          var dark = t === 'mytheme-dark';
+          var scheme = dark ? 'dark' : 'light';
+          var root = document.documentElement;
+          root.setAttribute('data-theme', t);
+          root.style.colorScheme = scheme;
+          var colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
+          if (colorSchemeMeta) colorSchemeMeta.setAttribute('content', scheme);
+          var themeColorMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeColorMeta) themeColorMeta.setAttribute('content', dark ? '#0f1217' : '#f6f9fb');
+        } catch (e) {
+          /* keep the static data-theme="mytheme" fallback */
+        }
+      })();
+    </script>
+    <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon/favicon.png" />
     <link rel="icon" href="/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
     <link rel="icon" href="/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
     <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180" type="image/png">
-    <link rel="android-chrome-192x192" href="/favicon/android-chrome-192x192.png" sizes="192x192" type="image/png">
-    <link rel="android-chrome-512x512" href="/favicon/android-chrome-512x512.png" sizes="512x512" type="image/png">
+    <link rel="icon" href="/favicon/android-chrome-192x192.png" sizes="192x192" type="image/png">
+    <link rel="icon" href="/favicon/android-chrome-512x512.png" sizes="512x512" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#f6f9fb">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">

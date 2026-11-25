@@ -2,11 +2,12 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate } from 'react-router';
 import { useUser } from '../contexts/UserContext';
 import { statisticService } from '../api/services';
-import { Medal, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Plus } from 'lucide-react';
 import { programmingLanguagesRanking, nationalParksRanking } from "../components/exampledata"
 import { DragDropContext } from "@hello-pangea/dnd";
 import Rankings from "../components/Rankings"
+import { useTheme } from '../contexts/ThemeContext';
 
 
 function LandingPage(){
@@ -33,6 +34,7 @@ function LandingPage(){
     ]
 
     const { isAuthenticated } = useUser()
+    const { isDark } = useTheme()
 
     const [currentRankings, setCurrentRankings] = useState([])
     const [totalRankings, setTotalRankings] = useState(-1)
@@ -119,10 +121,13 @@ return(
         {/* hero — the one signature gradient lives on the page, not the card */}
         <section className="rise-in mx-auto mb-10 w-full max-w-3xl rounded-box border border-base-300 bg-base-100 px-6 py-14 text-center shadow-soft sm:px-10">
 
-            {/* Logo/Brand */}
+            {/* Logo/Brand — theme-aware mark in the same badge box the Medal sat in */}
             <div className="flex justify-center items-center gap-3 mb-6">
-                <span className="flex items-center justify-center rounded-xl bg-primary p-3 shadow-soft">
-                    <Medal className="w-8 h-8 text-primary-content" />
+                <span className="flex items-center justify-center rounded-xl bg-base-200 border border-base-300 p-3 shadow-soft">
+                    <img
+                        src={isDark ? '/logo/logoDarkMark.png' : '/logo/logoLightMark.png'}
+                        alt=""
+                        className="w-8 h-8" />
                 </span>
                 <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-base-content">
                     simple rank

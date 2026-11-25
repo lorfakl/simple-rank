@@ -12,6 +12,7 @@ import Login from './pages/Login'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import { NotificationProvider } from './contexts/NotificationContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import type { ComponentType } from 'react'
 
 
@@ -19,7 +20,8 @@ import type { ComponentType } from 'react'
 function App() {
   return (
     <>
-      <NotificationProvider>
+      <ThemeProvider>
+        <NotificationProvider>
           <UserProvider>
             <BrowserRouter>
               <Navbar/>
@@ -37,7 +39,8 @@ function App() {
               </Routes>
             </BrowserRouter>
           </UserProvider>
-      </NotificationProvider>
+        </NotificationProvider>
+      </ThemeProvider>
     </>
   )
 }

@@ -50,6 +50,61 @@
   --noise: 0;
 }
 
+/* Dark counterpart of `mytheme` — same brand indigo (lightened so it clears
+   WCAG AA as text on the dark bases), dark neutral bases, light content
+   colors, and semantic hues re-tuned for dark backgrounds. Shape/depth tokens
+   are byte-identical to `mytheme` so both themes share one geometry. */
+@plugin "daisyui/theme" {
+  name: "mytheme-dark";
+  default: true;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  /* base — dark neutral with the same faint cool cast as the light theme */
+  --color-base-100: oklch(18% 0.012 262);
+  --color-base-200: oklch(22% 0.013 262);
+  --color-base-300: oklch(28% 0.016 262);
+  --color-base-content: oklch(95% 0.006 250);
+
+  /* primary — same indigo hue, lifted from 37% to 64% lightness so
+     `text-primary` stays legible on base-100/200 (5.5:1 / 5.1:1) */
+  --color-primary: oklch(64% 0.145 265);
+  --color-primary-content: oklch(18% 0.04 265);
+
+  /* secondary — dark counterpart of the alice-blue surface, light content */
+  --color-secondary: oklch(26% 0.03 235);
+  --color-secondary-content: oklch(93% 0.02 235);
+
+  /* accent — brightened warm hue so small `text-accent` copy clears AA */
+  --color-accent: oklch(79% 0.15 58);
+  --color-accent-content: oklch(20% 0.06 45);
+
+  --color-neutral: oklch(32% 0.02 262);
+  --color-neutral-content: oklch(95% 0 0);
+
+  /* semantic — re-tuned for dark grounds (content colors flipped dark so
+     `-content` on its color also clears AA) */
+  --color-info: oklch(72% 0.13 220);
+  --color-info-content: oklch(20% 0.05 235);
+  --color-success: oklch(72% 0.17 163);
+  --color-success-content: oklch(20% 0.05 165);
+  --color-warning: oklch(82% 0.17 90);
+  --color-warning-content: oklch(24% 0.06 55);
+  --color-error: oklch(66% 0.17 22);
+  --color-error-content: oklch(20% 0.07 26);
+
+  /* shape — identical to `mytheme` on purpose: one radius rhythm for both */
+  --radius-selector: 0.5rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
 @layer components {
   /* display font for the wordmark + headings */
   .font-display {

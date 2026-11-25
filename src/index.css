@@ -9,6 +9,10 @@
 
 @layer base {
   :root {
+    /* no-JS fallback — matches the static data-theme="mytheme". The pre-paint
+       inline script in index.html sets `color-scheme: light|dark` inline on
+       <html> before first paint (and ThemeProvider keeps it in sync on every
+       toggle), which is what makes scrollbars/form controls follow the theme. */
     color-scheme: light;
     font-synthesis: none;
     text-rendering: optimizeLegibility;

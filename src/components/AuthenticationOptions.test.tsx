@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import AuthenticationOptions from './AuthenticationOptions';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import type {} from '@testing-library/jest-dom/vitest';
 
 vi.mock('@clerk/react', () => ({
@@ -12,7 +13,8 @@ it.each([
   [false, 'Clerk sign in'],
   [true, 'Clerk sign up']
 ])('renders Clerk authentication and legal links', (isSignUp, label) => {
-  render(<MemoryRouter><AuthenticationOptions isSignUp={isSignUp} /></MemoryRouter>);
+  // AuthenticationOptions reads the theme for its logo, so it needs the provider
+  render(<ThemeProvider><MemoryRouter><AuthenticationOptions isSignUp={isSignUp} /></MemoryRouter></ThemeProvider>);
   expect(screen.getByText(label)).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'terms of service' })).toHaveAttribute('href', '/terms');
   expect(screen.getByRole('link', { name: 'privacy policy' })).toHaveAttribute('href', '/privacy');

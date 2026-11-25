@@ -1,13 +1,19 @@
 import { Link } from 'react-router';
 import { SignIn, SignUp } from '@clerk/react';
-import { Medal } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 function AuthenticationOptions({isSignUp}: { isSignUp: boolean }){
+    const { isDark } = useTheme()
     return(
         <>
             <div className="flex justify-center items-center gap-3 mb-8">
-                <span className="flex items-center justify-center rounded-xl bg-primary p-3 shadow-soft">
-                    <Medal className="w-8 h-8 text-primary-content" />
+                {/* same box size as the old <Medal/> container; surface moved off
+                    bg-primary so the royal-blue mark keeps its contrast */}
+                <span className="flex items-center justify-center rounded-xl bg-base-200 border border-base-300 p-3 shadow-soft">
+                    <img
+                        src={isDark ? '/logo/logoDarkMark.png' : '/logo/logoLightMark.png'}
+                        alt=""
+                        className="w-8 h-8" />
                 </span>
                 <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-base-content">
                     simple rank

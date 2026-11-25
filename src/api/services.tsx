@@ -58,6 +58,7 @@ export interface RankItemDto {
   name: string;
   description: string;
   rank: number;
+  imageUrl?: string;
 }
 
 export interface CreateRankingRequest {
@@ -125,6 +126,7 @@ export interface RankItemOutputDto {
   name: string;
   description: string;
   rank: number;
+  imageUrl?: string;
 }
 
 export interface RankingResponse {

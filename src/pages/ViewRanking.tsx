@@ -20,14 +20,8 @@ interface ViewRankItem {
     title: string;
     description: string;
     rank: number;
+    imageUrl?: string;
     isEditable?: boolean;
-}
-
-/** Draft as built by addNewRankItem — note the pre-existing `rankItem.id`
- *  access below reads a property the literal never sets (undefined at
- *  runtime), hence the optional `id`. */
-interface ViewRankItemDraft extends ViewRankItem {
-    id?: string;
 }
 
 interface CreatedRankRecord {
@@ -35,6 +29,7 @@ interface CreatedRankRecord {
     title: string;
     description: string;
     rank: number;
+    imageUrl?: string;
 }
 
 function ViewRanking(){
@@ -108,7 +103,13 @@ function ViewRanking(){
             //navigate to the new ranking page
             if(response.data !== undefined)
             {
-                const rankItems = response.data.items.map(item => ({itemId: item.itemId, title: item.name, description: item.description, rank: item.rank}))
+                const rankItems = response.data.items.map(item => ({
+                    itemId: item.itemId,
+                    title: item.name,
+                    description: item.description,
+                    rank: item.rank,
+                    imageUrl: (item as { imageUrl?: string }).imageUrl
+                }))
 
                 setRankItems(rankItems)
                 setRankingInfo({
@@ -215,14 +216,15 @@ function ViewRanking(){
         setUpdating(false)
     }
 
-    async function addRankItem(rankItem: { itemId: string; rank: number; title: string; description: string })
+    async function addRankItem(rankItem: { itemId: string; rank: number; title: string; description: string; imageUrl?: string })
     {
         const request = {
             item: {
                 id: rankItem.itemId,
                 rank: rankItem.rank,
                 name: rankItem.title,
-                description: rankItem.description
+                description: rankItem.description,
+                imageUrl: rankItem.imageUrl
             },
             rankingId: id
         }
@@ -334,7 +336,13 @@ function ViewRanking(){
             const request = {
                 id: id,
                 items: updatedRankItems.filter(item => item.title && item.title.trim() !== "")
-                .map(item => ({id: item.itemId, name: item.title, description: item.description, rank: item.rank})),
+                .map(item => ({
+                    id: item.itemId,
+                    name: item.title,
+                    description: item.description,
+                    rank: item.rank,
+                    imageUrl: item.imageUrl
+                })),
                 title: rankingInfo.title,
                 description: rankingInfo.description,
                 isPublic: rankingInfo.isPublic
@@ -363,14 +371,21 @@ function ViewRanking(){
 
     function addNewRankItem(name: string, desc: string, rank: number, imageurl: string)
     {
-        let rankItem: ViewRankItemDraft = {
+        let rankItem: ViewRankItem = {
             itemId: uuidv4(), 
             rank: rank, 
             title: name, 
-            description: desc
+            description: desc,
+            imageUrl: imageurl
         }
         
-        createdRanks.current[rankItem.id!] = rankItem
+        createdRanks.current[rankItem.itemId] = {
+            itemId: rankItem.itemId,
+            rank: rankItem.rank,
+            title: rankItem.title,
+            description: rankItem.description,
+            imageUrl: rankItem.imageUrl
+        }
         console.log(itemCount, "<- item count", createdRanks.current)
 
         setRankItems([...rankItems, rankItem])

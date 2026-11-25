@@ -18,6 +18,7 @@ interface SharedRankItem {
     title: string;
     description: string;
     rank: number;
+    imageUrl?: string;
 }
 
 // Pre-existing dead reference: setLinkLoading is never declared in this file
@@ -81,7 +82,13 @@ function SharedRank(){
             //navigate to the new ranking page
             if(response.data !== undefined)
             {
-                const rankItems = response.data.items.map(item => ({itemId: item.itemId, title: item.name, description: item.description, rank: item.rank}))
+                const rankItems = response.data.items.map(item => ({
+                    itemId: item.itemId,
+                    title: item.name,
+                    description: item.description,
+                    rank: item.rank,
+                    imageUrl: (item as { imageUrl?: string }).imageUrl
+                }))
 
                 setRankItems(rankItems)
                 try

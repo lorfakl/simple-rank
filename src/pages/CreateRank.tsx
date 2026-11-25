@@ -16,6 +16,7 @@ interface ProtoRankItem {
     rank: number;
     title: string;
     description: string;
+    imageUrl?: string;
 }
 
 const RANKING_NAMESPACE = '4e4a4cd7-8a00-42d7-a202-855d413d5e6a'
@@ -76,6 +77,7 @@ function CreateRank(){
                         rank: item.rank,
                         name: item.title,
                         description: item.description,
+                        imageUrl: item.imageUrl
                     }
                 }),
             });
@@ -258,7 +260,8 @@ function CreateRank(){
             id: uuidv4(), 
             rank: rank, 
             title: name, 
-            description: desc
+            description: desc,
+            imageUrl: imageurl
         }
         
         createdRanks.current[rankItem.id] = rankItem

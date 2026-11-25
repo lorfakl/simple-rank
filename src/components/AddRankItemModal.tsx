@@ -133,6 +133,17 @@ export function AddRankItemModal({ dialogId, onClose, onSave, totalRanks}: AddRa
               <LimitedTextArea inputLabel={"item description"} characterLimit={255} placeholderText={"description"} handleInputChange={setDescription} 
                     initialValue={description} useFullWidth={true} textSize='text-xl' syncToInitialValue={true}/>
             </div>
+
+            <div className="w-full">
+              <LimitedTextInput inputLabel={"item image url"} characterLimit={500}
+                  handleInputChange={setImageUrl}
+                  textSize={"text-xl"}
+                  useWidthFull={true}
+                  placeholderText={"https://example.com/image.jpg"}
+                  textValue={imageUrl}
+                  syncToTextValue={true}
+              />
+            </div>
             
             <div className='font-semibold select-none'>enter item rank</div>
             <div className="flex flex-row justify-between place-items-start gap-x-4">

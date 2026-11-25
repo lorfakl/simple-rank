@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useUser } from "../contexts/UserContext";
 import { Medal } from 'lucide-react';
 import EmailAuthenticationForm from "../components/EmailAuthenticationForm";
@@ -50,6 +50,12 @@ function AuthenticationOptions({isSignUp}: { isSignUp: boolean }){
             <div className="text-center opacity-70 text-sm mb-4">
                 oauth buttons are disabled in this local migration build.
             </div>
+            <p className="mb-4 text-center text-xs text-base-content/60">
+                by continuing you agree to our{' '}
+                <Link className="link link-primary" to="/terms">terms of service</Link>
+                {' '}and{' '}
+                <Link className="link link-primary" to="/privacy">privacy policy</Link>.
+            </p>
             <div className="flex gap-2 justify-center">
                 <button className="btn btn-soft transition duration-150" onClick={handleGoogleLogin}>google (disabled)</button>
                 <button className="btn btn-soft transition duration-150" onClick={handleDiscordLogin}>discord (disabled)</button>

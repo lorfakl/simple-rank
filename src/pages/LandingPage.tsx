@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useUser } from '../contexts/UserContext';
 import { statisticService } from '../api/services';
 import { Medal, ArrowRight } from 'lucide-react';
@@ -192,6 +192,10 @@ return(
         </section>
         <div className="text-center text-sm font-semibold mt-4 underline">backend server hibernates to save money🤑, so if the stats don't load, please refresh.</div>
         <div className="text-center text-sm text-base-content/70">this whole project is available on <span><a className="text-primary underline underline-offset-4" href="https://github.com/lorfakl/simple-rank">github</a></span> there's no logging on this so feel free to report any issues</div>
+        <div className="mt-3 flex justify-center gap-4 text-xs text-base-content/50">
+            <Link className="link link-hover" to="/privacy">privacy policy</Link>
+            <Link className="link link-hover" to="/terms">terms of service</Link>
+        </div>
         </div>
     </>
     )

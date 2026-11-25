@@ -10,6 +10,8 @@ import SharedRank from './pages/SharedRank'
 import { SupabaseProvider } from './contexts/SupabaseContext'
 import { UserProvider } from './contexts/UserContext'
 import Login from './pages/Login'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 import { NotificationProvider } from './contexts/NotificationContext'
 import type { ComponentType } from 'react'
 
@@ -31,6 +33,8 @@ function App() {
                 <Route path="/NewRank" element={<CreateRank/>}/>
                 <Route path="/ranking/:id" element={<ViewRanking/>}/>
                 <Route path="/share/:id" element={<SharedRank/>}/>
+                <Route path="/privacy" element={<PrivacyPolicy/>}/>
+                <Route path="/terms" element={<TermsOfService/>}/>
                 <Route path="/Explore"/>
               </Routes>
             </BrowserRouter>

@@ -173,8 +173,15 @@ export function UserProvider({ children }: { children?: React.ReactNode }) {
     } catch {
       // ignore
     }
+    // Persisted session must go too — the JWT stays valid for 7 days, so a
+    // refresh would otherwise silently sign the user straight back in.
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('fullName')
+    localStorage.removeItem('avatarUrl')
     setUser({})
     setSession(null)
+    setAuthenticated(false)
   }
 
   function getCurrentUser() {

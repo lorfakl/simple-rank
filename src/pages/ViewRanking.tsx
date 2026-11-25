@@ -13,6 +13,7 @@ import { useUser } from '../contexts/UserContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { RankingDetails } from '../components/RankingDetails';
 import { EditRankDetailsModal } from '../components/EditRankDetailsModal';
+import { RankingHistoryPanel } from '../components/RankingHistoryPanel';
 import type { DropResult } from '@hello-pangea/dnd';
 
 interface ViewRankItem {
@@ -45,6 +46,7 @@ function ViewRanking(){
     const [loading, setLoading] = useState(false)
     const [updating, setUpdating] = useState(false)
     const [linkLoading, setLinkLoading] = useState(false)
+    const [showHistory, setShowHistory] = useState(false)
 
     const createdRanks = useRef<Record<string, CreatedRankRecord>>({})
     const rankItemTitleErrors = useRef<Record<string, boolean>>({})
@@ -532,6 +534,18 @@ function ViewRanking(){
                     <RankingDetails createdBy={rankingInfo.createdBy} createdDate={rankingInfo.creationDate} lastupateDate={rankingInfo.lastUpdate} 
                         itemCount={rankItems.length} isPublic={rankingInfo.isPublic} isShared={rankingInfo.isShared} rankingId={id} 
                         onVisibilityClick={handleVisibilityOnClick} onCreateShareableLink={handleShareableLinkCreation} reactionIsInteractable={false}/>
+
+                    <div className="mt-2 flex justify-end">
+                        <button className="btn btn-sm btn-outline" onClick={() => { setShowHistory(prev => !prev) }}>
+                            {showHistory ? "hide edit history" : "show edit history"}
+                        </button>
+                    </div>
+
+                    {showHistory && id ? (
+                        <div className="mt-4">
+                            <RankingHistoryPanel rankingId={id} onRestored={async () => { await GetRank(id) }} />
+                        </div>
+                    ) : null}
                 </div>
             </div>
             

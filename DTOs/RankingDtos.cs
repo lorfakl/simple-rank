@@ -99,3 +99,18 @@ public class CreateRankingResponse
     public string Id { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
 }
+
+public class RankingEditHistoryItemResponse
+{
+    public string Id { get; set; } = string.Empty;
+    public string RankingId { get; set; } = string.Empty;
+    public string ActionType { get; set; } = string.Empty;
+    public string Summary { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}
+
+public class RankingEditHistoryResponse
+{
+    public List<RankingEditHistoryItemResponse> Items { get; set; } = [];
+}
+

@@ -209,6 +209,75 @@ public class UnitTest1
     }
 
     [Fact]
+    public async Task RankingEditHistory_ListAndRestore_AreOwnerOnly()
+    {
+        await using var app = new SimpleRankWebApplicationFactory();
+
+        using var ownerClient = app.CreateClient();
+        await SignUpAndAuthenticate(ownerClient);
+
+        var createResponse = await ownerClient.PostAsJsonAsync("/api/Rank/CreateRanking", new
+        {
+            title = "Original title",
+            description = "before",
+            isPublic = false,
+            items = new[]
+            {
+                new { id = "item-a", name = "Alpha", description = "A", rank = 1u },
+                new { id = "item-b", name = "Beta", description = "B", rank = 2u }
+            }
+        });
+        Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
+        var rankingId = await ReadStringPath(createResponse, "id");
+
+        var editResponse = await ownerClient.PutAsJsonAsync($"/api/Rank/EditRanking/{rankingId}", new
+        {
+            id = rankingId,
+            title = "Updated title",
+            description = "after",
+            isPublic = true,
+            items = new[]
+            {
+                new { id = "item-a", name = "Alpha", description = "A", rank = 2u },
+                new { id = "item-c", name = "Gamma", description = "C", rank = 1u }
+            }
+        });
+        Assert.Equal(HttpStatusCode.OK, editResponse.StatusCode);
+
+        var historyResponse = await ownerClient.GetAsync($"/api/Rank/GetRankingEditHistory/{rankingId}");
+        Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
+
+        using var historyJson = await JsonDocument.ParseAsync(await historyResponse.Content.ReadAsStreamAsync());
+        var historyItems = historyJson.RootElement.GetProperty("items").EnumerateArray().ToList();
+        Assert.True(historyItems.Count >= 2);
+
+        var createHistoryId = historyItems
+            .First(i => i.GetProperty("actionType").GetString() == "create")
+            .GetProperty("id")
+            .GetString();
+        Assert.False(string.IsNullOrWhiteSpace(createHistoryId));
+
+        var restoreResponse = await ownerClient.PostAsync($"/api/Rank/RestoreRankingFromHistory/{rankingId}/{createHistoryId}", null);
+        Assert.Equal(HttpStatusCode.OK, restoreResponse.StatusCode);
+
+        var restoredRankingResponse = await ownerClient.GetAsync($"/api/Rank/GetRanking/{rankingId}");
+        Assert.Equal(HttpStatusCode.OK, restoredRankingResponse.StatusCode);
+
+        using var restoredJson = await JsonDocument.ParseAsync(await restoredRankingResponse.Content.ReadAsStreamAsync());
+        Assert.Equal("Original title", restoredJson.RootElement.GetProperty("title").GetString());
+        Assert.Equal(2, restoredJson.RootElement.GetProperty("items").GetArrayLength());
+
+        using var otherClient = app.CreateClient();
+        await SignUpAndAuthenticate(otherClient);
+
+        var otherHistoryResponse = await otherClient.GetAsync($"/api/Rank/GetRankingEditHistory/{rankingId}");
+        Assert.Contains(otherHistoryResponse.StatusCode, new[] { HttpStatusCode.Forbidden, HttpStatusCode.NotFound });
+
+        var otherRestoreResponse = await otherClient.PostAsync($"/api/Rank/RestoreRankingFromHistory/{rankingId}/{createHistoryId}", null);
+        Assert.Contains(otherRestoreResponse.StatusCode, new[] { HttpStatusCode.Forbidden, HttpStatusCode.NotFound });
+    }
+
+    [Fact]
     public async Task ShareFlow_GetShareableLink_GetSharedRanking_CloneSharedRanking_Work()
     {
         await using var app = new SimpleRankWebApplicationFactory();

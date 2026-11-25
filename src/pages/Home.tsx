@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect, useState, useCallback } from "react"
 import { useNavigate } from 'react-router';
 import { Plus } from 'lucide-react';
 import { DragDropContext } from "@hello-pangea/dnd";
@@ -24,58 +24,78 @@ function Home(){
 
     const { user, session } = useUser()
     const rankingToDelete = useRef<{ id: string | null; title: string }>({ id: null, title: "" })
+    const activeRequestId = useRef(0)
+    const hasLoadedRankings = useRef(false)
+    const lastFetchedUserId = useRef<string | null>(null)
 
-    useEffect(()=>{
-        // console.log(programmingLanguagesRanking)
-        // console.log(nationalParksRanking)
-        // setCurrentRankings([programmingLanguagesRanking, nationalParksRanking])
-        const getRankings = async () => {
-            if(!session?.user?.id)
-            {
-                console.error("User ID is not defined")
-                return
-            }
-            await getRankingsForUser()
-        }
+    const getRankingsForUser = useCallback(async (userId: string) => {
+        const requestId = ++activeRequestId.current
+        setLoading(!hasLoadedRankings.current)
 
-        getRankings()
-    },
-    [session])
-
-    useEffect(() => {
-
-    }, [currentRankings])
-
-    async function getRankingsForUser()
-    {
-        setLoading(true)
         try {
             console.log("Getting all rankings: ")
-            const response = await rankingService.getUserRankings(session!.user.id) // Replace 1 with the actual user ID
+            const response = await rankingService.getUserRankings(userId)
 
-            setLoading(false)
+            if(requestId !== activeRequestId.current)
+            {
+                return
+            }
+
             if(response.error)
             {
                 console.error("Error saving ranking: ", response.error)
                 return
             }
-    
-            //navigate to the new ranking page
+
             if(response.data !== undefined)
             {
                 const rankings = response.data.map(item => ({ ...item, pinnedTime: new Date(item.pinnedTime) }));
                 console.log("Successfully saved ranking: ", response.data)
                 console.log("Rankings: post map", rankings)
                 setCurrentRankings(rankings)
+                hasLoadedRankings.current = true
                 showNotification("user rankings loaded", "success", 750)
             }
         }
         catch(error) {
-            setLoading(false)
+            if(requestId !== activeRequestId.current)
+            {
+                return
+            }
+
             console.error("Error saving ranking: ", error)
         }
-        setLoading(false)
-    }
+        finally {
+            if(requestId === activeRequestId.current)
+            {
+                setLoading(false)
+            }
+        }
+    }, [showNotification])
+
+    useEffect(()=>{
+        if(!session?.user?.id)
+        {
+            console.error("User ID is not defined")
+            return
+        }
+
+        if(lastFetchedUserId.current !== session.user.id)
+        {
+            hasLoadedRankings.current = false
+            lastFetchedUserId.current = session.user.id
+        }
+
+        void getRankingsForUser(session.user.id)
+
+        return () => {
+            activeRequestId.current += 1
+        }
+    }, [getRankingsForUser, session?.user?.id])
+
+    useEffect(() => {
+
+    }, [currentRankings])
 
     async function deleteRanking(id: string)
     {

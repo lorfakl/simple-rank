@@ -6,10 +6,9 @@ import ConfirmationModel from '../components/ConfirmationModal';
 import ToggleTextInput from '../components/ToggleTextInput';
 import { AddRankItemModal } from '../components/AddRankItemModal';
 import { ChevronDown, Plus, RefreshCw , Earth, Lock } from 'lucide-react';
-import { useState, useEffect, useRef, use } from "react"
+import { useState, useEffect, useRef, useCallback, use } from "react"
 import { Droppable, DragDropContext } from '@hello-pangea/dnd';
 import { rankingService, rankItemService } from '../api/services';
-import { useUser } from '../contexts/UserContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { RankingDetails } from '../components/RankingDetails';
 import { EditRankDetailsModal } from '../components/EditRankDetailsModal';
@@ -50,25 +49,95 @@ function ViewRanking(){
     const rankItemTitleErrors = useRef<Record<string, boolean>>({})
     const shareableLink = useRef("")
     const previousItemCount = useRef(0)
+    const activeRequestId = useRef(0)
+    const hasLoadedRanking = useRef(false)
 
     const navigate = useNavigate()
-    const { session } = useUser()
     const { showNotification } = useNotifications()
     const { id } = useParams()
 
-    useEffect(() => {
-        //load User Rank Data
-        const getCurrentRank = async () => {
-            if(id === undefined || id === null || id === "")
+    const GetRank = useCallback(async (rankingId: string) =>
+    {
+        const requestId = ++activeRequestId.current
+        setLoading(!hasLoadedRanking.current)
+
+        try {
+            console.log("Getting current rank: ")
+            const response = await rankingService.getRankingById(rankingId)
+
+            if(requestId !== activeRequestId.current)
             {
-                console.error("No ranking ID provided")
                 return
             }
-            await GetRank(id)
-        }
-        getCurrentRank()
 
-    }, [session])
+            if(response.error)
+            {
+                console.error("Error getting ranking: ", response.error)
+                return
+            }
+
+            console.log("Successfully got ranking: ", response.data)
+            if(response.data !== undefined)
+            {
+                const rankItems = response.data.items.map(item => ({itemId: item.itemId, title: item.name, description: item.description, rank: item.rank}))
+
+                setRankItems(rankItems)
+                setRankingInfo({
+                    title: response.data.title,
+                    description: response.data.description,
+                    createdBy: response.data.createdBy.displayName,
+                    lastUpdate: response.data.lastUpdated,
+                    creationDate: response.data.createdDate,
+                    isPublic: response.data.isPublic,
+                    isShared: response.data.isShared
+                })
+                setItemCount(response.data.items.length)
+                hasLoadedRanking.current = true
+
+                for(let i = 0; i < rankItems.length; i++)
+                {
+                    let item = rankItems[i]!
+                    createdRanks.current[item.itemId] = {
+                        itemId: item.itemId,
+                        title: item.title,
+                        description: item.description,
+                        rank: item.rank
+                    }
+                    rankItemTitleErrors.current[item.itemId] = false
+                }
+                console.log("Created ranks in use ref is this updating?: ", createdRanks.current)
+            }
+        }
+        catch(error) {
+            if(requestId !== activeRequestId.current)
+            {
+                return
+            }
+
+            console.error("Error saving ranking: ", error)
+        }
+        finally {
+            if(requestId === activeRequestId.current)
+            {
+                setLoading(false)
+            }
+        }
+    }, [])
+
+    useEffect(() => {
+        if(id === undefined || id === null || id === "")
+        {
+            console.error("No ranking ID provided")
+            return
+        }
+
+        hasLoadedRanking.current = false
+        void GetRank(id)
+
+        return () => {
+            activeRequestId.current += 1
+        }
+    }, [GetRank, id])
 
     useEffect(() => {
 
@@ -89,59 +158,6 @@ function ViewRanking(){
         console.log(dateString)
         setRankingInfo(prev => ({...prev, lastUpdate: dateString}));
     },[rankItems])
-
-    async function GetRank(rankingId: string)
-    {
-        setLoading(true)
-        try {
-            console.log("Getting current rank: ")
-            const response = await rankingService.getRankingById(rankingId)
-
-            setLoading(false)
-            if(response.error)
-            {
-                console.error("Error getting ranking: ", response.error)
-                return
-            }
-    
-            console.log("Successfully got ranking: ", response.data)
-            //navigate to the new ranking page
-            if(response.data !== undefined)
-            {
-                const rankItems = response.data.items.map(item => ({itemId: item.itemId, title: item.name, description: item.description, rank: item.rank}))
-
-                setRankItems(rankItems)
-                setRankingInfo({
-                    title: response.data.title, 
-                    description: response.data.description, 
-                    createdBy: response.data.createdBy.displayName,
-                    lastUpdate: response.data.lastUpdated,
-                    creationDate: response.data.createdDate,
-                    isPublic: response.data.isPublic,
-                    isShared: response.data.isShared
-                })
-                setItemCount(response.data.items.length)
-
-                for(let i = 0; i < rankItems.length; i++)
-                {
-                    let item = rankItems[i]!
-                    createdRanks.current[item.itemId] = {
-                        itemId: item.itemId,
-                        title: item.title,
-                        description: item.description,
-                        rank: item.rank
-                    }
-                    rankItemTitleErrors.current[item.itemId] = false
-                }
-                console.log("Created ranks in use ref is this updating?: ", createdRanks.current)
-            }
-        }
-        catch(error) {
-            setLoading(false)
-            console.error("Error saving ranking: ", error)
-        }
-        setLoading(false)
-    }
 
     async function updateRankingItemPlace(rankItemsArray: ViewRankItem[])
     {

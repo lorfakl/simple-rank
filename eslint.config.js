@@ -4,7 +4,9 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist'] },
+  // Only generated build output is ignored: `dist` (vite scaffold default) and
+  // `wwwroot` (build.outDir — PWA sw.js/workbox/assets are generated, not source).
+  { ignores: ['dist', 'wwwroot'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

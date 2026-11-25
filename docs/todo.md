@@ -4,8 +4,9 @@ Plan: `docs/plan.md` · branch `migration` · commit per slice · never push `ma
 Verification baseline for every slice: `npm run build`, `npm test`, `~/.dotnet/dotnet test`.
 
 ## Phase 1 — Launch blockers
-- [ ] Task 1: 401/403 interceptor + login redirect (simple-rank #10)
+- [ ] Task 1: 401/403 interceptor + login redirect + route guard for protected pages (simple-rank #10)
 - [ ] Task 2: Redirect URL correctness + rename SupabaseContext → AuthContext (simple-rank #10)
+- [ ] Task 2b: Repair `npm run dev` — dep optimizer serves broken `_jsxDEV` (clear `node_modules/.vite`), confirm dev server renders
 - [ ] Task 3: Logging baseline — Serilog + request middleware + client error endpoint (simple-rank #4, launch scope)
 - [ ] Task 4: Auth hardening review — secrets, authz tests, CORS, rate limits (simple-rank-backend #14 area, #7 part 1)
 - [ ] Task 5: ZAP baseline pen test, fix Highs, file the rest (simple-rank #7)

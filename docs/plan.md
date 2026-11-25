@@ -12,8 +12,8 @@ still-real parts (401/403 redirects) stay in scope.
 Verified state of the code before planning:
 - `src/api/client.tsx` has **no** 401/403 handling → #10 second checkbox is genuinely open.
 - No Sentry/OTel/console-error aggregation anywhere in frontend or backend → #4 open.
-- `SupabaseContext.tsx` still exists as a name but wraps the first-party auth API → rename is
-  cosmetic, tracked separately from #10.
+- `SupabaseContext.tsx` is a **hollow stub** (empty context, `{}` provider value) still imported by 5
+  pages — real auth state lives in `UserContext.tsx` → rename/removal is cleanup, tracked in Task 2.
 - Repo rules (AGENTS.md): branch `migration`, commit per slice, never push `main`,
   never deploy/DNS without a human.
 
@@ -39,6 +39,7 @@ session and redirect to `/login` (preserving `returnTo`); on 403, surface a frie
 **Acceptance criteria:**
 - [ ] Expired/invalid JWT on any API call ends at `/login` with return path preserved, exactly once (no redirect loop)
 - [ ] 403 shows an in-app state, never a blank screen or console-only failure
+- [ ] Unauthenticated deep-link to a protected route (e.g. `/Home`) redirects to `/login` instead of rendering an empty private page (verified missing 2026-11-25)
 - [ ] Unit tests cover 401, 403, and 200 paths in `src/api/client.test.tsx`
 **Verification:** `npm run build` exits 0; `npm test` exits 0; manual: forge an expired token, load a protected page.
 **Dependencies:** None
@@ -229,3 +230,11 @@ and where do master keys live (Key Vault vs appsettings-sealed secret)?
 - Where do master encryption keys live — Key Vault, or a production-only env var injected into the container? (blocks Task 11/12)
 - Should expired-JWT handling attempt a silent refresh, or is redirect-to-login acceptable UX?
 - Is Task 7's phone-only scroll bug still reproducible on your device today?
+- Should Google/Discord OAuth come back (needs real OAuth client setup now that Supabase is gone), or is email/password enough for launch?
+
+## Findings from live verification (2026-11-25)
+- **Auth works end-to-end.** Backend `SignUp`/`SignIn`/`Me`/`SignOut` + JWT validation verified live (200 with token, 401 without); browser E2E: signup → `/Home` → `GetUserRankings/{userId}`, wrong password → "Invalid credentials", sign out → keys cleared, no silent re-login. `dotnet test` 6/6, `npm test` 4/4.
+- **Root cause of "no auth exists":** `.env.production` baked a stale `VITE_API_BASE_URL=https://simple-rank-backend-komz4.kinsta.app` (host returns 502), so every production build sent auth off-origin and failed. Fixed to empty (same-origin, per `deployNote.md`).
+- **Sign-out leak fixed:** `signOut()` never cleared localStorage while the JWT stays valid 7 days → refresh silently re-authenticated. Now clears `auth_token`/`user`/`fullName`/`avatarUrl`.
+- **`npm run dev` dep optimizer is wedged** on this box: `_jsxDEV is not a function`, persists through `--force`; `vite preview` (prod build) works fine. Fix likely `rm -rf node_modules/.vite` — worth a task before relying on the dev server.
+- Client-side validation exists (daisyUI validators on the email/password inputs); the empty `validateForm()` stub in `EmailAuthenticationForm.tsx` is dead code, not the only guard.
